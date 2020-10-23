@@ -1,0 +1,99 @@
+type Customer 
+    @model
+    @auth(rules: [
+        { allow: groups, groups: ["Admins"] },
+        { allow: private, provider: iam, operations: [read, update] }
+    ]) {
+        id: ID!
+        firstName: String!
+        lastName: String!
+        active: Boolean!
+        address: String!
+}
+
+type Product
+    @model
+    @auth(rules: [
+        { allow: groups, groups: ["Admins"] },
+        { allow: public, provider: iam, operations: [read] }
+    ]) {
+        id: ID!
+        name: String!
+        description: String!
+        price: String!
+        active: Boolean!
+        added: AWSDateTime!
+        orders: [Order] @connection
+}
+
+# TODO: handle the subscription case when auth is not added - it doesn't create a subscription resolver
+type Order @model
+    @key(fields: ["id", "productID"]) {
+        id: ID!
+        productID: ID!
+        total: String!
+        ordered: AWSDateTime!
+}
+
+type Blog @model {
+  id: ID!
+  name: String!
+  posts: [Post] @connection(name: "BlogPosts")
+}
+
+type Post @model {
+  id: ID!
+  title: String!
+  blog: Blog @connection(name: "BlogPosts")
+  comments: [Comment] @connection(name: "PostComments")
+}
+
+type Comment @model {
+  id: ID!
+  content: String
+  post: Post @connection(name: "PostComments")
+}
+
+# Demonstrate the FUNCTION resolvers
+type User @model(queries: null, mutations: null, subscriptions: null)
+    @auth(rules: [
+        { allow: groups, groups: ["Admins"] },
+        { allow: owner, ownerField: "sub" },
+        { allow: private, provider: iam, operations: [create, update] }
+    ]) {
+    id: ID!
+    enabled: Boolean!
+    status: String!
+    email: String!
+    name: String!
+    email_verified: String
+    phone_number: String
+    phone_number_verified: String
+}
+
+type UserConnection {
+    items: [User]
+}
+
+input CreateUserInput {
+    email: String!
+    name: String!
+}
+
+input UpdateUserInput {
+    id: ID!
+    email: String
+    name: String
+    number: String
+}
+
+# Demonstrate the FUNCTION resolvers
+type Query {
+  listUsers: UserConnection @function(name: "currently-unused")
+  getUser(id: ID!): User @function(name: "currently-unused")
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): User @function(name: "currently-unused")
+  updateUser(input: UpdateUserInput!): User @function(name: "currently-unused")
+}
