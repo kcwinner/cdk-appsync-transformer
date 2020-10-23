@@ -1,4 +1,4 @@
-import { GraphQLTransform, TransformConfig, TRANSFORM_CURRENT_VERSION, TRANSFORM_CONFIG_FILE_NAME } from 'graphql-transformer-core';
+import { GraphQLTransform, TransformConfig, TRANSFORM_CURRENT_VERSION, TRANSFORM_CONFIG_FILE_NAME, ConflictHandlerType } from 'graphql-transformer-core';
 import { DynamoDBModelTransformer } from 'graphql-dynamodb-transformer';
 import { ModelConnectionTransformer } from 'graphql-connection-transformer';
 import { KeyTransformer } from 'graphql-key-transformer';
@@ -88,7 +88,7 @@ export class SchemaTransformer {
     }
 
     public transform() {
-        let transformConfig = this.isSyncEnabled ? this.loadConfigSync('lib/transformer/') : {}
+        let transformConfig = this.isSyncEnabled ? this.loadConfigSync() : {}
 
         // Note: This is not exact as we are omitting the @searchable transformer.
         const transformer = new GraphQLTransform({
@@ -205,17 +205,26 @@ export class SchemaTransformer {
     }
 
     /** 
-     * @param projectDir Project directory to load the tranformation config from. Defaults to lib/transformer/
      * @returns {@link TransformConfig}
     */
-    private loadConfigSync(projectDir: string): TransformConfig {
+    private loadConfigSync(projectDir: string = 'resources'): TransformConfig {
         // Initialize the config always with the latest version, other members are optional for now.
-        let config = {
-            Version: TRANSFORM_CURRENT_VERSION
+        let config: TransformConfig = {
+            Version: TRANSFORM_CURRENT_VERSION,
+            ResolverConfig: {
+                project: {
+                    ConflictHandler: ConflictHandlerType.OPTIMISTIC,
+                    ConflictDetection: "VERSION"
+                }
+            }
         };
 
+        const configDir = join(__dirname, '..', '..', projectDir);
+
+        console.log('CONFIG DIR:', configDir);
+
         try {
-            const configPath = join(projectDir, TRANSFORM_CONFIG_FILE_NAME);
+            const configPath = join(configDir, TRANSFORM_CONFIG_FILE_NAME);
             const configExists = fs.existsSync(configPath);
             if (configExists) {
                 const configStr = fs.readFileSync(configPath);
