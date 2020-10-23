@@ -47,11 +47,12 @@ new AppSyncTransformer(scope: Construct, id: string, props: AppSyncTransformerPr
 
 Name | Type | Description 
 -----|------|-------------
-**appsyncAPI**🔹 | <code>[GraphqlApi](#aws-cdk-aws-appsync-graphqlapi)</code> | <span></span>
-**nestedAppsyncStack**🔹 | <code>[NestedStack](#aws-cdk-core-nestedstack)</code> | <span></span>
-**outputs**🔹 | <code>any</code> | <span></span>
-**resolvers**🔹 | <code>any</code> | <span></span>
-**tableNameMap**🔹 | <code>any</code> | <span></span>
+**appsyncAPI**🔹 | <code>[GraphqlApi](#aws-cdk-aws-appsync-graphqlapi)</code> | The cdk GraphqlApi construct.
+**functionResolvers**🔹 | <code>any</code> | The Lambda Function resolvers designated by the function directive.
+**nestedAppsyncStack**🔹 | <code>[NestedStack](#aws-cdk-core-nestedstack)</code> | The NestedStack that contains the AppSync resources.
+**outputs**🔹 | <code>any</code> | The outputs from the SchemaTransformer.
+**resolvers**🔹 | <code>any</code> | The AppSync resolvers from the transformer minus any function resolvers.
+**tableNameMap**🔹 | <code>any</code> | Map of cdk table tokens to table names.
 
 
 
