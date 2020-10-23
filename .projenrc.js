@@ -9,6 +9,17 @@ const project = new JsiiProject({
   repository: "https://github.com/ken/cdk-appsync-transformer.git",
   stability: "experimental",
   license: 'Apache-2.0',
+  keywords: [
+    "aws",
+    "cdk",
+    "aws-cdk",
+    "appsync",
+    "amplify",
+    "transformer"
+  ],
+  awscdkio: {
+    twitter: "KenWin0x539"
+  },
   projenDevDependency: true,
   eslint: false,
   mergify: false,
@@ -31,10 +42,6 @@ const project = new JsiiProject({
     "@typescript-eslint/parser",
     "eslint",
     "jest",
-    "jsii",
-    "jsii-docgen",
-    "jsii-pacmak",
-    "jsii-release",
     "ts-jest"
   ],
   deps: [

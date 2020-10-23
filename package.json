@@ -97,7 +97,14 @@
     "graphql-transformer-core",
     "graphql-versioned-transformer"
   ],
-  "keywords": [],
+  "keywords": [
+    "amplify",
+    "appsync",
+    "aws",
+    "aws-cdk",
+    "cdk",
+    "transformer"
+  ],
   "engines": {
     "node": ">= 10.17.0"
   },
@@ -156,7 +163,7 @@
       "category": 2
     }
   },
-  "version": "1.63.0-rc.3",
+  "version": "1.64.0-rc.1",
   "types": "lib/index.d.ts",
   "jest": {
     "clearMocks": true,
