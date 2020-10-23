@@ -1,12 +1,12 @@
 # AppSync Transformer Construct for AWS CDK
 
-![build](https://github.com/kcwinner/aws-cdk-appsync-transformer/workflows/build/badge.svg)
-[![codecov](https://codecov.io/gh/kcwinner/aws-cdk-appsync-transformer/branch/main/graph/badge.svg)](https://codecov.io/gh/kcwinner/aws-cdk-appsync-transformer)
-[![dependencies Status](https://david-dm.org/kcwinner/aws-cdk-appsync-transformer/status.svg)](https://david-dm.org/kcwinner/aws-cdk-appsync-transformer)
-[![npm](https://img.shields.io/npm/dt/aws-cdk-appsync-transformer)](https://www.npmjs.com/package/aws-cdk-appsync-transformer)
+![build](https://github.com/kcwinner/cdk-appsync-transformer/workflows/build/badge.svg)
+[![codecov](https://codecov.io/gh/kcwinner/cdk-appsync-transformer/branch/main/graph/badge.svg)](https://codecov.io/gh/kcwinner/cdk-appsync-transformer)
+[![dependencies Status](https://david-dm.org/kcwinner/cdk-appsync-transformer/status.svg)](https://david-dm.org/kcwinner/cdk-appsync-transformer)
+[![npm](https://img.shields.io/npm/dt/cdk-appsync-transformer)](https://www.npmjs.com/package/cdk-appsync-transformer)
 
-[![npm version](https://badge.fury.io/js/aws-cdk-appsync-transformer.svg)](https://badge.fury.io/js/aws-cdk-appsync-transformer)
-[![PyPI version](https://badge.fury.io/py/aws-cdk-appsync-transformer.svg)](https://badge.fury.io/py/aws-cdk-appsync-transformer)
+[![npm version](https://badge.fury.io/js/cdk-appsync-transformer.svg)](https://badge.fury.io/js/cdk-appsync-transformer)
+[![PyPI version](https://badge.fury.io/py/cdk-appsync-transformer.svg)](https://badge.fury.io/py/cdk-appsync-transformer)
 
 ## Notice
 
@@ -24,7 +24,7 @@ This package is my attempt to convert all of that effort into a separate constru
 
 API With Default Values
 ```ts
-import { AppSyncTransformer } from 'aws-cdk-appsync-transformer';
+import { AppSyncTransformer } from 'cdk-appsync-transformer';
 ...
 new AppSyncTransformer(this, "my-cool-api", {
     schemaPath: 'schema.graphql'
@@ -146,7 +146,7 @@ I've written some helpers to generate code similarly to how AWS Amplify generate
 
 I will *attempt* to align the major and minor version of this package with [AWS CDK], but always check the release descriptions for compatibility.
 
-I currently support [![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/kcwinner/aws-cdk-appsync-transformer/@aws-cdk/core)](https://github.com/aws/aws-cdk)
+I currently support [![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/kcwinner/cdk-appsync-transformer/@aws-cdk/core)](https://github.com/aws/aws-cdk)
 
 ## Limitations
 
