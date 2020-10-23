@@ -1,16 +1,15 @@
-import { GraphQLTransform } from 'graphql-transformer-core';
+import { GraphQLTransform, TransformConfig, TRANSFORM_CURRENT_VERSION, TRANSFORM_CONFIG_FILE_NAME } from 'graphql-transformer-core';
 import { DynamoDBModelTransformer } from 'graphql-dynamodb-transformer';
 import { ModelConnectionTransformer } from 'graphql-connection-transformer';
 import { KeyTransformer } from 'graphql-key-transformer';
 import { VersionedModelTransformer } from 'graphql-versioned-transformer';
 import { ModelAuthTransformer, ModelAuthTransformerConfig } from 'graphql-auth-transformer'
 
-import { TransformConfig, TRANSFORM_CURRENT_VERSION, TRANSFORM_CONFIG_FILE_NAME } from 'graphql-transformer-core/lib/util/transformConfig';
-
 // Import this way because FunctionTransformer.d.ts types were throwing an eror. And we didn't write this package so hope for the best :P
 const { FunctionTransformer } = require('graphql-function-transformer');
 
-import Resource from "cloudform-types/types/resource";
+// Rebuilt this from cloudform-types because it has typescript errors. TODO: Revisit cloudform-types
+import { Resource } from './resource';
 
 import { MyTransformer } from './cdk-transformer';
 

@@ -8,6 +8,7 @@ const project = new JsiiProject({
   stability: "experimental",
   license: 'Apache-2.0',
   projenDevDependency: true,
+  jsiiVersion: '1.12.0',
   eslint: false,
   mergify: false,
   npmignore: [
@@ -43,7 +44,6 @@ const project = new JsiiProject({
     "@aws-cdk/aws-lambda@1.63.0",
     "@aws-cdk/core@1.63.0",
     "@types/graphql@14.5.0",
-    "cloudform-types@^5.0.0",
     "graphql@14.6.0",
     "graphql-auth-transformer@^6.18.1",
     "graphql-connection-transformer@^4.18.1",
@@ -63,11 +63,10 @@ const project = new JsiiProject({
     "@aws-cdk/aws-iam@1.63.0",
     "@aws-cdk/aws-lambda@1.63.0",
     "@aws-cdk/core@1.63.0",
-    "constructs"
+    "constructs@^3.1.2"
   ],
   bundledDeps: [
     "@types/graphql",
-    "cloudform-types",
     "graphql",
     "graphql-auth-transformer",
     "graphql-connection-transformer",
