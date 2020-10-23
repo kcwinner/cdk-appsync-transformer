@@ -1,5 +1,7 @@
 const { JsiiProject } = require('projen');
 
+const CDK_VERSION = '1.64.0';
+
 const project = new JsiiProject({
   authorAddress: "kcswinner@gmail.com",
   authorName: "Ken Winner",
@@ -8,7 +10,6 @@ const project = new JsiiProject({
   stability: "experimental",
   license: 'Apache-2.0',
   projenDevDependency: true,
-  jsiiVersion: '1.12.0',
   eslint: false,
   mergify: false,
   npmignore: [
@@ -22,8 +23,8 @@ const project = new JsiiProject({
     module: "cdk_appsync_transformer"
   },
   devDeps: [
-    "aws-cdk@1.63.0",
-    "@aws-cdk/assert@1.63.0",
+    `aws-cdk@${CDK_VERSION}`,
+    `@aws-cdk/assert@${CDK_VERSION}`,
     "@types/jest",
     "@types/node",
     "@typescript-eslint/eslint-plugin",
@@ -37,12 +38,12 @@ const project = new JsiiProject({
     "ts-jest"
   ],
   deps: [
-    "@aws-cdk/aws-appsync@1.63.0",
-    "@aws-cdk/aws-cognito@1.63.0",
-    "@aws-cdk/aws-dynamodb@1.63.0",
-    "@aws-cdk/aws-iam@1.63.0",
-    "@aws-cdk/aws-lambda@1.63.0",
-    "@aws-cdk/core@1.63.0",
+    `@aws-cdk/aws-appsync@${CDK_VERSION}`,
+    `@aws-cdk/aws-cognito@${CDK_VERSION}`,
+    `@aws-cdk/aws-dynamodb@${CDK_VERSION}`,
+    `@aws-cdk/aws-iam@${CDK_VERSION}`,
+    `@aws-cdk/aws-lambda@${CDK_VERSION}`,
+    `@aws-cdk/core@${CDK_VERSION}`,
     "@types/graphql@14.5.0",
     "graphql@14.6.0",
     "graphql-auth-transformer@^6.18.1",
@@ -57,12 +58,12 @@ const project = new JsiiProject({
     "graphql-versioned-transformer@^4.15.9"
   ],
   peerDeps: [
-    "@aws-cdk/aws-appsync@1.63.0",
-    "@aws-cdk/aws-cognito@1.63.0",
-    "@aws-cdk/aws-dynamodb@1.63.0",
-    "@aws-cdk/aws-iam@1.63.0",
-    "@aws-cdk/aws-lambda@1.63.0",
-    "@aws-cdk/core@1.63.0",
+    `@aws-cdk/aws-appsync@${CDK_VERSION}`,
+    `@aws-cdk/aws-cognito@${CDK_VERSION}`,
+    `@aws-cdk/aws-dynamodb@${CDK_VERSION}`,
+    `@aws-cdk/aws-iam@${CDK_VERSION}`,
+    `@aws-cdk/aws-lambda@${CDK_VERSION}`,
+    `@aws-cdk/core@${CDK_VERSION}`,
     "constructs@^3.1.2"
   ],
   bundledDeps: [

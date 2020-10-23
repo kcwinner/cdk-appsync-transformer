@@ -2,7 +2,7 @@ import { Transformer, TransformerContext, getFieldArguments } from "graphql-tran
 
 const graphqlTypeStatements = ['Query', 'Mutation', 'Subscription'];
 
-export class MyTransformer extends Transformer {
+export default class CdkTransformer extends Transformer {
     tables: any
     noneDataSources: any
     functionResolvers: any[]

@@ -8,9 +8,9 @@ import { ModelAuthTransformer, ModelAuthTransformerConfig } from 'graphql-auth-t
 // Import this way because FunctionTransformer.d.ts types were throwing an eror. And we didn't write this package so hope for the best :P
 const { FunctionTransformer } = require('graphql-function-transformer');
 
-// Rebuilt this from cloudform-types because it has typescript errors
+// Rebuilt this from cloudform-types because it has type errors
 import { Resource } from './resource';
-import { MyTransformer } from './cdk-transformer';
+import CdkTransformer from './cdk-transformer';
 
 import { normalize, join } from 'path';
 import * as fs from 'fs';
@@ -100,7 +100,7 @@ export class SchemaTransformer {
                 new KeyTransformer(),
                 new ModelConnectionTransformer(),
                 new ModelAuthTransformer(this.authTransformerConfig),
-                new MyTransformer(),
+                new CdkTransformer(),
             ]
         })
 
@@ -220,8 +220,6 @@ export class SchemaTransformer {
         };
 
         const configDir = join(__dirname, '..', '..', projectDir);
-
-        console.log('CONFIG DIR:', configDir);
 
         try {
             const configPath = join(configDir, TRANSFORM_CONFIG_FILE_NAME);

@@ -10,7 +10,7 @@
 
 ## Notice
 
-This have been migrated from [aws-cdk-appsync-transformer](https://github.com/kcwinner/aws-cdk-appsync-transformer). For CDK versions < 1.63.0 please use that version.
+This is a work in progress and is being migrated from [aws-cdk-appsync-transformer](https://github.com/kcwinner/aws-cdk-appsync-transformer) to follow community naming guidelines and to utilize [projen](https://github.com/eladb/projen). For CDK versions < 1.64.0 please use that version.
 
 ## Why This Package
 
