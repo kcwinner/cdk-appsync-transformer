@@ -8,18 +8,40 @@ import { ModelAuthTransformer, ModelAuthTransformerConfig } from 'graphql-auth-t
 // Import this way because FunctionTransformer.d.ts types were throwing an eror. And we didn't write this package so hope for the best :P
 const { FunctionTransformer } = require('graphql-function-transformer');
 
-// Rebuilt this from cloudform-types because it has typescript errors. TODO: Revisit cloudform-types
+// Rebuilt this from cloudform-types because it has typescript errors
 import { Resource } from './resource';
-
 import { MyTransformer } from './cdk-transformer';
 
 import { normalize, join } from 'path';
-import * as fs from "fs";
+import * as fs from 'fs';
 
 export interface SchemaTransformerProps {
-    schemaPath: string
+    /**
+     * File path to the graphql schema
+     *
+     * @default schema.graphql
+     */
+    schemaPath?: string
+
+    /**
+     * Path where transformed schema and resolvers will be placed
+     *
+     * @default appsync
+     */
     outputPath?: string
+
+    /**
+     * Set deletion protection on DynamoDB tables
+     *
+     * @default true
+     */
     deletionProtectionEnabled?: boolean
+
+    /**
+     * Where to enable DataStore or not
+     *
+     * @default false
+     */
     syncEnabled?: boolean
 }
 
@@ -65,7 +87,7 @@ export class SchemaTransformer {
         }
     }
 
-    transform() {
+    public transform() {
         let transformConfig = this.isSyncEnabled ? this.loadConfigSync('lib/transformer/') : {}
 
         // Note: This is not exact as we are omitting the @searchable transformer.
@@ -97,7 +119,7 @@ export class SchemaTransformer {
         return this.outputs;
     }
 
-    getResolvers() {
+    public getResolvers() {
         const statements = ['Query', 'Mutation', 'Subscription'];
         const resolversDirPath = normalize('./appsync/resolvers')
         if (fs.existsSync(resolversDirPath)) {
@@ -182,6 +204,10 @@ export class SchemaTransformer {
         })
     }
 
+    /** 
+     * @param projectDir Project directory to load the tranformation config from. Defaults to lib/transformer/
+     * @returns {@link TransformConfig}
+    */
     private loadConfigSync(projectDir: string): TransformConfig {
         // Initialize the config always with the latest version, other members are optional for now.
         let config = {

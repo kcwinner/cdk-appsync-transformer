@@ -1,9 +1,0 @@
-{
-    "Version": 5,
-    "ResolverConfig": {
-        "project": {
-            "ConflictHandler": "OPTIMISTIC_CONCURRENCY",
-            "ConflictDetection": "VERSION"
-        }
-    }
-}
