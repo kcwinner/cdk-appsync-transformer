@@ -3160,7 +3160,7 @@ graphql-auth-transformer@^6.20.9:
     graphql-transformer-common "4.17.11"
     graphql-transformer-core "6.21.7"
 
-graphql-connection-transformer@4.18.15, graphql-connection-transformer@^4.18.15:
+graphql-connection-transformer@4.18.15:
   version "4.18.15"
   resolved "https://registry.yarnpkg.com/graphql-connection-transformer/-/graphql-connection-transformer-4.18.15.tgz#816fc47013be4d036c64102279ac5fd74ee6ee2a"
   integrity sha512-JQp14xrqCvt3ZTEa8MBWX3ucvTyF+8orgmpDStAWlIzNVDB3uUyAjDYtI939amobxAnhZmjUHHG+eKm1Glf5Bw==
@@ -3169,6 +3169,19 @@ graphql-connection-transformer@4.18.15, graphql-connection-transformer@^4.18.15:
     graphql "^14.5.8"
     graphql-dynamodb-transformer "6.19.16"
     graphql-key-transformer "2.19.15"
+    graphql-mapping-template "4.15.3"
+    graphql-transformer-common "4.17.11"
+    graphql-transformer-core "6.21.7"
+
+graphql-connection-transformer@^4.18.15:
+  version "4.18.16"
+  resolved "https://registry.yarnpkg.com/graphql-connection-transformer/-/graphql-connection-transformer-4.18.16.tgz#b9d3ddf73f95069559119a0b74f569bbd2357fa7"
+  integrity sha512-ds42ARoj0kUeIE/4IQCdYmzJFnPaE2PBs0SwWbg4sMU4SVcn4p75pxonWw9wZb+Fsd+LKYMRjw4f04HypKbw2w==
+  dependencies:
+    cloudform-types "^4.2.0"
+    graphql "^14.5.8"
+    graphql-dynamodb-transformer "6.19.16"
+    graphql-key-transformer "2.19.16"
     graphql-mapping-template "4.15.3"
     graphql-transformer-common "4.17.11"
     graphql-transformer-core "6.21.7"
@@ -3198,10 +3211,22 @@ graphql-function-transformer@^2.3.22:
     graphql-transformer-common "4.17.11"
     graphql-transformer-core "6.21.7"
 
-graphql-key-transformer@2.19.15, graphql-key-transformer@^2.19.15:
+graphql-key-transformer@2.19.15:
   version "2.19.15"
   resolved "https://registry.yarnpkg.com/graphql-key-transformer/-/graphql-key-transformer-2.19.15.tgz#bde86f4e359fd01fcde5473b4971729baad5f363"
   integrity sha512-I898eA7+R8AW97MitQxU4xVTr2xydrOFUl+I9JWYXERc0MQHkddqEBIPLus9J0uPU226H2RCjmpK1Pcd2+HFqg==
+  dependencies:
+    cloudform-types "^4.2.0"
+    graphql "^14.5.8"
+    graphql-dynamodb-transformer "6.19.16"
+    graphql-mapping-template "4.15.3"
+    graphql-transformer-common "4.17.11"
+    graphql-transformer-core "6.21.7"
+
+graphql-key-transformer@2.19.16, graphql-key-transformer@^2.19.15:
+  version "2.19.16"
+  resolved "https://registry.yarnpkg.com/graphql-key-transformer/-/graphql-key-transformer-2.19.16.tgz#c911335b445b34d2cc020b41c4c9173bc5f47260"
+  integrity sha512-xmGbFDxvK8LnlAQBRdGoTMNYtSCC8Dk1BSLWw7fgDiuvfJrouwsETJqbHb+FDulWocYk7d3GCsnf6vZ1G0KnTg==
   dependencies:
     cloudform-types "^4.2.0"
     graphql "^14.5.8"
