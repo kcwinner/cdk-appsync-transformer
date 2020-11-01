@@ -9,6 +9,7 @@ const project = new JsiiProject({
   repository: "https://github.com/ken/cdk-appsync-transformer.git",
   stability: "experimental",
   license: 'Apache-2.0',
+  workflowNodeVersion: '12.17.0',
   keywords: [
     "aws",
     "cdk",

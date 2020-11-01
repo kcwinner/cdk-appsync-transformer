@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.17.0
+          node-version: 12.17.0
       - run: yarn install --frozen-lockfile
       - run: yarn projen
       - name: Anti-tamper check
