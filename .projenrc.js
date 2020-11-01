@@ -10,6 +10,7 @@ const project = new JsiiProject({
   stability: "experimental",
   license: 'Apache-2.0',
   workflowNodeVersion: '12.17.0',
+  releaseBranches: [ 'main' ],
   keywords: [
     "aws",
     "cdk",
