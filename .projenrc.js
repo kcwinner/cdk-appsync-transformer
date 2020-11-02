@@ -11,6 +11,7 @@ const project = new JsiiProject({
   license: 'Apache-2.0',
   workflowNodeVersion: '12.17.0',
   releaseBranches: [ 'main' ],
+  defaultReleaseBranch: 'main',
   keywords: [
     "aws",
     "cdk",
