@@ -2,6 +2,15 @@ const { JsiiProject } = require('projen');
 
 const CDK_VERSION = '1.65.0';
 
+const cdkDependencies = [
+  `@aws-cdk/aws-appsync@${CDK_VERSION}`,
+  `@aws-cdk/aws-cognito@${CDK_VERSION}`,
+  `@aws-cdk/aws-dynamodb@${CDK_VERSION}`,
+  `@aws-cdk/aws-iam@${CDK_VERSION}`,
+  `@aws-cdk/aws-lambda@${CDK_VERSION}`,
+  `@aws-cdk/core@${CDK_VERSION}`
+]
+
 const project = new JsiiProject({
   authorAddress: "kcswinner@gmail.com",
   authorName: "Ken Winner",
@@ -10,7 +19,7 @@ const project = new JsiiProject({
   stability: "experimental",
   license: 'Apache-2.0',
   workflowNodeVersion: '12.17.0',
-  releaseBranches: [ 'main' ],
+  releaseBranches: ['main'],
   defaultReleaseBranch: 'main',
   typescriptVersion: '^4.0.3',
   keywords: [
@@ -50,33 +59,23 @@ const project = new JsiiProject({
     "ts-jest"
   ],
   deps: [
-    `@aws-cdk/aws-appsync@${CDK_VERSION}`,
-    `@aws-cdk/aws-cognito@${CDK_VERSION}`,
-    `@aws-cdk/aws-dynamodb@${CDK_VERSION}`,
-    `@aws-cdk/aws-iam@${CDK_VERSION}`,
-    `@aws-cdk/aws-lambda@${CDK_VERSION}`,
-    `@aws-cdk/core@${CDK_VERSION}`,
-    "@types/graphql@14.5.0",
-    "graphql@14.6.0",
-    "graphql-auth-transformer@^6.18.1",
-    "graphql-connection-transformer@^4.18.1",
-    "graphql-dynamodb-transformer@^6.19.2",
-    "graphql-function-transformer@^2.3.9",
-    "graphql-key-transformer@^2.19.1",
-    "graphql-mapping-template@^4.13.4",
-    "graphql-relational-schema-transformer@^2.15.6",
-    "graphql-transformer-common@^4.17.1",
-    "graphql-transformer-core@^6.19.1",
-    "graphql-versioned-transformer@^4.15.9"
+    "@types/graphql",
+    "graphql",
+    "graphql-auth-transformer",
+    "graphql-connection-transformer",
+    "graphql-dynamodb-transformer",
+    "graphql-function-transformer",
+    "graphql-key-transformer",
+    "graphql-mapping-template",
+    "graphql-relational-schema-transformer",
+    "graphql-transformer-common",
+    "graphql-transformer-core",
+    "graphql-versioned-transformer",
+    ...cdkDependencies
   ],
   peerDeps: [
-    `@aws-cdk/aws-appsync@${CDK_VERSION}`,
-    `@aws-cdk/aws-cognito@${CDK_VERSION}`,
-    `@aws-cdk/aws-dynamodb@${CDK_VERSION}`,
-    `@aws-cdk/aws-iam@${CDK_VERSION}`,
-    `@aws-cdk/aws-lambda@${CDK_VERSION}`,
-    `@aws-cdk/core@${CDK_VERSION}`,
-    "constructs@^3.1.2"
+    "constructs@^3.2.17",
+    ...cdkDependencies,
   ],
   bundledDeps: [
     "@types/graphql",
