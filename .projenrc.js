@@ -12,6 +12,7 @@ const project = new JsiiProject({
   workflowNodeVersion: '12.17.0',
   releaseBranches: [ 'main' ],
   defaultReleaseBranch: 'main',
+  typescriptVersion: '^4.0.3',
   keywords: [
     "aws",
     "cdk",
