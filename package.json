@@ -11,15 +11,15 @@
     "projen": "node .projenrc.js",
     "no-changes": "(git log --oneline -1 | grep -q \"chore(release):\") && echo \"No changes to release.\"",
     "bump": "yarn run --silent no-changes || standard-version",
-    "release": "yarn run --silent no-changes || (yarn run bump && git push --follow-tags origin master)",
+    "release": "yarn run --silent no-changes || (yarn run bump && git push --follow-tags origin main)",
+    "test": "rm -fr lib/ && jest --passWithNoTests --updateSnapshot",
+    "test:watch": "jest --watch",
+    "test:update": "jest --updateSnapshot",
     "projen:upgrade": "yarn upgrade -L projen && CI=\"\" yarn projen",
     "compile": "jsii --silence-warnings=reserved-word --no-fix-peer-dependencies && jsii-docgen",
     "watch": "jsii -w --silence-warnings=reserved-word --no-fix-peer-dependencies",
     "build": "yarn run test && yarn run compile && yarn run package",
     "package": "jsii-pacmak",
-    "test": "rm -fr lib/ && jest --passWithNoTests --updateSnapshot",
-    "test:watch": "jest --watch",
-    "test:update": "jest --updateSnapshot",
     "compat": "npx jsii-diff npm:$(node -p \"require('./package.json').name\") -k --ignore-file .compatignore || (echo \"\nUNEXPECTED BREAKING CHANGES: add keys such as 'removed:constructs.Node.of' to .compatignore to skip.\n\" && exit 1)",
     "docgen": "jsii-docgen"
   },
@@ -29,18 +29,18 @@
     "organization": false
   },
   "devDependencies": {
-    "@aws-cdk/assert": "1.64.0",
-    "@aws-cdk/aws-appsync": "1.64.0",
-    "@aws-cdk/aws-cognito": "1.64.0",
-    "@aws-cdk/aws-dynamodb": "1.64.0",
-    "@aws-cdk/aws-iam": "1.64.0",
-    "@aws-cdk/aws-lambda": "1.64.0",
-    "@aws-cdk/core": "1.64.0",
+    "@aws-cdk/assert": "1.65.0",
+    "@aws-cdk/aws-appsync": "1.65.0",
+    "@aws-cdk/aws-cognito": "1.65.0",
+    "@aws-cdk/aws-dynamodb": "1.65.0",
+    "@aws-cdk/aws-iam": "1.65.0",
+    "@aws-cdk/aws-lambda": "1.65.0",
+    "@aws-cdk/core": "1.65.0",
     "@types/jest": "^26.0.7",
     "@types/node": "^10.17.0",
     "@typescript-eslint/eslint-plugin": "^4.5.0",
     "@typescript-eslint/parser": "^4.5.0",
-    "aws-cdk": "1.64.0",
+    "aws-cdk": "1.65.0",
     "constructs": "3.1.2",
     "eslint": "^7.11.0",
     "jest": "^26.4.2",
@@ -49,27 +49,27 @@
     "jsii-docgen": "^1.3.2",
     "jsii-pacmak": "^1.11.0",
     "jsii-release": "^0.1.6",
-    "projen": "^0.3.121",
+    "projen": "^0.3.160",
     "standard-version": "^9.0.0",
     "ts-jest": "^26.1.0",
     "typescript": "^3.9.5"
   },
   "peerDependencies": {
-    "@aws-cdk/aws-appsync": "1.64.0",
-    "@aws-cdk/aws-cognito": "1.64.0",
-    "@aws-cdk/aws-dynamodb": "1.64.0",
-    "@aws-cdk/aws-iam": "1.64.0",
-    "@aws-cdk/aws-lambda": "1.64.0",
-    "@aws-cdk/core": "1.64.0",
+    "@aws-cdk/aws-appsync": "1.65.0",
+    "@aws-cdk/aws-cognito": "1.65.0",
+    "@aws-cdk/aws-dynamodb": "1.65.0",
+    "@aws-cdk/aws-iam": "1.65.0",
+    "@aws-cdk/aws-lambda": "1.65.0",
+    "@aws-cdk/core": "1.65.0",
     "constructs": "^3.1.2"
   },
   "dependencies": {
-    "@aws-cdk/aws-appsync": "1.64.0",
-    "@aws-cdk/aws-cognito": "1.64.0",
-    "@aws-cdk/aws-dynamodb": "1.64.0",
-    "@aws-cdk/aws-iam": "1.64.0",
-    "@aws-cdk/aws-lambda": "1.64.0",
-    "@aws-cdk/core": "1.64.0",
+    "@aws-cdk/aws-appsync": "1.65.0",
+    "@aws-cdk/aws-cognito": "1.65.0",
+    "@aws-cdk/aws-dynamodb": "1.65.0",
+    "@aws-cdk/aws-iam": "1.65.0",
+    "@aws-cdk/aws-lambda": "1.65.0",
+    "@aws-cdk/core": "1.65.0",
     "@types/graphql": "^14.5.0",
     "graphql": "^15.3.0",
     "graphql-auth-transformer": "^6.20.9",
@@ -112,79 +112,93 @@
   "license": "Apache-2.0",
   "start": {
     "start": {
+      "command": "yarn run start",
       "desc": "Shows this menu"
     },
     "projen": {
       "desc": "Synthesize project configuration from .projenrc.js",
+      "command": "yarn run projen",
       "category": 3
     },
     "bump": {
       "desc": "Commits a bump to the package version based on conventional commits",
+      "command": "yarn run bump",
       "category": 2
     },
     "release": {
-      "desc": "Bumps version & push to master",
-      "category": 2
-    },
-    "projen:upgrade": {
-      "desc": "upgrades projen to the latest version",
-      "category": 3
-    },
-    "compile": {
-      "desc": "Only compile",
-      "category": 0
-    },
-    "watch": {
-      "desc": "Watch & compile in the background",
-      "category": 0
-    },
-    "build": {
-      "desc": "Full release build (test+compile)",
-      "category": 0
-    },
-    "package": {
-      "desc": "Create an npm tarball",
+      "desc": "Bumps version & push to main",
+      "command": "yarn run release",
       "category": 2
     },
     "test": {
       "desc": "Run tests",
+      "command": "yarn run test",
       "category": 1
     },
     "test:watch": {
       "desc": "Run jest in watch mode",
+      "command": "yarn run test:watch",
       "category": 1
+    },
+    "projen:upgrade": {
+      "desc": "upgrades projen to the latest version",
+      "command": "yarn run projen:upgrade",
+      "category": 3
+    },
+    "compile": {
+      "desc": "Only compile",
+      "command": "yarn run compile",
+      "category": 0
+    },
+    "watch": {
+      "desc": "Watch & compile in the background",
+      "command": "yarn run watch",
+      "category": 0
+    },
+    "build": {
+      "desc": "Full release build (test+compile)",
+      "command": "yarn run build",
+      "category": 0
+    },
+    "package": {
+      "desc": "Create an npm tarball",
+      "command": "yarn run package",
+      "category": 2
     },
     "compat": {
       "desc": "Perform API compatibility check against latest version",
+      "command": "yarn run compat",
       "category": 2
     },
     "docgen": {
       "desc": "Generate API.md from .jsii manifest",
+      "command": "yarn run docgen",
       "category": 2
     }
   },
   "version": "1.64.0",
-  "types": "lib/index.d.ts",
   "jest": {
     "clearMocks": true,
     "collectCoverage": true,
+    "coverageDirectory": "coverage",
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ],
     "testPathIgnorePatterns": [
       "/node_modules/"
     ],
-    "preset": "ts-jest",
     "testMatch": [
       "**/__tests__/**/*.ts?(x)",
       "**/?(*.)+(spec|test).ts?(x)"
     ],
+    "preset": "ts-jest",
     "globals": {
       "ts-jest": {
-        "tsConfig": "tsconfig.jest.json"
+        "tsconfig": "tsconfig.jest.json"
       }
     }
   },
+  "types": "lib/index.d.ts",
   "stability": "experimental",
   "jsii": {
     "outdir": "dist",

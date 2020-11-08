@@ -1,6 +1,6 @@
 const { JsiiProject } = require('projen');
 
-const CDK_VERSION = '1.64.0';
+const CDK_VERSION = '1.65.0';
 
 const project = new JsiiProject({
   authorAddress: "kcswinner@gmail.com",
@@ -26,6 +26,7 @@ const project = new JsiiProject({
   projenDevDependency: true,
   eslint: false,
   mergify: false,
+  codeCov: true,
   npmignore: [
     'appsync/*'
   ],
