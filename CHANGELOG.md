@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 1.65.0 (2020-11-08)
+
+### Changes
+
+* Upgrading to 1.65.0 of the CDK
+
 ## 1.64.0 (2020-11-01)
 
 ### Changes
