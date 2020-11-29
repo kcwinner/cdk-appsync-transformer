@@ -293,12 +293,11 @@ export class AppSyncTransformer extends Construct {
 
   private convertAttributeType(type: string) {
     switch (type) {
-      case 'S':
-        return AttributeType.STRING
       case 'N':
         return AttributeType.NUMBER
       case 'B':
         return AttributeType.BINARY
+      case 'S': // Same as default
       default:
         return AttributeType.STRING
     }
@@ -306,12 +305,11 @@ export class AppSyncTransformer extends Construct {
 
   private convertProjectionType(type: string) {
     switch (type) {
-      case 'ALL':
-        return ProjectionType.ALL
       case 'INCLUDE':
         return ProjectionType.INCLUDE
       case 'KEYS_ONLY':
         return ProjectionType.KEYS_ONLY
+      case 'ALL': // Same as default
       default:
         return ProjectionType.ALL
     }
