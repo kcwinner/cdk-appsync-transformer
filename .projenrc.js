@@ -12,7 +12,7 @@ const project = new AwsCdkConstructLibrary({
   license: 'Apache-2.0',
   workflowNodeVersion: '12.17.0',
   defaultReleaseBranch: 'main',
-  typescriptVersion: '^4.0.3',
+  typescriptVersion: '^4.1.2',
   keywords: [
     "aws",
     "cdk",
