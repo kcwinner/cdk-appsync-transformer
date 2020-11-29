@@ -45,17 +45,24 @@ export default class CdkTransformer extends Transformer {
         // @ts-ignore
         ctx.setOutput('FUNCTION_RESOLVERS', this.functionResolvers);
 
-        let query = ctx.getQuery();
-        let queryFields = getFieldArguments(query);
-        ctx.setOutput('QUERIES', queryFields);
+        const query = ctx.getQuery();
+        
+        if (query) {
+            const queryFields = getFieldArguments(query);
+            ctx.setOutput('QUERIES', queryFields);
+        }
 
-        let mutation = ctx.getMutation();
-        let mutationFields = getFieldArguments(mutation);
-        ctx.setOutput('MUTATIONS', mutationFields);
+        const mutation = ctx.getMutation();
+        if (mutation) {
+            const mutationFields = getFieldArguments(mutation);
+            ctx.setOutput('MUTATIONS', mutationFields);
+        }
 
-        let subscription = ctx.getSubscription();
-        let subscriptionFields = getFieldArguments(subscription);
-        ctx.setOutput('SUBSCRIPTIONS', subscriptionFields);
+        const subscription = ctx.getSubscription();
+        if (subscription) {
+            const subscriptionFields = getFieldArguments(subscription);
+            ctx.setOutput('SUBSCRIPTIONS', subscriptionFields);
+        }
     }
 
     private printWithoutFilePath(ctx: TransformerContext): void {
