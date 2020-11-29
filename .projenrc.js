@@ -38,7 +38,7 @@ const project = new AwsCdkConstructLibrary({
     module: "cdk_appsync_transformer"
   },
 
-  // Dependency informatino
+  // Dependency information
   cdkVersion: '1.66.0',
   cdkDependencies: [
     '@aws-cdk/aws-appsync',
