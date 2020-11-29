@@ -1,6 +1,6 @@
 # AppSync Transformer Construct for AWS CDK
 
-![build](https://github.com/kcwinner/cdk-appsync-transformer/workflows/build/badge.svg)
+![build](https://github.com/kcwinner/cdk-appsync-transformer/workflows/Build/badge.svg)
 [![codecov](https://codecov.io/gh/kcwinner/cdk-appsync-transformer/branch/main/graph/badge.svg)](https://codecov.io/gh/kcwinner/cdk-appsync-transformer)
 [![dependencies Status](https://david-dm.org/kcwinner/cdk-appsync-transformer/status.svg)](https://david-dm.org/kcwinner/cdk-appsync-transformer)
 [![npm](https://img.shields.io/npm/dt/cdk-appsync-transformer)](https://www.npmjs.com/package/cdk-appsync-transformer)

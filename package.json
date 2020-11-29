@@ -29,47 +29,40 @@
     "organization": false
   },
   "devDependencies": {
-    "@aws-cdk/assert": "1.65.0",
-    "@aws-cdk/aws-appsync": "1.65.0",
-    "@aws-cdk/aws-cognito": "1.65.0",
-    "@aws-cdk/aws-dynamodb": "1.65.0",
-    "@aws-cdk/aws-iam": "1.65.0",
-    "@aws-cdk/aws-lambda": "1.65.0",
-    "@aws-cdk/core": "1.65.0",
+    "@aws-cdk/assert": "^1.66.0",
     "@types/jest": "^26.0.15",
     "@types/node": "^10.17.0",
     "@typescript-eslint/eslint-plugin": "^4.6.1",
     "@typescript-eslint/parser": "^4.6.1",
-    "aws-cdk": "1.65.0",
-    "constructs": "3.2.17",
     "eslint": "^7.13.0",
     "jest": "^26.6.3",
+    "jest-junit": "^12",
     "jsii": "^1.11.0",
     "jsii-diff": "^1.11.0",
     "jsii-docgen": "^1.3.2",
     "jsii-pacmak": "^1.11.0",
     "jsii-release": "^0.1.6",
-    "projen": "^0.3.160",
+    "projen": "^0.5.4",
     "standard-version": "^9.0.0",
     "ts-jest": "^26.4.4",
     "typescript": "^4.0.3"
   },
   "peerDependencies": {
-    "@aws-cdk/aws-appsync": "1.65.0",
-    "@aws-cdk/aws-cognito": "1.65.0",
-    "@aws-cdk/aws-dynamodb": "1.65.0",
-    "@aws-cdk/aws-iam": "1.65.0",
-    "@aws-cdk/aws-lambda": "1.65.0",
-    "@aws-cdk/core": "1.65.0",
-    "constructs": "^3.2.17"
+    "@aws-cdk/aws-appsync": "^1.66.0",
+    "@aws-cdk/aws-cognito": "^1.66.0",
+    "@aws-cdk/aws-dynamodb": "^1.66.0",
+    "@aws-cdk/aws-iam": "^1.66.0",
+    "@aws-cdk/aws-lambda": "^1.66.0",
+    "@aws-cdk/core": "^1.66.0",
+    "constructs": "^3.2.27"
   },
   "dependencies": {
-    "@aws-cdk/aws-appsync": "1.65.0",
-    "@aws-cdk/aws-cognito": "1.65.0",
-    "@aws-cdk/aws-dynamodb": "1.65.0",
-    "@aws-cdk/aws-iam": "1.65.0",
-    "@aws-cdk/aws-lambda": "1.65.0",
-    "@aws-cdk/core": "1.65.0",
+    "@aws-cdk/aws-appsync": "^1.66.0",
+    "@aws-cdk/aws-cognito": "^1.66.0",
+    "@aws-cdk/aws-dynamodb": "^1.66.0",
+    "@aws-cdk/aws-iam": "^1.66.0",
+    "@aws-cdk/aws-lambda": "^1.66.0",
+    "@aws-cdk/core": "^1.66.0",
     "@types/graphql": "^14.5.0",
     "graphql": "14.6.0",
     "graphql-auth-transformer": "^6.21.1",
@@ -105,9 +98,6 @@
     "cdk",
     "transformer"
   ],
-  "engines": {
-    "node": ">= 10.17.0"
-  },
   "main": "lib/index.js",
   "license": "Apache-2.0",
   "start": {
@@ -191,6 +181,15 @@
       "**/__tests__/**/*.ts?(x)",
       "**/?(*.)+(spec|test).ts?(x)"
     ],
+    "reporters": [
+      "default",
+      [
+        "jest-junit",
+        {
+          "outputDirectory": "test-reports"
+        }
+      ]
+    ],
     "preset": "ts-jest",
     "globals": {
       "ts-jest": {
@@ -212,5 +211,8 @@
       "outDir": "lib",
       "rootDir": "src"
     }
+  },
+  "awscdkio": {
+    "twitter": "KenWin0x539"
   }
 }
