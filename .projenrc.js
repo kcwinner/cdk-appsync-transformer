@@ -1,27 +1,18 @@
-const { JsiiProject } = require('projen');
+const { AwsCdkConstructLibrary } = require('projen');
 
-const CDK_VERSION = '1.65.0';
-
-const cdkDependencies = [
-  `@aws-cdk/aws-appsync@${CDK_VERSION}`,
-  `@aws-cdk/aws-cognito@${CDK_VERSION}`,
-  `@aws-cdk/aws-dynamodb@${CDK_VERSION}`,
-  `@aws-cdk/aws-iam@${CDK_VERSION}`,
-  `@aws-cdk/aws-lambda@${CDK_VERSION}`,
-  `@aws-cdk/core@${CDK_VERSION}`
-]
-
-const project = new JsiiProject({
+const project = new AwsCdkConstructLibrary({
   authorAddress: "kcswinner@gmail.com",
   authorName: "Ken Winner",
   name: "cdk-appsync-transformer",
   repository: "https://github.com/ken/cdk-appsync-transformer.git",
   stability: "experimental",
+  catalog: {
+    twitter: 'KenWin0x539'
+  },
   license: 'Apache-2.0',
   workflowNodeVersion: '12.17.0',
-  releaseBranches: ['main'],
   defaultReleaseBranch: 'main',
-  typescriptVersion: '^4.0.3',
+  typescriptVersion: '^4.1.2',
   keywords: [
     "aws",
     "cdk",
@@ -30,12 +21,9 @@ const project = new JsiiProject({
     "amplify",
     "transformer"
   ],
-  awscdkio: {
-    twitter: "KenWin0x539"
-  },
-  projenDevDependency: true,
   eslint: false,
   mergify: false,
+  dependabot: false,
   codeCov: true,
   npmignore: [
     'appsync/*'
@@ -43,13 +31,24 @@ const project = new JsiiProject({
   gitignore: [
     'appsync/*'
   ],
+
+  // Jsii packaging
   python: {
     distName: "cdk-appsync-transformer",
     module: "cdk_appsync_transformer"
   },
+
+  // Dependency information
+  cdkVersion: '1.66.0',
+  cdkDependencies: [
+    '@aws-cdk/aws-appsync',
+    '@aws-cdk/aws-cognito',
+    '@aws-cdk/aws-dynamodb',
+    '@aws-cdk/aws-iam',
+    '@aws-cdk/aws-lambda',
+    '@aws-cdk/core'
+  ],
   devDeps: [
-    `aws-cdk@${CDK_VERSION}`,
-    `@aws-cdk/assert@${CDK_VERSION}`,
     "@types/jest",
     "@types/node",
     "@typescript-eslint/eslint-plugin",
@@ -71,11 +70,9 @@ const project = new JsiiProject({
     "graphql-transformer-common",
     "graphql-transformer-core",
     "graphql-versioned-transformer",
-    ...cdkDependencies
   ],
   peerDeps: [
-    "constructs@^3.2.17",
-    ...cdkDependencies,
+    "constructs",
   ],
   bundledDeps: [
     "@types/graphql",
