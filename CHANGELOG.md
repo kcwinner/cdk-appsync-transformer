@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.70.1 (2020-11-29)
+
+
+### Bug Fixes
+
+* fixing the cdk transformer so that it won't operate on null fields ([#45](https://github.com/ken/cdk-appsync-transformer/issues/45)) ([b181070](https://github.com/ken/cdk-appsync-transformer/commit/b1810709c63da24f0b810b89866bf0c225047d4b))
+
 ## 1.70.0 (2020-11-29)
 
 
