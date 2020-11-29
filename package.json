@@ -29,7 +29,7 @@
     "organization": false
   },
   "devDependencies": {
-    "@aws-cdk/assert": "1.67.0",
+    "@aws-cdk/assert": "1.68.0",
     "@types/jest": "^26.0.15",
     "@types/node": "^10.17.0",
     "@typescript-eslint/eslint-plugin": "^4.8.2",
@@ -48,21 +48,21 @@
     "typescript": "^4.1.2"
   },
   "peerDependencies": {
-    "@aws-cdk/aws-appsync": "1.67.0",
-    "@aws-cdk/aws-cognito": "1.67.0",
-    "@aws-cdk/aws-dynamodb": "1.67.0",
-    "@aws-cdk/aws-iam": "1.67.0",
-    "@aws-cdk/aws-lambda": "1.67.0",
-    "@aws-cdk/core": "1.67.0",
+    "@aws-cdk/aws-appsync": "1.68.0",
+    "@aws-cdk/aws-cognito": "1.68.0",
+    "@aws-cdk/aws-dynamodb": "1.68.0",
+    "@aws-cdk/aws-iam": "1.68.0",
+    "@aws-cdk/aws-lambda": "1.68.0",
+    "@aws-cdk/core": "1.68.0",
     "constructs": "^3.2.27"
   },
   "dependencies": {
-    "@aws-cdk/aws-appsync": "1.67.0",
-    "@aws-cdk/aws-cognito": "1.67.0",
-    "@aws-cdk/aws-dynamodb": "1.67.0",
-    "@aws-cdk/aws-iam": "1.67.0",
-    "@aws-cdk/aws-lambda": "1.67.0",
-    "@aws-cdk/core": "1.67.0",
+    "@aws-cdk/aws-appsync": "1.68.0",
+    "@aws-cdk/aws-cognito": "1.68.0",
+    "@aws-cdk/aws-dynamodb": "1.68.0",
+    "@aws-cdk/aws-iam": "1.68.0",
+    "@aws-cdk/aws-lambda": "1.68.0",
+    "@aws-cdk/core": "1.68.0",
     "graphql": "^15.4.0",
     "graphql-auth-transformer": "^6.22.1",
     "graphql-connection-transformer": "^4.19.1",
