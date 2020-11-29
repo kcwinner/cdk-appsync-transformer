@@ -39,7 +39,7 @@ const project = new AwsCdkConstructLibrary({
   },
 
   // Dependency information
-  cdkVersion: '1.66.0',
+  cdkVersion: '1.67.0',
   cdkDependencies: [
     '@aws-cdk/aws-appsync',
     '@aws-cdk/aws-cognito',
@@ -58,7 +58,6 @@ const project = new AwsCdkConstructLibrary({
     "ts-jest"
   ],
   deps: [
-    "@types/graphql",
     "graphql",
     "graphql-auth-transformer",
     "graphql-connection-transformer",
@@ -75,7 +74,6 @@ const project = new AwsCdkConstructLibrary({
     "constructs",
   ],
   bundledDeps: [
-    "@types/graphql",
     "graphql",
     "graphql-auth-transformer",
     "graphql-connection-transformer",
