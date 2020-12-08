@@ -16,14 +16,11 @@ const project = new AwsCdkConstructLibrary({
   keywords: [
     "aws",
     "cdk",
-    "aws-cdk",
     "appsync",
     "amplify",
-    "transformer"
   ],
   eslint: false,
   mergify: false,
-  dependabot: false,
   codeCov: true,
   npmignore: [
     'appsync/*'
@@ -39,7 +36,7 @@ const project = new AwsCdkConstructLibrary({
   },
 
   // Dependency information
-  cdkVersion: '1.70.0',
+  cdkVersion: '1.71.0',
   cdkVersionPinning: true,
   cdkDependencies: [
     '@aws-cdk/aws-appsync',

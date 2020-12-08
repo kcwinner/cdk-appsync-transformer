@@ -53,6 +53,8 @@ tsconfig.json
 !/test
 !/.github/workflows/build.yml
 !/.github/workflows/release.yml
+!/.github/dependabot.yml
+!/.mergify.yml
 !/.github/pull_request_template.md
 !/src
 !/tsconfig.jest.json
