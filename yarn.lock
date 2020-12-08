@@ -2971,7 +2971,7 @@ graphql-transformer-common@4.18.1, graphql-transformer-common@^4.18.1:
     graphql-mapping-template "4.18.1"
     md5 "^2.2.1"
 
-graphql-transformer-core@6.23.1, graphql-transformer-core@^6.23.1:
+graphql-transformer-core@6.23.1:
   version "6.23.1"
   resolved "https://registry.yarnpkg.com/graphql-transformer-core/-/graphql-transformer-core-6.23.1.tgz#731b3cee1d5907db6bd9369df4d0f3b3a032b1e5"
   integrity sha512-mDsFjjo/CCecPzTR6x1R426HbozAfLl/uOicd+/aUqYjLPuXvNmx8fw9XFzro9ta5kEnahQGrqh96P9jSXDzkA==
@@ -2983,15 +2983,27 @@ graphql-transformer-core@6.23.1, graphql-transformer-core@^6.23.1:
     graphql "^14.5.8"
     graphql-transformer-common "4.18.1"
 
+graphql-transformer-core@6.25.0, graphql-transformer-core@^6.23.1:
+  version "6.25.0"
+  resolved "https://registry.yarnpkg.com/graphql-transformer-core/-/graphql-transformer-core-6.25.0.tgz#579a28db095c1d4408769c5a39aaaac7241d2de9"
+  integrity sha512-o1ItJQx9kSeS0ijzrG3Jgw1Gre6aEgt55OMPWflRU9FoRgTF+WsiZkaO/aIsCt2pO+GUC2/saoPnDfsfiOhr2A==
+  dependencies:
+    cloudform-types "^4.2.0"
+    deep-diff "^1.0.2"
+    fs-extra "^8.1.0"
+    glob "^7.1.6"
+    graphql "^14.5.8"
+    graphql-transformer-common "4.18.1"
+
 graphql-versioned-transformer@^4.16.1:
-  version "4.16.1"
-  resolved "https://registry.yarnpkg.com/graphql-versioned-transformer/-/graphql-versioned-transformer-4.16.1.tgz#6d3bccab62c3068492a85c89c208142ae9e0cf72"
-  integrity sha512-2PTsL8kzYrXBb6GyCLXDOod/BIKCa6/hFMIBfSa215o0b0FMViffFC8/KhRF2GDfTFBXATiEaVfhX2qfYIWAXg==
+  version "4.16.3"
+  resolved "https://registry.yarnpkg.com/graphql-versioned-transformer/-/graphql-versioned-transformer-4.16.3.tgz#e721e1a3c1346febf0d17a41237cdda5f033554d"
+  integrity sha512-IqiE1vHPfPv0MPwvWTVmjfr2WTsoG6oLXhq+mILfINoRl6PDS1t25uTSMN7b+Z6OEYUT1HwPyoXUAhegYh9uTA==
   dependencies:
     graphql "^14.5.8"
     graphql-mapping-template "4.18.1"
     graphql-transformer-common "4.18.1"
-    graphql-transformer-core "6.23.1"
+    graphql-transformer-core "6.25.0"
 
 graphql@^14.5.8:
   version "14.7.0"
