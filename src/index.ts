@@ -3,6 +3,7 @@ import { GraphqlApi, AuthorizationType, FieldLogLevel, MappingTemplate, CfnDataS
 import { Table, AttributeType, ProjectionType, BillingMode } from '@aws-cdk/aws-dynamodb';
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam'
 
+import { FunctionResolver } from './transformer/cdk-transformer';
 import { SchemaTransformer, SchemaTransformerProps } from './transformer/schema-transformer';
 
 /**
@@ -71,7 +72,7 @@ export class AppSyncTransformer extends Construct {
   /** 
    * Map of cdk table tokens to table names
    */
-  public readonly tableNameMap: any;
+  public readonly tableNameMap: { [name: string]: any };
 
   /**
    * The outputs from the SchemaTransformer
@@ -85,8 +86,9 @@ export class AppSyncTransformer extends Construct {
 
   /**
    * The Lambda Function resolvers designated by the function directive
+   * https://github.com/kcwinner/cdk-appsync-transformer#functions
    */
-  public readonly functionResolvers: any;
+  public readonly functionResolvers: FunctionResolver[];
 
   private isSyncEnabled: boolean
   private syncTable: Table | undefined

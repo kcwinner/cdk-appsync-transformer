@@ -1,18 +1,45 @@
-import { Transformer, TransformerContext, getFieldArguments } from "graphql-transformer-core";
+import { Transformer, TransformerContext, getFieldArguments } from 'graphql-transformer-core';
 
 const graphqlTypeStatements = ['Query', 'Mutation', 'Subscription'];
 
-export default class CdkTransformer extends Transformer {
-    tables: any
-    noneDataSources: any
-    functionResolvers: any[]
-    resolverTableMap: any
-    gsiResolverTableMap: any
+export interface CdkTransformerTableKey {
+    name: string
+    type: string
+}
+
+export interface CdkTransformerGlobalSecondaryIndex {
+    IndexName: string;
+    Projection: string;
+    PartitionKey: CdkTransformerTableKey
+    SortKey: CdkTransformerTableKey,
+}
+
+export interface CdkTransformerTable {
+    TableName: string;
+    PartitionKey: CdkTransformerTableKey;
+    SortKey?: CdkTransformerTableKey;
+    TTL?: any; // TODO: Figure this out
+    GlobalSecondaryIndexes: CdkTransformerGlobalSecondaryIndex[];
+    Resolvers: string[];
+    GSIResolvers: string[];
+}
+
+export interface FunctionResolver {
+  typeName: string;
+  fieldName: string;
+}
+
+export class CdkTransformer extends Transformer {
+    tables: { [name: string]: CdkTransformerTable };
+    noneDataSources: any;
+    functionResolvers: FunctionResolver[];
+    resolverTableMap: { [name: string]: string };
+    gsiResolverTableMap: { [name: string]: string };
 
     constructor() {
         super(
-            'MyTransformer',
-            'directive @nullable on FIELD_DEFINITION'
+            'CdkTransformer',
+            'directive @nullable on FIELD_DEFINITION' // this is unused
         )
 
         this.tables = {}
@@ -27,9 +54,6 @@ export default class CdkTransformer extends Transformer {
 
         Object.keys(this.tables).forEach(tableName => {
             let table = this.tables[tableName];
-            if (!table.Resolvers) table.Resolvers = [];
-            if (!table.GSIResolvers) table.GSIResolvers = [];
-
             Object.keys(this.resolverTableMap).forEach(resolverName => {
                 if (this.resolverTableMap[resolverName] === tableName) table.Resolvers.push(resolverName);
             })
@@ -39,14 +63,16 @@ export default class CdkTransformer extends Transformer {
             })
         })
 
+        // @ts-ignore - we are overloading the use of outputs here...
         ctx.setOutput('CDK_TABLES', this.tables);
+
+        // @ts-ignore - we are overloading the use of outputs here...
         ctx.setOutput('NONE', this.noneDataSources);
 
-        // @ts-ignore
+        // @ts-ignore - we are overloading the use of outputs here...
         ctx.setOutput('FUNCTION_RESOLVERS', this.functionResolvers);
 
         const query = ctx.getQuery();
-        
         if (query) {
             const queryFields = getFieldArguments(query);
             ctx.setOutput('QUERIES', queryFields);
@@ -71,6 +97,14 @@ export default class CdkTransformer extends Transformer {
 
         for (const resourceName of Object.keys(templateResources)) {
             const resource = templateResources[resourceName]
+
+            console.log('Resource Name:', resourceName);
+            console.log(resource);
+
+            // TYPE: AWS::AppSync::FunctionConfiguration
+
+            // DataSource TYPE: AWS_LAMBDA
+
             if (resource.Type === 'AWS::DynamoDB::Table') {
                 this.buildTablesFromResource(resourceName, ctx)
             } else if (resource.Type === 'AWS::AppSync::Resolver') {
@@ -80,6 +114,9 @@ export default class CdkTransformer extends Transformer {
                         fieldName: resource.Properties.FieldName
                     }
                 } else if (resource.Properties?.Kind === 'PIPELINE') { // TODO: This may not be accurate but works for now
+                    console.log('resource.Properties');
+                    console.log(resource.Properties)
+                    
                     let fieldName = resource.Properties?.FieldName
                     let typeName = resource.Properties?.TypeName
 
@@ -109,21 +146,23 @@ export default class CdkTransformer extends Transformer {
         const attributeDefinitions = tableResource?.Properties?.AttributeDefinitions
         const keySchema = tableResource?.Properties?.KeySchema
 
-        let keys = this.parseKeySchema(keySchema, attributeDefinitions);
+        const keys = this.parseKeySchema(keySchema, attributeDefinitions);
 
-        let table = {
+        let table: CdkTransformerTable = {
             TableName: resourceName,
             PartitionKey: keys.partitionKey,
             SortKey: keys.sortKey,
             TTL: tableResource?.Properties?.TimeToLiveSpecification,
-            GlobalSecondaryIndexes: [] as any[]
+            GlobalSecondaryIndexes: [],
+            Resolvers: [],
+            GSIResolvers: []
         }
 
         const gsis = tableResource?.Properties?.GlobalSecondaryIndexes;
         if (gsis) {
             gsis.forEach((gsi: any) => {
-                let gsiKeys = this.parseKeySchema(gsi.KeySchema, attributeDefinitions);
-                let gsiDefinition = {
+                const gsiKeys = this.parseKeySchema(gsi.KeySchema, attributeDefinitions);
+                const gsiDefinition = {
                     IndexName: gsi.IndexName,
                     Projection: gsi.Projection,
                     PartitionKey: gsiKeys.partitionKey,
@@ -142,10 +181,10 @@ export default class CdkTransformer extends Transformer {
         let sortKey: any = {}
 
         keySchema.forEach((key: any) => {
-            let keyType = key.KeyType
-            let attributeName = key.AttributeName
+            const keyType = key.KeyType
+            const attributeName = key.AttributeName
 
-            let attribute = attributeDefinitions.find((attribute: any) => {
+            const attribute = attributeDefinitions.find((attribute: any) => {
                 return attribute.AttributeName === attributeName
             })
 

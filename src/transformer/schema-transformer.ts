@@ -10,7 +10,7 @@ const { FunctionTransformer } = require('graphql-function-transformer');
 
 // Rebuilt this from cloudform-types because it has type errors
 import { Resource } from './resource';
-import CdkTransformer from './cdk-transformer';
+import { CdkTransformer, FunctionResolver } from './cdk-transformer';
 
 import { normalize, join } from 'path';
 import * as fs from 'fs';
@@ -38,15 +38,24 @@ export interface SchemaTransformerProps {
     deletionProtectionEnabled?: boolean
 
     /**
-     * Where to enable DataStore or not
+     * Whether to enable DataStore or not
      *
      * @default false
      */
     syncEnabled?: boolean
 }
 
+export interface SchemaTransformerOutputs {
+    CDK_TABLES?: { [name: string]: any };
+    NONE?: { [name: string]: any };
+    FUNCTION_RESOLVERS?: FunctionResolver[];
+
+    // Escape hatch
+    [name: string]: any
+}
+
 export class SchemaTransformer {
-    outputs: any
+    outputs: SchemaTransformerOutputs
     resolvers: any
     schemaPath: string
     outputPath: string
@@ -56,7 +65,8 @@ export class SchemaTransformer {
     authTransformerConfig: ModelAuthTransformerConfig
 
     constructor(props: SchemaTransformerProps) {
-        this.resolvers = {}
+        this.outputs = {};
+        this.resolvers = {};
 
         this.schemaPath = props.schemaPath || './schema.graphql';
         this.outputPath = props.outputPath || './appsync';
@@ -88,7 +98,7 @@ export class SchemaTransformer {
     }
 
     public transform() {
-        let transformConfig = this.isSyncEnabled ? this.loadConfigSync() : {}
+        const transformConfig = this.isSyncEnabled ? this.loadConfigSync() : {}
 
         // Note: This is not exact as we are omitting the @searchable transformer.
         const transformer = new GraphQLTransform({
@@ -102,23 +112,26 @@ export class SchemaTransformer {
                 new ModelAuthTransformer(this.authTransformerConfig),
                 new CdkTransformer(),
             ]
-        })
+        });
 
         const schema = fs.readFileSync(this.schemaPath);
         const cfdoc = transformer.transform(schema.toString());
 
         // TODO: Get Unauth Role and Auth Role policies for authorization stuff
-        this.authRolePolicy = cfdoc.rootStack.Resources?.AuthRolePolicy01 as Resource || undefined
         this.unauthRolePolicy = cfdoc.rootStack.Resources?.UnauthRolePolicy01 as Resource || undefined
 
         this.writeSchema(cfdoc.schema);
         this.writeResolversToFile(cfdoc.resolvers);
 
-        this.outputs = cfdoc.rootStack.Outputs;
+        // Outputs shouldn't be null but default to empty map
+        this.outputs = cfdoc.rootStack.Outputs ?? {};
 
         return this.outputs;
     }
 
+    /**
+     * 
+     */
     public getResolvers() {
         const statements = ['Query', 'Mutation', 'Subscription'];
         const resolversDirPath = normalize('./appsync/resolvers')
@@ -172,6 +185,10 @@ export class SchemaTransformer {
         return this.resolvers;
     }
 
+    /**
+     * Writes the schema to the output directory for use with @aws-cdk/aws-appsync
+     * @param schema 
+     */
     private writeSchema(schema: any) {
         if (!fs.existsSync(this.outputPath)) {
             fs.mkdirSync(this.outputPath);
@@ -180,6 +197,10 @@ export class SchemaTransformer {
         fs.writeFileSync(`${this.outputPath}/schema.graphql`, schema)
     }
 
+    /**
+     * Writes all the resolvers to the output directory for loading into the datasources later
+     * @param resolvers 
+     */
     private writeResolversToFile(resolvers: any) {
         if (!fs.existsSync(this.outputPath)) {
             fs.mkdirSync(this.outputPath);

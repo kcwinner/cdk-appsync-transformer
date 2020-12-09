@@ -89,11 +89,11 @@ input UpdateUserInput {
 
 # Demonstrate the FUNCTION resolvers
 type Query {
-  listUsers: UserConnection @function(name: "currently-unused")
-  getUser(id: ID!): User @function(name: "currently-unused")
+  listUsers: UserConnection @function(name: "my-function")
+  getUser(id: ID!): User @function(name: "my-function")
 }
 
 type Mutation {
-  createUser(input: CreateUserInput!): User @function(name: "currently-unused")
-  updateUser(input: UpdateUserInput!): User @function(name: "currently-unused")
+  createUser(input: CreateUserInput!): User @function(name: "my-function")
+  updateUser(input: UpdateUserInput!): User @function(name: "my-function")
 }
