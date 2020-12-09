@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 1.74.0 (2020-12-09)
+
+
+### Features
+
+* bump cdk version to 1.74 ([#55](https://github.com/ken/cdk-appsync-transformer/issues/55)) ([4ef13a4](https://github.com/ken/cdk-appsync-transformer/commit/4ef13a43f69bbcdddf47c71864d64e5d24b6c474))
+
 ## 1.73.0 (2020-12-09)
 
 
