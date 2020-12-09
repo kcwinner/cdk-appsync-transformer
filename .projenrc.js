@@ -36,7 +36,7 @@ const project = new AwsCdkConstructLibrary({
   },
 
   // Dependency information
-  cdkVersion: '1.75.0',
+  cdkVersion: '1.76.0',
   cdkVersionPinning: true,
   cdkDependencies: [
     '@aws-cdk/aws-appsync',
