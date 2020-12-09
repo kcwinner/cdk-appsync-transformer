@@ -36,7 +36,7 @@ const project = new AwsCdkConstructLibrary({
   },
 
   // Dependency information
-  cdkVersion: '1.72.0',
+  cdkVersion: '1.73.0',
   cdkVersionPinning: true,
   cdkDependencies: [
     '@aws-cdk/aws-appsync',
@@ -69,5 +69,8 @@ const project = new AwsCdkConstructLibrary({
     "graphql-versioned-transformer@4.16.1"
   ]
 });
+
+// Override the @types/node version so dependabot leaves us alone
+project.addDevDeps('@types/node@^10.17.48');
 
 project.synth();
