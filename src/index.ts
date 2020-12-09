@@ -108,16 +108,12 @@ export class AppSyncTransformer extends Construct {
     this.outputs.FUNCTION_RESOLVERS.forEach((resolver: any) => {
       switch (resolver.typeName) {
         case 'Query':
-          delete resolvers[resolver.fieldName]
-          break;
         case 'Mutation':
-          delete resolvers[resolver.fieldName]
-          break;
         case 'Subscription':
           delete resolvers[resolver.fieldName]
           break;
       }
-    })
+    });
 
     this.functionResolvers = this.outputs.FUNCTION_RESOLVERS;
     this.resolvers = resolvers;

@@ -13,8 +13,8 @@ const apiKeyAuthorizationConfig: AuthorizationConfig = {
     defaultAuthorization: {
         authorizationType: AuthorizationType.API_KEY,
         apiKeyConfig: {
-            description: "Auto generated API Key from construct",
-            name: "dev",
+            description: 'Auto generated API Key from construct',
+            name: 'dev',
         }
     }
 }
