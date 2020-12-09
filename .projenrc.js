@@ -36,7 +36,7 @@ const project = new AwsCdkConstructLibrary({
   },
 
   // Dependency information
-  cdkVersion: '1.75.0',
+  cdkVersion: '1.76.0',
   cdkVersionPinning: true,
   cdkDependencies: [
     '@aws-cdk/aws-appsync',
@@ -48,7 +48,6 @@ const project = new AwsCdkConstructLibrary({
   ],
   devDeps: [
     "@types/jest",
-    "@types/node@^10.17.48",
     "@typescript-eslint/eslint-plugin",
     "@typescript-eslint/parser",
     "eslint",
