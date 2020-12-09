@@ -102,10 +102,8 @@ export class AppSyncTransformer extends Construct {
     }
 
     const transformer = new SchemaTransformer(transformerConfiguration);
-    const outputs = transformer.transform();
+    this.outputs = transformer.transform();
     const resolvers = transformer.getResolvers();
-
-    this.outputs = outputs;
 
     this.outputs.FUNCTION_RESOLVERS.forEach((resolver: any) => {
       switch (resolver.typeName) {
@@ -136,7 +134,7 @@ export class AppSyncTransformer extends Construct {
       schema: Schema.fromAsset('./appsync/schema.graphql')
     })
 
-    let tableData = outputs.CDK_TABLES;
+    let tableData = this.outputs.CDK_TABLES;
 
     // Check to see if sync is enabled
     if (tableData['DataStore']) {
@@ -146,7 +144,7 @@ export class AppSyncTransformer extends Construct {
     }
 
     this.tableNameMap = this.createTablesAndResolvers(tableData, resolvers);
-    this.createNoneDataSourceAndResolvers(outputs.NONE, resolvers);
+    this.createNoneDataSourceAndResolvers(this.outputs.NONE, resolvers);
 
     // Outputs so we can generate exports
     new CfnOutput(scope, 'appsyncGraphQLEndpointOutput', {

@@ -55,7 +55,7 @@ test('GraphQL API W/ Sync Created', () => {
 test('GraphQL API W/ User Pool Auth Created', () => {
     const mockApp = new App();
     const stack = new Stack(mockApp, 'user-pool-auth-stack');
-    
+
     const userPool = new UserPool(stack, 'test-userpool');
     const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
         userPool: userPool
@@ -81,4 +81,37 @@ test('GraphQL API W/ User Pool Auth Created', () => {
         AuthenticationType: 'AMAZON_COGNITO_USER_POOLS',
         Name: 'user-pool-auth-api'
     });
+});
+
+test('Model Tables Created', () => {
+    const mockApp = new App();
+    const stack = new Stack(mockApp, 'user-pool-auth-stack');
+
+    const userPool = new UserPool(stack, 'test-userpool');
+    const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+        userPool: userPool
+    })
+
+    const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+        schemaPath: testSchemaPath,
+        apiName: 'user-pool-auth-api',
+        authorizationConfig: {
+            defaultAuthorization: {
+                authorizationType: AuthorizationType.USER_POOL,
+                userPoolConfig: {
+                    userPool: userPool,
+                    appIdClientRegex: userPoolClient.userPoolClientId,
+                    defaultAction: UserPoolDefaultAction.ALLOW
+                }
+            }
+        }
+    });
+    
+    const tableData = appSyncTransformer.outputs.CDK_TABLES;
+    for (const [tableName] of Object.entries(tableData)) {
+        expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::DataSource', {
+            Name: tableName,
+            Type: 'AMAZON_DYNAMODB'
+        });
+    }
 });
