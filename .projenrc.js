@@ -48,7 +48,6 @@ const project = new AwsCdkConstructLibrary({
   ],
   devDeps: [
     "@types/jest",
-    "@types/node@^10.17.48",
     "@typescript-eslint/eslint-plugin",
     "@typescript-eslint/parser",
     "eslint",
