@@ -108,6 +108,8 @@ test('Model Tables Created', () => {
     });
     
     const tableData = appSyncTransformer.outputs.CDK_TABLES;
+    if (!tableData) throw new Error('Expected table data');
+
     for (const [tableName] of Object.entries(tableData)) {
         expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::DataSource', {
             Name: tableName,

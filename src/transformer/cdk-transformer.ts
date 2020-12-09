@@ -24,15 +24,20 @@ export interface CdkTransformerTable {
     GSIResolvers: string[];
 }
 
-export interface FunctionResolver {
-  typeName: string;
-  fieldName: string;
+export interface CdkTransformerResolver {
+    typeName: string;
+    fieldName: string;
+}
+
+export interface CdkTransformerFunctionResolver extends CdkTransformerResolver {
+    RequestMappingTemplate: string;
+    ResponseMappingTemplate: string;
 }
 
 export class CdkTransformer extends Transformer {
     tables: { [name: string]: CdkTransformerTable };
-    noneDataSources: any;
-    functionResolvers: FunctionResolver[];
+    noneDataSources: { [name: string]: CdkTransformerResolver };
+    functionResolvers: CdkTransformerResolver[];
     resolverTableMap: { [name: string]: string };
     gsiResolverTableMap: { [name: string]: string };
 
@@ -95,15 +100,9 @@ export class CdkTransformer extends Transformer {
         const templateResources = ctx.template.Resources
         if (!templateResources) return;
 
-        for (const resourceName of Object.keys(templateResources)) {
-            const resource = templateResources[resourceName]
-
+        for (const [resourceName, resource] of Object.entries(templateResources)) {
             console.log('Resource Name:', resourceName);
             console.log(resource);
-
-            // TYPE: AWS::AppSync::FunctionConfiguration
-
-            // DataSource TYPE: AWS_LAMBDA
 
             if (resource.Type === 'AWS::DynamoDB::Table') {
                 this.buildTablesFromResource(resourceName, ctx)
@@ -113,7 +112,9 @@ export class CdkTransformer extends Transformer {
                         typeName: resource.Properties.TypeName,
                         fieldName: resource.Properties.FieldName
                     }
-                } else if (resource.Properties?.Kind === 'PIPELINE') { // TODO: This may not be accurate but works for now
+                } else if (resource.Properties?.Kind === 'PIPELINE') {
+                    // TODO: This may not be accurate but works for now - AWS::AppSync::FunctionConfiguration instead
+                    // Map AWS::AppSync::FunctionConfiguration -> DataSource -> DataSource TYPE: AWS_LAMBDA -> PIPELINE ???
                     console.log('resource.Properties');
                     console.log(resource.Properties)
                     
@@ -124,7 +125,7 @@ export class CdkTransformer extends Transformer {
                         typeName: typeName,
                         fieldName: fieldName
                     })
-                } else {
+                } else { // Should be a table/model resolver -> Maybe not true when we add in @searchable, etc
                     let typeName = resource.Properties?.TypeName;
                     let fieldName = resource.Properties?.FieldName;
                     let tableName = resource.Properties?.DataSourceName?.payload[0];

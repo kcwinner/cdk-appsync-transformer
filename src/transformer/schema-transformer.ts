@@ -10,7 +10,7 @@ const { FunctionTransformer } = require('graphql-function-transformer');
 
 // Rebuilt this from cloudform-types because it has type errors
 import { Resource } from './resource';
-import { CdkTransformer, FunctionResolver } from './cdk-transformer';
+import { CdkTransformer, CdkTransformerTable, CdkTransformerResolver } from './cdk-transformer';
 
 import { normalize, join } from 'path';
 import * as fs from 'fs';
@@ -46,33 +46,34 @@ export interface SchemaTransformerProps {
 }
 
 export interface SchemaTransformerOutputs {
-    CDK_TABLES?: { [name: string]: any };
-    NONE?: { [name: string]: any };
-    FUNCTION_RESOLVERS?: FunctionResolver[];
-
-    // Escape hatch
-    [name: string]: any
+    CDK_TABLES?: { [name: string]: CdkTransformerTable };
+    NONE?: { [name: string]: CdkTransformerResolver };
+    FUNCTION_RESOLVERS?: CdkTransformerResolver[];
+    QUERIES?: { [name: string]: string };
+    MUTATIONS?: { [name: string]: CdkTransformerResolver };
+    SUBSCRIPTIONS?: { [name: string]: CdkTransformerResolver };
 }
 
 export class SchemaTransformer {
+    public readonly schemaPath: string
+    public readonly outputPath: string
+    public readonly isSyncEnabled: boolean
+    public readonly authTransformerConfig: ModelAuthTransformerConfig
+
     outputs: SchemaTransformerOutputs
     resolvers: any
-    schemaPath: string
-    outputPath: string
-    isSyncEnabled: boolean
     authRolePolicy: Resource | undefined
     unauthRolePolicy: Resource | undefined
-    authTransformerConfig: ModelAuthTransformerConfig
 
     constructor(props: SchemaTransformerProps) {
-        this.outputs = {};
-        this.resolvers = {};
-
         this.schemaPath = props.schemaPath || './schema.graphql';
         this.outputPath = props.outputPath || './appsync';
         this.isSyncEnabled = props.syncEnabled || false
 
-        // TODO: Make this mo betta
+        this.outputs = {};
+        this.resolvers = {};
+
+        // TODO: Make this better?
         this.authTransformerConfig = {
             authConfig: {
                 defaultAuthentication: {
@@ -100,7 +101,7 @@ export class SchemaTransformer {
     public transform() {
         const transformConfig = this.isSyncEnabled ? this.loadConfigSync() : {}
 
-        // Note: This is not exact as we are omitting the @searchable transformer.
+        // Note: This is not exact as we are omitting the @searchable transformer, and some others.
         const transformer = new GraphQLTransform({
             transformConfig: transformConfig,
             transformers: [
@@ -134,16 +135,16 @@ export class SchemaTransformer {
      */
     public getResolvers() {
         const statements = ['Query', 'Mutation', 'Subscription'];
-        const resolversDirPath = normalize('./appsync/resolvers')
+        const resolversDirPath = normalize('./appsync/resolvers');
         if (fs.existsSync(resolversDirPath)) {
-            const files = fs.readdirSync(resolversDirPath)
+            const files = fs.readdirSync(resolversDirPath);
             files.forEach(file => {
                 // Example: Mutation.createChannel.response
-                let args = file.split('.')
+                let args = file.split('.');
                 let typeName: string = args[0];
-                let name: string = args[1]
-                let templateType = args[2] // request or response
-                let filepath = normalize(`${resolversDirPath}/${file}`)
+                let name: string = args[1];
+                let templateType = args[2]; // request or response
+                let filepath = normalize(`${resolversDirPath}/${file}`);
 
                 if (statements.indexOf(typeName) >= 0 || (this.outputs.NONE && this.outputs.NONE[name])) {
                     if (!this.resolvers[name]) {
@@ -154,14 +155,14 @@ export class SchemaTransformer {
                     }
 
                     if (templateType === 'req') {
-                        this.resolvers[name]['requestMappingTemplate'] = filepath
+                        this.resolvers[name]['requestMappingTemplate'] = filepath;
                     } else if (templateType === 'res') {
-                        this.resolvers[name]['responseMappingTemplate'] = filepath
+                        this.resolvers[name]['responseMappingTemplate'] = filepath;
                     }
 
                 } else { // This is a GSI
                     if (!this.resolvers['gsi']) {
-                        this.resolvers['gsi'] = {}
+                        this.resolvers['gsi'] = {};
                     }
 
                     let mapName = `${typeName}${name}`
@@ -174,9 +175,9 @@ export class SchemaTransformer {
                     }
 
                     if (templateType === 'req') {
-                        this.resolvers['gsi'][mapName]['requestMappingTemplate'] = filepath
+                        this.resolvers['gsi'][mapName]['requestMappingTemplate'] = filepath;
                     } else if (templateType === 'res') {
-                        this.resolvers['gsi'][mapName]['responseMappingTemplate'] = filepath
+                        this.resolvers['gsi'][mapName]['responseMappingTemplate'] = filepath;
                     }
                 }
             })
@@ -194,7 +195,7 @@ export class SchemaTransformer {
             fs.mkdirSync(this.outputPath);
         }
 
-        fs.writeFileSync(`${this.outputPath}/schema.graphql`, schema)
+        fs.writeFileSync(`${this.outputPath}/schema.graphql`, schema);
     }
 
     /**
@@ -208,9 +209,9 @@ export class SchemaTransformer {
 
         const resolverFolderPath = normalize(this.outputPath + '/resolvers');
         if (fs.existsSync(resolverFolderPath)) {
-            const files = fs.readdirSync(resolverFolderPath)
-            files.forEach(file => fs.unlinkSync(resolverFolderPath + '/' + file))
-            fs.rmdirSync(resolverFolderPath)
+            const files = fs.readdirSync(resolverFolderPath);
+            files.forEach(file => fs.unlinkSync(resolverFolderPath + '/' + file));
+            fs.rmdirSync(resolverFolderPath);
         }
 
         if (!fs.existsSync(resolverFolderPath)) {
@@ -222,7 +223,7 @@ export class SchemaTransformer {
             const fileName = key.replace('.vtl', '');
             const resolverFilePath = normalize(`${resolverFolderPath}/${fileName}`);
             fs.writeFileSync(resolverFilePath, resolver);
-        })
+        });
     }
 
     /** 
@@ -235,7 +236,7 @@ export class SchemaTransformer {
             ResolverConfig: {
                 project: {
                     ConflictHandler: ConflictHandlerType.OPTIMISTIC,
-                    ConflictDetection: "VERSION"
+                    ConflictDetection: 'VERSION'
                 }
             }
         };
@@ -249,6 +250,7 @@ export class SchemaTransformer {
                 const configStr = fs.readFileSync(configPath);
                 config = JSON.parse(configStr.toString());
             }
+
             return config as TransformConfig;
         } catch (err) {
             return config;

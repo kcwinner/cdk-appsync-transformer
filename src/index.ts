@@ -3,8 +3,8 @@ import { GraphqlApi, AuthorizationType, FieldLogLevel, MappingTemplate, CfnDataS
 import { Table, AttributeType, ProjectionType, BillingMode } from '@aws-cdk/aws-dynamodb';
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam'
 
-import { FunctionResolver } from './transformer/cdk-transformer';
-import { SchemaTransformer, SchemaTransformerProps } from './transformer/schema-transformer';
+import { CdkTransformerResolver } from './transformer/cdk-transformer';
+import { SchemaTransformer, SchemaTransformerProps, SchemaTransformerOutputs } from './transformer/schema-transformer';
 
 /**
  * Properties for AppSyncTransformer Construct
@@ -77,7 +77,7 @@ export class AppSyncTransformer extends Construct {
   /**
    * The outputs from the SchemaTransformer
    */
-  public readonly outputs: any;
+  public readonly outputs: SchemaTransformerOutputs;
 
   /**
    * The AppSync resolvers from the transformer minus any function resolvers
@@ -88,7 +88,7 @@ export class AppSyncTransformer extends Construct {
    * The Lambda Function resolvers designated by the function directive
    * https://github.com/kcwinner/cdk-appsync-transformer#functions
    */
-  public readonly functionResolvers: FunctionResolver[];
+  public readonly functionResolvers: CdkTransformerResolver[];
 
   private isSyncEnabled: boolean
   private syncTable: Table | undefined
@@ -107,7 +107,7 @@ export class AppSyncTransformer extends Construct {
     this.outputs = transformer.transform();
     const resolvers = transformer.getResolvers();
 
-    this.outputs.FUNCTION_RESOLVERS.forEach((resolver: any) => {
+    this.outputs.FUNCTION_RESOLVERS?.forEach((resolver: any) => {
       switch (resolver.typeName) {
         case 'Query':
         case 'Mutation':
@@ -117,7 +117,7 @@ export class AppSyncTransformer extends Construct {
       }
     });
 
-    this.functionResolvers = this.outputs.FUNCTION_RESOLVERS;
+    this.functionResolvers = this.outputs.FUNCTION_RESOLVERS ?? [];
     this.resolvers = resolvers;
 
     this.nestedAppsyncStack = new NestedStack(this, `appsync-nested-stack`);
@@ -132,7 +132,7 @@ export class AppSyncTransformer extends Construct {
       schema: Schema.fromAsset('./appsync/schema.graphql')
     })
 
-    let tableData = this.outputs.CDK_TABLES;
+    let tableData = this.outputs.CDK_TABLES ?? {};
 
     // Check to see if sync is enabled
     if (tableData['DataStore']) {
