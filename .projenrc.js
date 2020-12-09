@@ -36,7 +36,7 @@ const project = new AwsCdkConstructLibrary({
   },
 
   // Dependency information
-  cdkVersion: '1.71.0',
+  cdkVersion: '1.72.0',
   cdkVersionPinning: true,
   cdkDependencies: [
     '@aws-cdk/aws-appsync',
@@ -48,38 +48,25 @@ const project = new AwsCdkConstructLibrary({
   ],
   devDeps: [
     "@types/jest",
-    "@types/node",
+    "@types/node@^10.17.48",
     "@typescript-eslint/eslint-plugin",
     "@typescript-eslint/parser",
     "eslint",
     "jest",
     "ts-jest"
   ],
-  deps: [
-    "graphql",
-    "graphql-auth-transformer",
-    "graphql-connection-transformer",
-    "graphql-dynamodb-transformer",
-    "graphql-function-transformer",
-    "graphql-key-transformer",
-    "graphql-mapping-template",
-    "graphql-relational-schema-transformer",
-    "graphql-transformer-common",
-    "graphql-transformer-core",
-    "graphql-versioned-transformer",
-  ],
   bundledDeps: [
     "graphql",
-    "graphql-auth-transformer",
-    "graphql-connection-transformer",
-    "graphql-dynamodb-transformer",
-    "graphql-function-transformer",
-    "graphql-key-transformer",
-    "graphql-mapping-template",
-    "graphql-relational-schema-transformer",
-    "graphql-transformer-common",
-    "graphql-transformer-core",
-    "graphql-versioned-transformer"
+    "graphql-auth-transformer@6.22.1",
+    "graphql-connection-transformer@4.19.1",
+    "graphql-dynamodb-transformer@6.21.1",
+    "graphql-function-transformer@2.4.1",
+    "graphql-key-transformer@2.20.1",
+    "graphql-mapping-template@4.18.1",
+    "graphql-relational-schema-transformer@2.16.1",
+    "graphql-transformer-common@4.18.1",
+    "graphql-transformer-core@6.23.1",
+    "graphql-versioned-transformer@4.16.1"
   ]
 });
 
