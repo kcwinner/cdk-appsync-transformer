@@ -122,6 +122,14 @@ Auth Role: Unsupported. Authorized roles (Lambda Functions, EC2 roles, etc) are 
 
 ### Functions
 
+There are two ways to add functions as data sources (and their resolvers)
+
+#### Convenience Method
+
+`addLambdaDataSourceAndResolvers` will do the same thing as the manual version below. However, if you want to customize mapping templates you will have to bypass this and set up the data source and resolvers yourself
+
+#### Manually
+
 Fields with the `@function` directive will be accessible via `appsyncTransformer.functionResolvers`. It will return a map like so:
 ```ts
 {

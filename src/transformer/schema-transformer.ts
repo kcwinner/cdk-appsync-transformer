@@ -21,25 +21,25 @@ export interface SchemaTransformerProps {
    * File path to the graphql schema
    * @default schema.graphql
    */
-  schemaPath?: string;
+  readonly schemaPath?: string;
 
   /**
    * Path where transformed schema and resolvers will be placed
    * @default appsync
    */
-  outputPath?: string;
+  readonly outputPath?: string;
 
   /**
    * Set deletion protection on DynamoDB tables
    * @default true
    */
-  deletionProtectionEnabled?: boolean;
+  readonly deletionProtectionEnabled?: boolean;
 
   /**
    * Whether to enable DataStore or not
    * @default false
    */
-  syncEnabled?: boolean;
+  readonly syncEnabled?: boolean;
 }
 
 export interface SchemaTransformerOutputs {
@@ -55,7 +55,8 @@ export class SchemaTransformer {
   public readonly schemaPath: string
   public readonly outputPath: string
   public readonly isSyncEnabled: boolean
-  public readonly authTransformerConfig: ModelAuthTransformerConfig
+
+  private readonly authTransformerConfig: ModelAuthTransformerConfig
 
   outputs: SchemaTransformerOutputs
   resolvers: any
