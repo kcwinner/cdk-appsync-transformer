@@ -48,7 +48,7 @@ export interface SchemaTransformerProps {
 export interface SchemaTransformerOutputs {
     CDK_TABLES?: { [name: string]: CdkTransformerTable };
     NONE?: { [name: string]: CdkTransformerResolver };
-    FUNCTION_RESOLVERS?: CdkTransformerResolver[];
+    FUNCTION_RESOLVERS?: { [name: string]: CdkTransformerResolver[] };
     QUERIES?: { [name: string]: string };
     MUTATIONS?: { [name: string]: CdkTransformerResolver };
     SUBSCRIPTIONS?: { [name: string]: CdkTransformerResolver };

@@ -117,3 +117,35 @@ test('Model Tables Created', () => {
         });
     }
 });
+
+test('Function Resolvers Match', () => {
+    const mockApp = new App();
+    const stack = new Stack(mockApp, 'user-pool-auth-stack');
+
+    const userPool = new UserPool(stack, 'test-userpool');
+    const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+        userPool: userPool
+    })
+
+    const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+        schemaPath: testSchemaPath,
+        apiName: 'user-pool-auth-api',
+        authorizationConfig: {
+            defaultAuthorization: {
+                authorizationType: AuthorizationType.USER_POOL,
+                userPoolConfig: {
+                    userPool: userPool,
+                    appIdClientRegex: userPoolClient.userPoolClientId,
+                    defaultAction: UserPoolDefaultAction.ALLOW
+                }
+            }
+        }
+    });
+    
+    const functionResolvers = appSyncTransformer.functionResolvers;
+    expect(functionResolvers).toBeTruthy();
+    expect(functionResolvers!['test-function']).toBeTruthy(); // Will fail above if not truthy
+
+    const testFunctionResolvers = functionResolvers!['test-function']; // will fail above if does not exist
+    expect(testFunctionResolvers.length).toEqual(4);
+});

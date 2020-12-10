@@ -122,15 +122,44 @@ Auth Role: Unsupported (for now?). Authorized roles (Lambda Functions, EC2 roles
 
 ### Functions
 
-Fields with the `@function` directive will be accessible via `api.outputs.FUNCTION_RESOLVERS`. It will return an array like below.Currently these are not named and do not specify a region. There are improvements that can be made here but this simple way has worked for me so I've implemented it first. Typically I send all `@function` requests to one Lambda Function and have it route as necessary.
 
+Fields with the `@function` directive will be accessible via `appsyncTransformer.functionResolvers`. It will return a map like so:
 ```js
-[
-  { typeName: 'Query', fieldName: 'listUsers' },
-  { typeName: 'Query', fieldName: 'getUser' },
-  { typeName: 'Mutation', fieldName: 'createUser' },
-  { typeName: 'Mutation', fieldName: 'updateUser' }
-]
+{
+  'test-function': [
+    { typeName: 'Query', fieldName: 'listUsers' },
+    { typeName: 'Query', fieldName: 'getUser' },
+    { typeName: 'Mutation', fieldName: 'createUser' },
+    { typeName: 'Mutation', fieldName: 'updateUser' }
+  ]
+}
+```
+TODO: Add default mapping templates to function resolvers
+
+You can grab your function resolvers via the map and assign them your own function(s). Example might be something like:
+```js
+const lambdaFunction = new Function(...);
+const lambdaDataSource = appsyncTransformer.appsyncAPI.addLambdaDataSource('id', lambdaFunction, {props});
+
+const dataSourceMap = {
+    'my-function': lambdaDataSource
+};
+
+for (const [functionName, resolver] of Object.entries(appsyncTransformer.functionResolvers)) {
+    const dataSource = dataSourceMap[functionName];
+    new Resolver(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
+        api: appsyncTransformer.appsyncAPI,
+        typeName: resolver.typeName,
+        fieldName: resolver.fieldName,
+        dataSource: dataSource,
+        requestMappingTemplate: MappingTemplate.lambdaRequest().renderTemplate(),
+        responseMappingTemplate: `#if( $context.result && $context.result.errorMessage )
+    $utils.error($context.result.errorMessage, $context.result.errorType, $context.result.data)
+#else
+    $utils.toJson($context.result.data)
+#end`;
+      });
+}
 ```
 
 ### DataStore Support
@@ -148,10 +177,6 @@ I will *attempt* to align the major and minor version of this package with [AWS 
 
 I currently support [![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/kcwinner/cdk-appsync-transformer/@aws-cdk/core)](https://github.com/aws/aws-cdk)
 
-## Limitations
-
-* 
-
 ## Contributing
 
 See [CONTRIBUTING](CONTRIBUTING.md) for details
@@ -160,4 +185,9 @@ See [CONTRIBUTING](CONTRIBUTING.md) for details
 
 Distributed under [Apache License, Version 2.0](LICENSE)
 
-[aws cdk]: https://aws.amazon.com/cdk
+
+
+## References
+* [aws cdk]: https://aws.amazon.com/cdk
+* [amplify-cli](https://github.com/aws-amplify/amplify-cli)
+* [Amplify Directives](https://docs.amplify.aws/cli/graphql-transformer/directives)

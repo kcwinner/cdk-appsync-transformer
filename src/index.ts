@@ -88,7 +88,7 @@ export class AppSyncTransformer extends Construct {
    * The Lambda Function resolvers designated by the function directive
    * https://github.com/kcwinner/cdk-appsync-transformer#functions
    */
-  public readonly functionResolvers: CdkTransformerResolver[];
+  public readonly functionResolvers: { [name: string]: CdkTransformerResolver[] };
 
   private isSyncEnabled: boolean
   private syncTable: Table | undefined
@@ -107,17 +107,20 @@ export class AppSyncTransformer extends Construct {
     this.outputs = transformer.transform();
     const resolvers = transformer.getResolvers();
 
-    this.outputs.FUNCTION_RESOLVERS?.forEach((resolver: any) => {
-      switch (resolver.typeName) {
-        case 'Query':
-        case 'Mutation':
-        case 'Subscription':
-          delete resolvers[resolver.fieldName]
-          break;
-      }
-    });
+    this.functionResolvers = this.outputs.FUNCTION_RESOLVERS ?? {};
 
-    this.functionResolvers = this.outputs.FUNCTION_RESOLVERS ?? [];
+    for (const [_, resolvers] of Object.entries(this.functionResolvers)) {
+      resolvers.forEach((resolver: any) => {
+        switch (resolver.typeName) {
+          case 'Query':
+          case 'Mutation':
+          case 'Subscription':
+            delete resolvers[resolver.fieldName]
+            break;
+        }
+      });
+    }
+
     this.resolvers = resolvers;
 
     this.nestedAppsyncStack = new NestedStack(this, `appsync-nested-stack`);
@@ -155,7 +158,7 @@ export class AppSyncTransformer extends Construct {
     const noneDataSource = this.appsyncAPI.addNoneDataSource('NONE');
 
     Object.keys(none).forEach((resolverKey: any) => {
-      let resolver = resolvers[resolverKey];
+      const resolver = resolvers[resolverKey];
 
       new Resolver(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
         api: this.appsyncAPI,
@@ -164,8 +167,8 @@ export class AppSyncTransformer extends Construct {
         dataSource: noneDataSource,
         requestMappingTemplate: MappingTemplate.fromFile(resolver.requestMappingTemplate),
         responseMappingTemplate: MappingTemplate.fromFile(resolver.responseMappingTemplate),
-      })
-    })
+      });
+    });
   }
 
   private createTablesAndResolvers(tableData: any, resolvers: any) {

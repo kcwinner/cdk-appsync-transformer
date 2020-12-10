@@ -54,7 +54,7 @@ type Comment @model {
   post: Post @connection(name: "PostComments")
 }
 
-# Demonstrate the FUNCTION resolvers
+# Demonstrate the function resolvers
 type User @model(queries: null, mutations: null, subscriptions: null)
     @auth(rules: [
         { allow: groups, groups: ["Admins"] },
@@ -87,13 +87,13 @@ input UpdateUserInput {
     number: String
 }
 
-# Demonstrate the FUNCTION resolvers
+# Demonstrate the function resolvers
 type Query {
-  listUsers: UserConnection @function(name: "my-function")
-  getUser(id: ID!): User @function(name: "my-function")
+  listUsers: UserConnection @function(name: "test-function")
+  getUser(id: ID!): User @function(name: "test-function")
 }
 
 type Mutation {
-  createUser(input: CreateUserInput!): User @function(name: "my-function")
-  updateUser(input: UpdateUserInput!): User @function(name: "my-function")
+  createUser(input: CreateUserInput!): User @function(name: "test-function")
+  updateUser(input: UpdateUserInput!): User @function(name: "test-function")
 }
