@@ -1,9 +1,9 @@
 export * from './transformer/transformerTypes';
 
-import { Construct, NestedStack, CfnOutput } from '@aws-cdk/core';
 import { GraphqlApi, AuthorizationType, FieldLogLevel, MappingTemplate, CfnDataSource, Resolver, AuthorizationConfig, Schema } from '@aws-cdk/aws-appsync';
 import { Table, AttributeType, ProjectionType, BillingMode } from '@aws-cdk/aws-dynamodb';
-import { Effect, PolicyStatement } from '@aws-cdk/aws-iam'
+import { Effect, PolicyStatement } from '@aws-cdk/aws-iam';
+import { Construct, NestedStack, CfnOutput } from '@aws-cdk/core';
 
 import { CdkTransformerResolver, CdkTransformerTable, SchemaTransformerOutputs } from './transformer';
 import { SchemaTransformer, SchemaTransformerProps } from './transformer/schema-transformer';
@@ -20,42 +20,42 @@ export interface AppSyncTransformerProps {
   /**
    * Required. Relative path where schema.graphql exists
    */
-  readonly schemaPath: string
+  readonly schemaPath: string;
 
   /**
    * Optional. {@link AuthorizationConfig} type defining authorization for AppSync GraphqlApi. Defaults to API_KEY
    * @default API_KEY authorization config
    */
-  readonly authorizationConfig?: AuthorizationConfig
+  readonly authorizationConfig?: AuthorizationConfig;
 
   /**
    * Optional. String value representing the api name
    * @default `${id}-api`
    */
-  readonly apiName?: string
+  readonly apiName?: string;
 
   /**
    * Optional. Boolean to enable DataStore Sync Tables
    * @default false
    */
-  readonly syncEnabled?: boolean
+  readonly syncEnabled?: boolean;
 
   /**
    * Optional. {@link FieldLogLevel} type for AppSync GraphqlApi log level
    * @default FieldLogLevel.NONE
    */
-  readonly fieldLogLevel?: FieldLogLevel
+  readonly fieldLogLevel?: FieldLogLevel;
 }
 
 const defaultAuthorizationConfig: AuthorizationConfig = {
   defaultAuthorization: {
     authorizationType: AuthorizationType.API_KEY,
     apiKeyConfig: {
-      description: "Auto generated API Key from construct",
-      name: "dev"
-    }
-  }
-}
+      description: 'Auto generated API Key from construct',
+      name: 'dev',
+    },
+  },
+};
 
 /**
  * AppSyncTransformer Construct
@@ -71,7 +71,7 @@ export class AppSyncTransformer extends Construct {
    */
   public readonly nestedAppsyncStack: NestedStack;
 
-  /** 
+  /**
    * Map of cdk table tokens to table names
    */
   public readonly tableNameMap: { [name: string]: any };
@@ -102,8 +102,8 @@ export class AppSyncTransformer extends Construct {
 
     const transformerConfiguration: SchemaTransformerProps = {
       schemaPath: props.schemaPath,
-      syncEnabled: props.syncEnabled ?? false
-    }
+      syncEnabled: props.syncEnabled ?? false,
+    };
 
     const transformer = new SchemaTransformer(transformerConfiguration);
     this.outputs = transformer.transform();
@@ -111,13 +111,13 @@ export class AppSyncTransformer extends Construct {
 
     this.functionResolvers = this.outputs.functionResolvers ?? {};
 
-    for (const [_, resolvers] of Object.entries(this.functionResolvers)) {
-      resolvers.forEach((resolver: any) => {
+    for (const [_, functionResolvers] of Object.entries(this.functionResolvers)) {
+      functionResolvers.forEach((resolver: any) => {
         switch (resolver.typeName) {
           case 'Query':
           case 'Mutation':
           case 'Subscription':
-            delete resolvers[resolver.fieldName]
+            delete resolvers[resolver.fieldName];
             break;
         }
       });
@@ -125,7 +125,7 @@ export class AppSyncTransformer extends Construct {
 
     this.resolvers = resolvers;
 
-    this.nestedAppsyncStack = new NestedStack(this, `appsync-nested-stack`);
+    this.nestedAppsyncStack = new NestedStack(this, 'appsync-nested-stack');
 
     // AppSync
     this.appsyncAPI = new GraphqlApi(this.nestedAppsyncStack, `${id}-api`, {
@@ -134,27 +134,27 @@ export class AppSyncTransformer extends Construct {
       logConfig: {
         fieldLogLevel: props.fieldLogLevel ? props.fieldLogLevel : FieldLogLevel.NONE,
       },
-      schema: Schema.fromAsset('./appsync/schema.graphql')
-    })
+      schema: Schema.fromAsset('./appsync/schema.graphql'),
+    });
 
     let tableData = this.outputs.cdkTables ?? {};
 
     // Check to see if sync is enabled
-    if (tableData['DataStore']) {
-      this.isSyncEnabled = true
-      this.syncTable = this.createSyncTable(tableData['DataStore']);
-      delete tableData['DataStore'] // We don't want to create this again below so remove it from the tableData map
+    if (tableData.DataStore) {
+      this.isSyncEnabled = true;
+      this.syncTable = this.createSyncTable(tableData.DataStore);
+      delete tableData.DataStore; // We don't want to create this again below so remove it from the tableData map
     }
 
     this.tableNameMap = this.createTablesAndResolvers(tableData, resolvers);
-    
+
     if (this.outputs.noneResolvers) this.createNoneDataSourceAndResolvers(this.outputs.noneResolvers, resolvers);
 
     // Outputs so we can generate exports
     new CfnOutput(scope, 'appsyncGraphQLEndpointOutput', {
       value: this.appsyncAPI.graphqlUrl,
-      description: 'Output for aws_appsync_graphqlEndpoint'
-    })
+      description: 'Output for aws_appsync_graphqlEndpoint',
+    });
   }
 
   /**
@@ -197,25 +197,25 @@ export class AppSyncTransformer extends Construct {
 
       if (this.isSyncEnabled && this.syncTable) {
         //@ts-ignore - ds is the base CfnDataSource and the db config needs to be versioned - see CfnDataSource
-        dataSource.ds.dynamoDbConfig.versioned = true
+        dataSource.ds.dynamoDbConfig.versioned = true;
 
         //@ts-ignore - ds is the base CfnDataSource - see CfnDataSource
         dataSource.ds.dynamoDbConfig.deltaSyncConfig = {
           baseTableTtl: '43200', // Got this value from amplify - 30 days in minutes
           deltaSyncTableName: this.syncTable.tableName,
-          deltaSyncTableTtl: '30' // Got this value from amplify - 30 minutes
-        }
+          deltaSyncTableTtl: '30', // Got this value from amplify - 30 minutes
+        };
 
         // Need to add permission for our datasource service role to access the sync table
         dataSource.grantPrincipal.addToPolicy(new PolicyStatement({
           effect: Effect.ALLOW,
           actions: [
-            'dynamodb:*' // TODO: This may be too permissive
+            'dynamodb:*', // TODO: This may be too permissive
           ],
           resources: [
-            this.syncTable.tableArn
-          ]
-        }))
+            this.syncTable.tableArn,
+          ],
+        }));
       }
 
       const dynamoDbConfig = dataSource.ds.dynamoDbConfig as CfnDataSource.DynamoDBConfigProperty;
@@ -231,12 +231,12 @@ export class AppSyncTransformer extends Construct {
           dataSource: dataSource,
           requestMappingTemplate: MappingTemplate.fromFile(resolver.requestMappingTemplate),
           responseMappingTemplate: MappingTemplate.fromFile(resolver.responseMappingTemplate),
-        })
+        });
       });
 
       // Loop the gsi resolvers
       tableData[tableKey].gsiResolvers.forEach((resolverKey: any) => {
-        let resolver = resolvers['gsi'][resolverKey];
+        let resolver = resolvers.gsi[resolverKey];
         new Resolver(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
           api: this.appsyncAPI,
           typeName: resolver.typeName,
@@ -244,7 +244,7 @@ export class AppSyncTransformer extends Construct {
           dataSource: dataSource,
           requestMappingTemplate: MappingTemplate.fromFile(resolver.requestMappingTemplate),
           responseMappingTemplate: MappingTemplate.fromFile(resolver.responseMappingTemplate),
-        })
+        });
       });
     });
 
@@ -256,14 +256,14 @@ export class AppSyncTransformer extends Construct {
       billingMode: BillingMode.PAY_PER_REQUEST,
       partitionKey: {
         name: tableData.partitionKey.name,
-        type: this.convertAttributeType(tableData.partitionKey.type)
-      }
+        type: this.convertAttributeType(tableData.partitionKey.type),
+      },
     };
 
     if (tableData.sortKey && tableData.sortKey.name) {
       tableProps.sortKey = {
         name: tableData.sortKey.name,
-        type: this.convertAttributeType(tableData.sortKey.type)
+        type: this.convertAttributeType(tableData.sortKey.type),
       };
     };
 
@@ -279,11 +279,11 @@ export class AppSyncTransformer extends Construct {
           indexName: gsi.indexName,
           partitionKey: {
             name: gsi.partitionKey.name,
-            type: this.convertAttributeType(gsi.partitionKey.type)
+            type: this.convertAttributeType(gsi.partitionKey.type),
           },
-          projectionType: this.convertProjectionType(gsi.projection.ProjectionType)
-        })
-      })
+          projectionType: this.convertProjectionType(gsi.projection.ProjectionType),
+        });
+      });
     }
 
     return table;
@@ -299,37 +299,37 @@ export class AppSyncTransformer extends Construct {
       billingMode: BillingMode.PAY_PER_REQUEST,
       partitionKey: {
         name: tableData.partitionKey.name,
-        type: this.convertAttributeType(tableData.partitionKey.type)
+        type: this.convertAttributeType(tableData.partitionKey.type),
       },
       sortKey: {
         name: tableData.sortKey!.name, // We know it has a sortkey because we forced it to
-        type: this.convertAttributeType(tableData.sortKey!.type) // We know it has a sortkey because we forced it to
+        type: this.convertAttributeType(tableData.sortKey!.type), // We know it has a sortkey because we forced it to
       },
-      timeToLiveAttribute: tableData.ttl?.AttributeName || '_ttl'
-    })
+      timeToLiveAttribute: tableData.ttl?.AttributeName || '_ttl',
+    });
   }
 
   private convertAttributeType(type: string): AttributeType {
     switch (type) {
       case 'N':
-        return AttributeType.NUMBER
+        return AttributeType.NUMBER;
       case 'B':
-        return AttributeType.BINARY
+        return AttributeType.BINARY;
       case 'S': // Same as default
       default:
-        return AttributeType.STRING
+        return AttributeType.STRING;
     }
   }
 
   private convertProjectionType(type: string): ProjectionType {
     switch (type) {
       case 'INCLUDE':
-        return ProjectionType.INCLUDE
+        return ProjectionType.INCLUDE;
       case 'KEYS_ONLY':
-        return ProjectionType.KEYS_ONLY
+        return ProjectionType.KEYS_ONLY;
       case 'ALL': // Same as default
       default:
-        return ProjectionType.ALL
+        return ProjectionType.ALL;
     }
   }
 }

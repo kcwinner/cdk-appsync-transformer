@@ -58,4 +58,5 @@ tsconfig.json
 !/.github/pull_request_template.md
 !/src
 !/tsconfig.jest.json
+!/.eslintrc.json
 !/API.md
