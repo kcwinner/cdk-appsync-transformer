@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.77.2 (2020-12-10)
+
+
+### Bug Fixes
+
+* adding in [@http](https://github.com/http) directive support ([#65](https://github.com/ken/cdk-appsync-transformer/issues/65)) ([edc0a78](https://github.com/ken/cdk-appsync-transformer/commit/edc0a78c3db5d964eed23323c3b0b33219bd235f))
+
 ### 1.77.1 (2020-12-10)
 
 
