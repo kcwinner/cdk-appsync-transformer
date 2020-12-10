@@ -118,15 +118,14 @@ new AppSyncTransformer(this, "my-cool-api", {
 
 Unauth Role: TODO
 
-Auth Role: Unsupported (for now?). Authorized roles (Lambda Functions, EC2 roles, etc) are required to setup their own role permissions.
+Auth Role: Unsupported. Authorized roles (Lambda Functions, EC2 roles, etc) are required to setup their own role permissions.
 
 ### Functions
 
-
 Fields with the `@function` directive will be accessible via `appsyncTransformer.functionResolvers`. It will return a map like so:
-```js
+```ts
 {
-  'test-function': [
+  'user-function': [
     { typeName: 'Query', fieldName: 'listUsers' },
     { typeName: 'Query', fieldName: 'getUser' },
     { typeName: 'Mutation', fieldName: 'createUser' },
@@ -136,28 +135,40 @@ Fields with the `@function` directive will be accessible via `appsyncTransformer
 ```
 
 You can grab your function resolvers via the map and assign them your own function(s). Example might be something like:
-```js
-const lambdaFunction = new Function(...);
-const lambdaDataSource = appsyncTransformer.appsyncAPI.addLambdaDataSource('id', lambdaFunction, {props});
+```ts
+const userFunction = new Function(...);
+const userFunctionDataSource = appsyncTransformer.appsyncAPI.addLambdaDataSource('some-id', userFunction);
 
 const dataSourceMap = {
-    'my-function': lambdaDataSource
+  'user-function': userFunctionDataSource
 };
 
 for (const [functionName, resolver] of Object.entries(appsyncTransformer.functionResolvers)) {
-    const dataSource = dataSourceMap[functionName];
-    new Resolver(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
-        api: appsyncTransformer.appsyncAPI,
-        typeName: resolver.typeName,
-        fieldName: resolver.fieldName,
-        dataSource: dataSource,
-        requestMappingTemplate: MappingTemplate.lambdaRequest().renderTemplate(),
-        responseMappingTemplate: `#if( $context.result && $context.result.errorMessage )
-    $utils.error($context.result.errorMessage, $context.result.errorType, $context.result.data)
-#else
-    $utils.toJson($context.result.data)
-#end`;
-      });
+  const dataSource = dataSourceMap[functionName];
+  new Resolver(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
+    api: appsyncTransformer.appsyncAPI,
+    typeName: resolver.typeName,
+    fieldName: resolver.fieldName,
+    dataSource: dataSource,
+    requestMappingTemplate: resolver.defaultRequestMappingTemplate,
+    responseMappingTemplate: resolver.defaultResponseMappingTemplate // This defaults to allow errors to return to the client instead of throwing
+  });
+}
+```
+
+### Table Name Map
+
+Often you will need to access your table names in a lambda function or elsewhere. The cdk-appsync-transformer will return these values as a map of table names to cdk tokens. These tokens will be resolved at deploy time. They can be accessed via `appSyncTransformer.tableNameMap`.
+
+```ts
+{
+  CustomerTable: '${Token[TOKEN.1300]}',
+  ProductTable: '${Token[TOKEN.1346]}',
+  OrderTable: '${Token[TOKEN.1392]}',
+  BlogTable: '${Token[TOKEN.1442]}',
+  PostTable: '${Token[TOKEN.1492]}',
+  CommentTable: '${Token[TOKEN.1546]}',
+  UserTable: '${Token[TOKEN.1596]}'
 }
 ```
 
@@ -183,8 +194,6 @@ See [CONTRIBUTING](CONTRIBUTING.md) for details
 ## License
 
 Distributed under [Apache License, Version 2.0](LICENSE)
-
-
 
 ## References
 * [aws cdk]: https://aws.amazon.com/cdk
