@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.77.1 (2020-12-10)
+
+
+### Bug Fixes
+
+* rework function resolvers outputs ([#64](https://github.com/ken/cdk-appsync-transformer/issues/64)) ([c659fe5](https://github.com/ken/cdk-appsync-transformer/commit/c659fe5d4c80053818bec8e2391be845256897f0))
+
 ## 1.77.0 (2020-12-09)
 
 
