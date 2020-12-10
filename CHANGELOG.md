@@ -5,9 +5,20 @@ All notable changes to this project will be documented in this file. See [standa
 ### 1.77.1 (2020-12-10)
 
 
+### Features
+
+* added a convenience method for adding lambda datasource and resolvers
+
 ### Bug Fixes
 
-* rework function resolvers outputs ([#64](https://github.com/ken/cdk-appsync-transformer/issues/64)) ([c659fe5](https://github.com/ken/cdk-appsync-transformer/commit/c659fe5d4c80053818bec8e2391be845256897f0))
+* added much needed type safety
+* added in additional unit tests
+* upgraded some packages
+
+### BREAKING CHANGES
+
+* makes FUNCTION_RESOLVERS output a map of function names with an array of resolvers for ease of use
+* renamed a lot of interfaces to use camelCase to satisfy jsii
 
 ## 1.77.0 (2020-12-09)
 
