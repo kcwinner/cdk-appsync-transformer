@@ -1,236 +1,257 @@
-import { GraphQLTransform, TransformConfig, TRANSFORM_CURRENT_VERSION, TRANSFORM_CONFIG_FILE_NAME, ConflictHandlerType } from 'graphql-transformer-core';
-import { DynamoDBModelTransformer } from 'graphql-dynamodb-transformer';
+import * as fs from 'fs';
+import { normalize, join } from 'path';
+import { ModelAuthTransformer, ModelAuthTransformerConfig } from 'graphql-auth-transformer';
 import { ModelConnectionTransformer } from 'graphql-connection-transformer';
+import { DynamoDBModelTransformer } from 'graphql-dynamodb-transformer';
 import { KeyTransformer } from 'graphql-key-transformer';
+import { GraphQLTransform, TransformConfig, TRANSFORM_CURRENT_VERSION, TRANSFORM_CONFIG_FILE_NAME, ConflictHandlerType } from 'graphql-transformer-core';
 import { VersionedModelTransformer } from 'graphql-versioned-transformer';
-import { ModelAuthTransformer, ModelAuthTransformerConfig } from 'graphql-auth-transformer'
 
-// Import this way because FunctionTransformer.d.ts types were throwing an eror. And we didn't write this package so hope for the best :P
-const { FunctionTransformer } = require('graphql-function-transformer');
+import { CdkTransformer, CdkTransformerTable, CdkTransformerResolver, CdkTransformerFunctionResolver } from './cdk-transformer';
 
 // Rebuilt this from cloudform-types because it has type errors
 import { Resource } from './resource';
-import CdkTransformer from './cdk-transformer';
 
-import { normalize, join } from 'path';
-import * as fs from 'fs';
+// Import this way because FunctionTransformer.d.ts types were throwing an eror. And we didn't write this package so hope for the best :P
+// eslint-disable-next-line
+const { FunctionTransformer } = require('graphql-function-transformer');
 
 export interface SchemaTransformerProps {
-    /**
-     * File path to the graphql schema
-     *
-     * @default schema.graphql
-     */
-    schemaPath?: string
+  /**
+   * File path to the graphql schema
+   * @default schema.graphql
+   */
+  readonly schemaPath?: string;
 
-    /**
-     * Path where transformed schema and resolvers will be placed
-     *
-     * @default appsync
-     */
-    outputPath?: string
+  /**
+   * Path where transformed schema and resolvers will be placed
+   * @default appsync
+   */
+  readonly outputPath?: string;
 
-    /**
-     * Set deletion protection on DynamoDB tables
-     *
-     * @default true
-     */
-    deletionProtectionEnabled?: boolean
+  /**
+   * Set deletion protection on DynamoDB tables
+   * @default true
+   */
+  readonly deletionProtectionEnabled?: boolean;
 
-    /**
-     * Where to enable DataStore or not
-     *
-     * @default false
-     */
-    syncEnabled?: boolean
+  /**
+   * Whether to enable DataStore or not
+   * @default false
+   */
+  readonly syncEnabled?: boolean;
+}
+
+export interface SchemaTransformerOutputs {
+  readonly cdkTables?: { [name: string]: CdkTransformerTable };
+  readonly noneResolvers?: { [name: string]: CdkTransformerResolver };
+  readonly functionResolvers?: { [name: string]: CdkTransformerFunctionResolver[] };
+  readonly queries?: { [name: string]: string };
+  readonly mutations?: { [name: string]: CdkTransformerResolver };
+  readonly subscriptions?: { [name: string]: CdkTransformerResolver };
 }
 
 export class SchemaTransformer {
-    outputs: any
-    resolvers: any
-    schemaPath: string
-    outputPath: string
-    isSyncEnabled: boolean
-    authRolePolicy: Resource | undefined
-    unauthRolePolicy: Resource | undefined
-    authTransformerConfig: ModelAuthTransformerConfig
+  public readonly schemaPath: string
+  public readonly outputPath: string
+  public readonly isSyncEnabled: boolean
 
-    constructor(props: SchemaTransformerProps) {
-        this.resolvers = {}
+  private readonly authTransformerConfig: ModelAuthTransformerConfig
 
-        this.schemaPath = props.schemaPath || './schema.graphql';
-        this.outputPath = props.outputPath || './appsync';
-        this.isSyncEnabled = props.syncEnabled || false
+  outputs: SchemaTransformerOutputs
+  resolvers: any
+  authRolePolicy: Resource | undefined
+  unauthRolePolicy: Resource | undefined
 
-        // TODO: Make this mo betta
-        this.authTransformerConfig = {
-            authConfig: {
-                defaultAuthentication: {
-                    authenticationType: 'AMAZON_COGNITO_USER_POOLS',
-                    userPoolConfig: {
-                        userPoolId: '12345xyz'
-                    }
-                },
-                additionalAuthenticationProviders: [
-                    {
-                        authenticationType: 'API_KEY',
-                        apiKeyConfig: {
-                            description: 'Testing',
-                            apiKeyExpirationDays: 100
-                        }
-                    },
-                    {
-                        authenticationType: 'AWS_IAM'
-                    }
-                ]
-            }
+  constructor(props: SchemaTransformerProps) {
+    this.schemaPath = props.schemaPath || './schema.graphql';
+    this.outputPath = props.outputPath || './appsync';
+    this.isSyncEnabled = props.syncEnabled || false;
+
+    this.outputs = {};
+    this.resolvers = {};
+
+    // TODO: Make this better?
+    this.authTransformerConfig = {
+      authConfig: {
+        defaultAuthentication: {
+          authenticationType: 'AMAZON_COGNITO_USER_POOLS',
+          userPoolConfig: {
+            userPoolId: '12345xyz',
+          },
+        },
+        additionalAuthenticationProviders: [
+          {
+            authenticationType: 'API_KEY',
+            apiKeyConfig: {
+              description: 'Testing',
+              apiKeyExpirationDays: 100,
+            },
+          },
+          {
+            authenticationType: 'AWS_IAM',
+          },
+        ],
+      },
+    };
+  }
+
+  public transform() {
+    const transformConfig = this.isSyncEnabled ? this.loadConfigSync() : {};
+
+    // Note: This is not exact as we are omitting the @searchable transformer as well as some others.
+    const transformer = new GraphQLTransform({
+      transformConfig: transformConfig,
+      transformers: [
+        new DynamoDBModelTransformer(),
+        new VersionedModelTransformer(),
+        new FunctionTransformer(),
+        new KeyTransformer(),
+        new ModelConnectionTransformer(),
+        new ModelAuthTransformer(this.authTransformerConfig),
+        new CdkTransformer(),
+      ],
+    });
+
+    const schema = fs.readFileSync(this.schemaPath);
+    const cfdoc = transformer.transform(schema.toString());
+
+    // TODO: Get Unauth Role and Auth Role policies for authorization stuff
+    this.unauthRolePolicy = cfdoc.rootStack.Resources?.UnauthRolePolicy01 as Resource || undefined;
+
+    this.writeSchema(cfdoc.schema);
+    this.writeResolversToFile(cfdoc.resolvers);
+
+    // Outputs shouldn't be null but default to empty map
+    this.outputs = cfdoc.rootStack.Outputs ?? {};
+
+    return this.outputs;
+  }
+
+  /**
+     *
+     */
+  public getResolvers() {
+    const statements = ['Query', 'Mutation', 'Subscription'];
+    const resolversDirPath = normalize('./appsync/resolvers');
+    if (fs.existsSync(resolversDirPath)) {
+      const files = fs.readdirSync(resolversDirPath);
+      files.forEach(file => {
+        // Example: Mutation.createChannel.response
+        let args = file.split('.');
+        let typeName: string = args[0];
+        let name: string = args[1];
+        let templateType = args[2]; // request or response
+        let filepath = normalize(`${resolversDirPath}/${file}`);
+
+        if (statements.indexOf(typeName) >= 0 || (this.outputs.noneResolvers && this.outputs.noneResolvers[name])) {
+          if (!this.resolvers[name]) {
+            this.resolvers[name] = {
+              typeName: typeName,
+              fieldName: name,
+            };
+          }
+
+          if (templateType === 'req') {
+            this.resolvers[name].requestMappingTemplate = filepath;
+          } else if (templateType === 'res') {
+            this.resolvers[name].responseMappingTemplate = filepath;
+          }
+
+        } else { // This is a GSI
+          if (!this.resolvers.gsi) {
+            this.resolvers.gsi = {};
+          }
+
+          let mapName = `${typeName}${name}`;
+          if (!this.resolvers.gsi[mapName]) {
+            this.resolvers.gsi[mapName] = {
+              typeName: typeName,
+              fieldName: name,
+              tableName: name.charAt(0).toUpperCase() + name.slice(1),
+            };
+          }
+
+          if (templateType === 'req') {
+            this.resolvers.gsi[mapName].requestMappingTemplate = filepath;
+          } else if (templateType === 'res') {
+            this.resolvers.gsi[mapName].responseMappingTemplate = filepath;
+          }
         }
+      });
     }
 
-    public transform() {
-        let transformConfig = this.isSyncEnabled ? this.loadConfigSync() : {}
+    return this.resolvers;
+  }
 
-        // Note: This is not exact as we are omitting the @searchable transformer.
-        const transformer = new GraphQLTransform({
-            transformConfig: transformConfig,
-            transformers: [
-                new DynamoDBModelTransformer(),
-                new VersionedModelTransformer(),
-                new FunctionTransformer(),
-                new KeyTransformer(),
-                new ModelConnectionTransformer(),
-                new ModelAuthTransformer(this.authTransformerConfig),
-                new CdkTransformer(),
-            ]
-        })
-
-        const schema = fs.readFileSync(this.schemaPath);
-        const cfdoc = transformer.transform(schema.toString());
-
-        // TODO: Get Unauth Role and Auth Role policies for authorization stuff
-        this.authRolePolicy = cfdoc.rootStack.Resources?.AuthRolePolicy01 as Resource || undefined
-        this.unauthRolePolicy = cfdoc.rootStack.Resources?.UnauthRolePolicy01 as Resource || undefined
-
-        this.writeSchema(cfdoc.schema);
-        this.writeResolversToFile(cfdoc.resolvers);
-
-        this.outputs = cfdoc.rootStack.Outputs;
-
-        return this.outputs;
+  /**
+     * Writes the schema to the output directory for use with @aws-cdk/aws-appsync
+     * @param schema
+     */
+  private writeSchema(schema: any) {
+    if (!fs.existsSync(this.outputPath)) {
+      fs.mkdirSync(this.outputPath);
     }
 
-    public getResolvers() {
-        const statements = ['Query', 'Mutation', 'Subscription'];
-        const resolversDirPath = normalize('./appsync/resolvers')
-        if (fs.existsSync(resolversDirPath)) {
-            const files = fs.readdirSync(resolversDirPath)
-            files.forEach(file => {
-                // Example: Mutation.createChannel.response
-                let args = file.split('.')
-                let typeName: string = args[0];
-                let name: string = args[1]
-                let templateType = args[2] // request or response
-                let filepath = normalize(`${resolversDirPath}/${file}`)
+    fs.writeFileSync(`${this.outputPath}/schema.graphql`, schema);
+  }
 
-                if (statements.indexOf(typeName) >= 0 || (this.outputs.NONE && this.outputs.NONE[name])) {
-                    if (!this.resolvers[name]) {
-                        this.resolvers[name] = {
-                            typeName: typeName,
-                            fieldName: name,
-                        }
-                    }
-
-                    if (templateType === 'req') {
-                        this.resolvers[name]['requestMappingTemplate'] = filepath
-                    } else if (templateType === 'res') {
-                        this.resolvers[name]['responseMappingTemplate'] = filepath
-                    }
-
-                } else { // This is a GSI
-                    if (!this.resolvers['gsi']) {
-                        this.resolvers['gsi'] = {}
-                    }
-
-                    let mapName = `${typeName}${name}`
-                    if (!this.resolvers['gsi'][mapName]) {
-                        this.resolvers['gsi'][mapName] = {
-                            typeName: typeName,
-                            fieldName: name,
-                            tableName: name.charAt(0).toUpperCase() + name.slice(1)
-                        }
-                    }
-
-                    if (templateType === 'req') {
-                        this.resolvers['gsi'][mapName]['requestMappingTemplate'] = filepath
-                    } else if (templateType === 'res') {
-                        this.resolvers['gsi'][mapName]['responseMappingTemplate'] = filepath
-                    }
-                }
-            })
-        }
-
-        return this.resolvers;
+  /**
+     * Writes all the resolvers to the output directory for loading into the datasources later
+     * @param resolvers
+     */
+  private writeResolversToFile(resolvers: any) {
+    if (!fs.existsSync(this.outputPath)) {
+      fs.mkdirSync(this.outputPath);
     }
 
-    private writeSchema(schema: any) {
-        if (!fs.existsSync(this.outputPath)) {
-            fs.mkdirSync(this.outputPath);
-        }
-
-        fs.writeFileSync(`${this.outputPath}/schema.graphql`, schema)
+    const resolverFolderPath = normalize(this.outputPath + '/resolvers');
+    if (fs.existsSync(resolverFolderPath)) {
+      const files = fs.readdirSync(resolverFolderPath);
+      files.forEach(file => fs.unlinkSync(resolverFolderPath + '/' + file));
+      fs.rmdirSync(resolverFolderPath);
     }
 
-    private writeResolversToFile(resolvers: any) {
-        if (!fs.existsSync(this.outputPath)) {
-            fs.mkdirSync(this.outputPath);
-        }
-
-        const resolverFolderPath = normalize(this.outputPath + '/resolvers');
-        if (fs.existsSync(resolverFolderPath)) {
-            const files = fs.readdirSync(resolverFolderPath)
-            files.forEach(file => fs.unlinkSync(resolverFolderPath + '/' + file))
-            fs.rmdirSync(resolverFolderPath)
-        }
-
-        if (!fs.existsSync(resolverFolderPath)) {
-            fs.mkdirSync(resolverFolderPath);
-        }
-
-        Object.keys(resolvers).forEach((key: any) => {
-            const resolver = resolvers[key];
-            const fileName = key.replace('.vtl', '');
-            const resolverFilePath = normalize(`${resolverFolderPath}/${fileName}`);
-            fs.writeFileSync(resolverFilePath, resolver);
-        })
+    if (!fs.existsSync(resolverFolderPath)) {
+      fs.mkdirSync(resolverFolderPath);
     }
 
-    /** 
+    Object.keys(resolvers).forEach((key: any) => {
+      const resolver = resolvers[key];
+      const fileName = key.replace('.vtl', '');
+      const resolverFilePath = normalize(`${resolverFolderPath}/${fileName}`);
+      fs.writeFileSync(resolverFilePath, resolver);
+    });
+  }
+
+  /**
      * @returns {@link TransformConfig}
     */
-    private loadConfigSync(projectDir: string = 'resources'): TransformConfig {
-        // Initialize the config always with the latest version, other members are optional for now.
-        let config: TransformConfig = {
-            Version: TRANSFORM_CURRENT_VERSION,
-            ResolverConfig: {
-                project: {
-                    ConflictHandler: ConflictHandlerType.OPTIMISTIC,
-                    ConflictDetection: "VERSION"
-                }
-            }
-        };
+  private loadConfigSync(projectDir: string = 'resources'): TransformConfig {
+    // Initialize the config always with the latest version, other members are optional for now.
+    let config: TransformConfig = {
+      Version: TRANSFORM_CURRENT_VERSION,
+      ResolverConfig: {
+        project: {
+          ConflictHandler: ConflictHandlerType.OPTIMISTIC,
+          ConflictDetection: 'VERSION',
+        },
+      },
+    };
 
-        const configDir = join(__dirname, '..', '..', projectDir);
+    const configDir = join(__dirname, '..', '..', projectDir);
 
-        try {
-            const configPath = join(configDir, TRANSFORM_CONFIG_FILE_NAME);
-            const configExists = fs.existsSync(configPath);
-            if (configExists) {
-                const configStr = fs.readFileSync(configPath);
-                config = JSON.parse(configStr.toString());
-            }
-            return config as TransformConfig;
-        } catch (err) {
-            return config;
-        }
+    try {
+      const configPath = join(configDir, TRANSFORM_CONFIG_FILE_NAME);
+      const configExists = fs.existsSync(configPath);
+      if (configExists) {
+        const configStr = fs.readFileSync(configPath);
+        config = JSON.parse(configStr.toString());
+      }
+
+      return config as TransformConfig;
+    } catch (err) {
+      return config;
     }
+  }
 }

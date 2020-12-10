@@ -19,9 +19,10 @@ const project = new AwsCdkConstructLibrary({
     "appsync",
     "amplify",
   ],
-  eslint: false,
   mergify: false,
   codeCov: true,
+
+  // Ignore our generated appsync files
   npmignore: [
     'appsync/*'
   ],

@@ -118,25 +118,76 @@ new AppSyncTransformer(this, "my-cool-api", {
 
 Unauth Role: TODO
 
-Auth Role: Unsupported (for now?). Authorized roles (Lambda Functions, EC2 roles, etc) are required to setup their own role permissions.
+Auth Role: Unsupported. Authorized roles (Lambda Functions, EC2 roles, etc) are required to setup their own role permissions.
 
 ### Functions
 
-Fields with the `@function` directive will be accessible via `api.outputs.FUNCTION_RESOLVERS`. It will return an array like below.Currently these are not named and do not specify a region. There are improvements that can be made here but this simple way has worked for me so I've implemented it first. Typically I send all `@function` requests to one Lambda Function and have it route as necessary.
+There are two ways to add functions as data sources (and their resolvers)
 
-```js
-[
-  { typeName: 'Query', fieldName: 'listUsers' },
-  { typeName: 'Query', fieldName: 'getUser' },
-  { typeName: 'Mutation', fieldName: 'createUser' },
-  { typeName: 'Mutation', fieldName: 'updateUser' }
-]
+#### Convenience Method
+
+`addLambdaDataSourceAndResolvers` will do the same thing as the manual version below. However, if you want to customize mapping templates you will have to bypass this and set up the data source and resolvers yourself
+
+#### Manually
+
+Fields with the `@function` directive will be accessible via `appsyncTransformer.functionResolvers`. It will return a map like so:
+```ts
+{
+  'user-function': [
+    { typeName: 'Query', fieldName: 'listUsers' },
+    { typeName: 'Query', fieldName: 'getUser' },
+    { typeName: 'Mutation', fieldName: 'createUser' },
+    { typeName: 'Mutation', fieldName: 'updateUser' }
+  ]
+}
+```
+
+You can grab your function resolvers via the map and assign them your own function(s). Example might be something like:
+```ts
+const userFunction = new Function(...);
+const userFunctionDataSource = appsyncTransformer.appsyncAPI.addLambdaDataSource('some-id', userFunction);
+
+const dataSourceMap = {
+  'user-function': userFunctionDataSource
+};
+
+for (const [functionName, resolver] of Object.entries(appsyncTransformer.functionResolvers)) {
+  const dataSource = dataSourceMap[functionName];
+  new Resolver(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
+    api: appsyncTransformer.appsyncAPI,
+    typeName: resolver.typeName,
+    fieldName: resolver.fieldName,
+    dataSource: dataSource,
+    requestMappingTemplate: resolver.defaultRequestMappingTemplate,
+    responseMappingTemplate: resolver.defaultResponseMappingTemplate // This defaults to allow errors to return to the client instead of throwing
+  });
+}
+```
+
+### Table Name Map
+
+Often you will need to access your table names in a lambda function or elsewhere. The cdk-appsync-transformer will return these values as a map of table names to cdk tokens. These tokens will be resolved at deploy time. They can be accessed via `appSyncTransformer.tableNameMap`.
+
+```ts
+{
+  CustomerTable: '${Token[TOKEN.1300]}',
+  ProductTable: '${Token[TOKEN.1346]}',
+  OrderTable: '${Token[TOKEN.1392]}',
+  BlogTable: '${Token[TOKEN.1442]}',
+  PostTable: '${Token[TOKEN.1492]}',
+  CommentTable: '${Token[TOKEN.1546]}',
+  UserTable: '${Token[TOKEN.1596]}'
+}
 ```
 
 ### DataStore Support
 
 1. Pass `syncEnabled: true` to the `AppSyncTransformerProps`
 1. Generate necessary exports (see [Code Generation](#code-generation) below)
+
+### Cfn Outputs
+
+* `appsyncGraphQLEndpointOutput` - the appsync graphql endpoint
 
 ### Code Generation
 
@@ -148,10 +199,6 @@ I will *attempt* to align the major and minor version of this package with [AWS 
 
 I currently support [![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/kcwinner/cdk-appsync-transformer/@aws-cdk/core)](https://github.com/aws/aws-cdk)
 
-## Limitations
-
-* 
-
 ## Contributing
 
 See [CONTRIBUTING](CONTRIBUTING.md) for details
@@ -160,4 +207,7 @@ See [CONTRIBUTING](CONTRIBUTING.md) for details
 
 Distributed under [Apache License, Version 2.0](LICENSE)
 
-[aws cdk]: https://aws.amazon.com/cdk
+## References
+* [aws cdk]: https://aws.amazon.com/cdk
+* [amplify-cli](https://github.com/aws-amplify/amplify-cli)
+* [Amplify Directives](https://docs.amplify.aws/cli/graphql-transformer/directives)
