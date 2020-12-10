@@ -100,7 +100,7 @@ type Query {
   listUsers: UserConnection @function(name: "test-function")
   getUser(id: ID!): User @function(name: "test-function")
 
-  listTodos: Todo @http(url: "https://jsonplaceholder.typicode.com/todos")
+  listTodos: [Todo] @http(url: "https://jsonplaceholder.typicode.com/todos")
   getTodo: Todo @http(url: "https://jsonplaceholder.typicode.com/todos/:id")
 }
 

@@ -365,7 +365,8 @@ export class AppSyncTransformer extends Construct {
 
   private createHttpResolvers() {
     for (const [endpoint, httpResolvers] of Object.entries(this.httpResolvers)) {
-      const httpDataSource = this.appsyncAPI.addHttpDataSource(`http-${endpoint}`, endpoint);
+      const strippedEndpoint = endpoint.replace(/[^_0-9A-Za-z]/g, '');
+      const httpDataSource = this.appsyncAPI.addHttpDataSource(`${strippedEndpoint}`, endpoint);
 
       httpResolvers.forEach((resolver: CdkTransformerHttpResolver) => {
         new Resolver(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
