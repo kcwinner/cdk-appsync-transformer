@@ -9,6 +9,7 @@ import { AppSyncTransformer } from '../src/index';
 
 const testSchemaPath = path.join(__dirname, 'schema.graphql');
 const functionDirectiveTestFunctionName = 'test-function';
+const testHttpEndpoint = 'https://jsonplaceholder.typicode.com';
 
 const apiKeyAuthorizationConfig: AuthorizationConfig = {
   defaultAuthorization: {
@@ -115,6 +116,43 @@ test('Model Tables Created', () => {
     expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::DataSource', {
       Name: tableName,
       Type: 'AMAZON_DYNAMODB',
+    });
+  }
+});
+
+test('HTTP Resolvers Match', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'user-pool-auth-stack');
+
+  const userPool = new UserPool(stack, 'test-userpool');
+  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+    userPool: userPool,
+  });
+
+  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+    schemaPath: testSchemaPath,
+    apiName: 'user-pool-auth-api',
+    authorizationConfig: {
+      defaultAuthorization: {
+        authorizationType: AuthorizationType.USER_POOL,
+        userPoolConfig: {
+          userPool: userPool,
+          appIdClientRegex: userPoolClient.userPoolClientId,
+          defaultAction: UserPoolDefaultAction.ALLOW,
+        },
+      },
+    },
+  });
+
+  expect(appSyncTransformer.httpResolvers).toBeTruthy();
+
+  const endpointResolvers = appSyncTransformer.httpResolvers[testHttpEndpoint];
+  expect(endpointResolvers.length).toEqual(2);
+
+  for (const resolver of endpointResolvers) {
+    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::Resolver', {
+      FieldName: resolver.fieldName,
+      TypeName: resolver.typeName,
     });
   }
 });

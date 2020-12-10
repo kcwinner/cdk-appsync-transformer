@@ -60,6 +60,7 @@ const project = new AwsCdkConstructLibrary({
     "graphql-connection-transformer@4.19.1",
     "graphql-dynamodb-transformer@6.21.1",
     "graphql-function-transformer@2.4.1",
+    "graphql-http-transformer@4.16.2",
     "graphql-key-transformer@2.20.1",
     "graphql-mapping-template@4.18.1",
     "graphql-relational-schema-transformer@2.16.1",

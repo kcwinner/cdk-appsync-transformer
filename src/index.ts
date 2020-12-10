@@ -1,6 +1,7 @@
 export {
   CdkTransformerResolver,
   CdkTransformerFunctionResolver,
+  CdkTransformerHttpResolver,
   CdkTransformerTable,
   CdkTransformerGlobalSecondaryIndex,
   CdkTransformerTableKey,

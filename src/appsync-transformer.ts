@@ -16,7 +16,14 @@ import { Effect, PolicyStatement } from '@aws-cdk/aws-iam';
 import { IFunction } from '@aws-cdk/aws-lambda';
 import { Construct, NestedStack, CfnOutput } from '@aws-cdk/core';
 
-import { CdkTransformerResolver, CdkTransformerFunctionResolver, CdkTransformerTable, SchemaTransformerOutputs } from './transformer';
+import {
+  CdkTransformerResolver,
+  CdkTransformerFunctionResolver,
+  CdkTransformerHttpResolver,
+  CdkTransformerTable,
+  SchemaTransformerOutputs,
+} from './transformer';
+
 import { SchemaTransformer, SchemaTransformerProps } from './transformer/schema-transformer';
 
 export interface AppSyncTransformerProps {
@@ -95,6 +102,8 @@ export class AppSyncTransformer extends Construct {
    */
   public readonly functionResolvers: { [name: string]: CdkTransformerFunctionResolver[] };
 
+  public readonly httpResolvers: { [name: string]: CdkTransformerHttpResolver[] };
+
   private isSyncEnabled: boolean
   private syncTable: Table | undefined
 
@@ -118,6 +127,22 @@ export class AppSyncTransformer extends Construct {
     // Otherwise it will add them twice
     for (const [_, functionResolvers] of Object.entries(this.functionResolvers)) {
       functionResolvers.forEach((resolver: any) => {
+        switch (resolver.typeName) {
+          case 'Query':
+          case 'Mutation':
+          case 'Subscription':
+            delete resolvers[resolver.fieldName];
+            break;
+        }
+      });
+    }
+
+    this.httpResolvers = this.outputs.httpResolvers ?? {};
+
+    // Remove any http resolvers from the total list of resolvers
+    // Otherwise it will add them twice
+    for (const [_, httpResolvers] of Object.entries(this.httpResolvers)) {
+      httpResolvers.forEach((resolver: any) => {
         switch (resolver.typeName) {
           case 'Query':
           case 'Mutation':
@@ -152,8 +177,8 @@ export class AppSyncTransformer extends Construct {
     }
 
     this.tableNameMap = this.createTablesAndResolvers(tableData, resolvers);
-
     if (this.outputs.noneResolvers) this.createNoneDataSourceAndResolvers(this.outputs.noneResolvers, resolvers);
+    this.createHttpResolvers();
 
     // Outputs so we can generate exports
     new CfnOutput(scope, 'appsyncGraphQLEndpointOutput', {
@@ -335,6 +360,23 @@ export class AppSyncTransformer extends Construct {
       case 'ALL': // Same as default
       default:
         return ProjectionType.ALL;
+    }
+  }
+
+  private createHttpResolvers() {
+    for (const [endpoint, httpResolvers] of Object.entries(this.httpResolvers)) {
+      const httpDataSource = this.appsyncAPI.addHttpDataSource(`http-${endpoint}`, endpoint);
+
+      httpResolvers.forEach((resolver: CdkTransformerHttpResolver) => {
+        new Resolver(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
+          api: this.appsyncAPI,
+          typeName: resolver.typeName,
+          fieldName: resolver.fieldName,
+          dataSource: httpDataSource,
+          requestMappingTemplate: MappingTemplate.fromString(resolver.defaultRequestMappingTemplate),
+          responseMappingTemplate: MappingTemplate.fromString(resolver.defaultResponseMappingTemplate),
+        });
+      });
     }
   }
 

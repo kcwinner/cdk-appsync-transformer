@@ -80,11 +80,11 @@ Experimental:
 * [@versioned](https://docs.amplify.aws/cli/graphql-transformer/directives#versioned)
 * [@function](https://docs.amplify.aws/cli/graphql-transformer/directives#function)
   * These work differently here than they do in Amplify - see [Functions](#functions) below
+* [@http](https://docs.amplify.aws/cli/graphql-transformer/directives#http)
 
 Not Yet Supported:
 * [@searchable](https://docs.amplify.aws/cli/graphql-transformer/directives#searchable)
 * [@predictions](https://docs.amplify.aws/cli/graphql-transformer/directives#predictions)
-* [@http](https://docs.amplify.aws/cli/graphql-transformer/directives#http)
 
 ### Authentication
 

@@ -87,10 +87,21 @@ input UpdateUserInput {
     number: String
 }
 
+# https://jsonplaceholder.typicode.com/
+type Todo {
+  id: Int!
+  userId: Int!
+  title: String!
+  completed: Boolean!
+}
+
 # Demonstrate the function resolvers
 type Query {
   listUsers: UserConnection @function(name: "test-function")
   getUser(id: ID!): User @function(name: "test-function")
+
+  listTodos: Todo @http(url: "https://jsonplaceholder.typicode.com/todos")
+  getTodo: Todo @http(url: "https://jsonplaceholder.typicode.com/todos/:id")
 }
 
 type Mutation {
