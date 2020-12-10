@@ -8,6 +8,7 @@ import { App, Stack } from '@aws-cdk/core';
 import { AppSyncTransformer } from '../src/index';
 
 const testSchemaPath = path.join(__dirname, 'schema.graphql');
+const functionDirectiveTestFunctionName = 'test-function';
 
 const apiKeyAuthorizationConfig: AuthorizationConfig = {
   defaultAuthorization: {
@@ -144,9 +145,9 @@ test('Function Resolvers Match', () => {
 
   const functionResolvers = appSyncTransformer.functionResolvers;
   expect(functionResolvers).toBeTruthy();
-  expect(functionResolvers!['test-function']).toBeTruthy(); // Will fail above if not truthy
+  expect(functionResolvers![functionDirectiveTestFunctionName]).toBeTruthy(); // Will fail above if not truthy
 
-  const testFunctionResolvers = functionResolvers!['test-function']; // will fail above if does not exist
+  const testFunctionResolvers = functionResolvers![functionDirectiveTestFunctionName]; // will fail above if does not exist
   expect(testFunctionResolvers.length).toEqual(4);
 });
 
@@ -181,9 +182,22 @@ test('addLambdaDataSourceAndResolvers', () => {
     handler: 'handler',
   });
 
-  appSyncTransformer.addLambdaDataSourceAndResolvers('test-function', 'test-data-source', testFunction);
+  const testFunctionDataSource = appSyncTransformer.addLambdaDataSourceAndResolvers(
+    functionDirectiveTestFunctionName,
+    'test-data-source',
+    testFunction,
+  );
 
-  // expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('');
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::DataSource', {
+    Name: testFunctionDataSource.name,
+    Type: 'AWS_LAMBDA',
+  });
+
+  const testFunctionResolvers = appSyncTransformer.functionResolvers[functionDirectiveTestFunctionName];
+  for (const resolver of testFunctionResolvers) {
+    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::Resolver', {
+      FieldName: resolver.fieldName,
+      TypeName: resolver.typeName,
+    });
+  }
 });
-
-
