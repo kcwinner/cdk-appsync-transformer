@@ -8,17 +8,9 @@ import { Construct, NestedStack, CfnOutput } from '@aws-cdk/core';
 import { CdkTransformerResolver, CdkTransformerTable, SchemaTransformerOutputs } from './transformer';
 import { SchemaTransformer, SchemaTransformerProps } from './transformer/schema-transformer';
 
-/**
- * Properties for AppSyncTransformer Construct
- * @param schemaPath Relative path where schema.graphql exists.
- * @param authorizationConfig {@link AuthorizationConfig} type defining authorization for AppSync GraphqlApi. Defaults to API_KEY
- * @param apiName Optional string value representing the api name
- * @param syncEnabled Optional boolean to enable DataStore Sync Tables
- * @param fieldLogLevel {@link FieldLogLevel} type for AppSync GraphqlApi log level
- */
 export interface AppSyncTransformerProps {
   /**
-   * Required. Relative path where schema.graphql exists
+   * Relative path where schema.graphql exists
    */
   readonly schemaPath: string;
 
@@ -29,13 +21,13 @@ export interface AppSyncTransformerProps {
   readonly authorizationConfig?: AuthorizationConfig;
 
   /**
-   * Optional. String value representing the api name
+   * String value representing the api name
    * @default `${id}-api`
    */
   readonly apiName?: string;
 
   /**
-   * Optional. Boolean to enable DataStore Sync Tables
+   * Whether to enable Amplify DataStore and Sync Tables
    * @default false
    */
   readonly syncEnabled?: boolean;

@@ -9,42 +9,37 @@ import { VersionedModelTransformer } from 'graphql-versioned-transformer';
 
 // Import this way because FunctionTransformer.d.ts types were throwing an eror. And we didn't write this package so hope for the best :P
 import { CdkTransformer } from './cdk-transformer';
+
+// Rebuilt this from cloudform-types because it has type errors
 import { Resource } from './resource';
 import { SchemaTransformerOutputs } from './transformerTypes';
 
 // eslint-disable-next-line
 const { FunctionTransformer } = require('graphql-function-transformer');
 
-// Rebuilt this from cloudform-types because it has type errors
-
-
 export interface SchemaTransformerProps {
   /**
-     * File path to the graphql schema
-     *
-     * @default schema.graphql
-     */
+   * File path to the graphql schema
+   * @default schema.graphql
+   */
   schemaPath?: string;
 
   /**
-     * Path where transformed schema and resolvers will be placed
-     *
-     * @default appsync
-     */
+   * Path where transformed schema and resolvers will be placed
+   * @default appsync
+   */
   outputPath?: string;
 
   /**
-     * Set deletion protection on DynamoDB tables
-     *
-     * @default true
-     */
+   * Set deletion protection on DynamoDB tables
+   * @default true
+   */
   deletionProtectionEnabled?: boolean;
 
   /**
-     * Whether to enable DataStore or not
-     *
-     * @default false
-     */
+   * Whether to enable DataStore or not
+   * @default false
+   */
   syncEnabled?: boolean;
 }
 
@@ -95,7 +90,7 @@ export class SchemaTransformer {
   public transform() {
     const transformConfig = this.isSyncEnabled ? this.loadConfigSync() : {};
 
-    // Note: This is not exact as we are omitting the @searchable transformer, and some others.
+    // Note: This is not exact as we are omitting the @searchable transformer as well as some others.
     const transformer = new GraphQLTransform({
       transformConfig: transformConfig,
       transformers: [

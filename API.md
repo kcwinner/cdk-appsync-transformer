@@ -11,7 +11,7 @@ Name|Description
 
 Name|Description
 ----|-----------
-[AppSyncTransformerProps](#cdk-appsync-transformer-appsynctransformerprops)|Properties for AppSyncTransformer Construct.
+[AppSyncTransformerProps](#cdk-appsync-transformer-appsynctransformerprops)|*No description*
 [CdkTransformerFunctionResolver](#cdk-appsync-transformer-cdktransformerfunctionresolver)|*No description*
 [CdkTransformerGlobalSecondaryIndex](#cdk-appsync-transformer-cdktransformerglobalsecondaryindex)|*No description*
 [CdkTransformerResolver](#cdk-appsync-transformer-cdktransformerresolver)|*No description*
@@ -40,11 +40,11 @@ new AppSyncTransformer(scope: Construct, id: string, props: AppSyncTransformerPr
 * **scope** (<code>[Construct](#aws-cdk-core-construct)</code>)  *No description*
 * **id** (<code>string</code>)  *No description*
 * **props** (<code>[AppSyncTransformerProps](#cdk-appsync-transformer-appsynctransformerprops)</code>)  *No description*
-  * **schemaPath** (<code>string</code>)  Required. 
-  * **apiName** (<code>string</code>)  Optional. __*Default*__: `${id}-api`
+  * **schemaPath** (<code>string</code>)  Relative path where schema.graphql exists. 
+  * **apiName** (<code>string</code>)  String value representing the api name. __*Default*__: `${id}-api`
   * **authorizationConfig** (<code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code>)  Optional. __*Default*__: API_KEY authorization config
   * **fieldLogLevel** (<code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code>)  Optional. __*Default*__: FieldLogLevel.NONE
-  * **syncEnabled** (<code>boolean</code>)  Optional. __*Default*__: false
+  * **syncEnabled** (<code>boolean</code>)  Whether to enable Amplify DataStore and Sync Tables. __*Default*__: false
 
 
 
@@ -65,17 +65,17 @@ Name | Type | Description
 ## struct AppSyncTransformerProps 🔹 <a id="cdk-appsync-transformer-appsynctransformerprops"></a>
 
 
-Properties for AppSyncTransformer Construct.
+
 
 
 
 Name | Type | Description 
 -----|------|-------------
-**schemaPath**🔹 | <code>string</code> | Required.
-**apiName**?🔹 | <code>string</code> | Optional.<br/>__*Default*__: `${id}-api`
+**schemaPath**🔹 | <code>string</code> | Relative path where schema.graphql exists.
+**apiName**?🔹 | <code>string</code> | String value representing the api name.<br/>__*Default*__: `${id}-api`
 **authorizationConfig**?🔹 | <code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code> | Optional.<br/>__*Default*__: API_KEY authorization config
 **fieldLogLevel**?🔹 | <code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code> | Optional.<br/>__*Default*__: FieldLogLevel.NONE
-**syncEnabled**?🔹 | <code>boolean</code> | Optional.<br/>__*Default*__: false
+**syncEnabled**?🔹 | <code>boolean</code> | Whether to enable Amplify DataStore and Sync Tables.<br/>__*Default*__: false
 
 
 
