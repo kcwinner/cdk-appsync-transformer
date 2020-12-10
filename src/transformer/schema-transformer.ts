@@ -10,7 +10,8 @@ const { FunctionTransformer } = require('graphql-function-transformer');
 
 // Rebuilt this from cloudform-types because it has type errors
 import { Resource } from './resource';
-import { CdkTransformer, CdkTransformerTable, CdkTransformerResolver } from './cdk-transformer';
+import { SchemaTransformerOutputs } from './transformerTypes';
+import { CdkTransformer } from './cdk-transformer';
 
 import { normalize, join } from 'path';
 import * as fs from 'fs';
@@ -43,15 +44,6 @@ export interface SchemaTransformerProps {
      * @default false
      */
     syncEnabled?: boolean
-}
-
-export interface SchemaTransformerOutputs {
-    CDK_TABLES?: { [name: string]: CdkTransformerTable };
-    NONE?: { [name: string]: CdkTransformerResolver };
-    FUNCTION_RESOLVERS?: { [name: string]: CdkTransformerResolver[] };
-    QUERIES?: { [name: string]: string };
-    MUTATIONS?: { [name: string]: CdkTransformerResolver };
-    SUBSCRIPTIONS?: { [name: string]: CdkTransformerResolver };
 }
 
 export class SchemaTransformer {
@@ -146,7 +138,7 @@ export class SchemaTransformer {
                 let templateType = args[2]; // request or response
                 let filepath = normalize(`${resolversDirPath}/${file}`);
 
-                if (statements.indexOf(typeName) >= 0 || (this.outputs.NONE && this.outputs.NONE[name])) {
+                if (statements.indexOf(typeName) >= 0 || (this.outputs.noneResolvers && this.outputs.noneResolvers[name])) {
                     if (!this.resolvers[name]) {
                         this.resolvers[name] = {
                             typeName: typeName,

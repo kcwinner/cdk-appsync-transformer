@@ -107,7 +107,7 @@ test('Model Tables Created', () => {
         }
     });
     
-    const tableData = appSyncTransformer.outputs.CDK_TABLES;
+    const tableData = appSyncTransformer.outputs.cdkTables;
     if (!tableData) throw new Error('Expected table data');
 
     for (const [tableName] of Object.entries(tableData)) {

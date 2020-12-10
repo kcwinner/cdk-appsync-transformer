@@ -134,7 +134,6 @@ Fields with the `@function` directive will be accessible via `appsyncTransformer
   ]
 }
 ```
-TODO: Add default mapping templates to function resolvers
 
 You can grab your function resolvers via the map and assign them your own function(s). Example might be something like:
 ```js

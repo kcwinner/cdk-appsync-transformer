@@ -1,43 +1,13 @@
 import { Transformer, TransformerContext, getFieldArguments } from 'graphql-transformer-core';
+import { CdkTransformerTable, CdkTransformerResolver, CdkTransformerFunctionResolver } from './transformerTypes';
+import { MappingTemplate } from '@aws-cdk/aws-appsync';
 
 const graphqlTypeStatements = ['Query', 'Mutation', 'Subscription'];
-
-export interface CdkTransformerTableKey {
-    name: string
-    type: string
-}
-
-export interface CdkTransformerGlobalSecondaryIndex {
-    IndexName: string;
-    Projection: string;
-    PartitionKey: CdkTransformerTableKey
-    SortKey: CdkTransformerTableKey,
-}
-
-export interface CdkTransformerTable {
-    TableName: string;
-    PartitionKey: CdkTransformerTableKey;
-    SortKey?: CdkTransformerTableKey;
-    TTL?: any; // TODO: Figure this out
-    GlobalSecondaryIndexes: CdkTransformerGlobalSecondaryIndex[];
-    Resolvers: string[];
-    GSIResolvers: string[];
-}
-
-export interface CdkTransformerResolver {
-    typeName: string;
-    fieldName: string;
-}
-
-export interface CdkTransformerFunctionResolver extends CdkTransformerResolver {
-    RequestMappingTemplate: string;
-    ResponseMappingTemplate: string;
-}
 
 export class CdkTransformer extends Transformer {
     tables: { [name: string]: CdkTransformerTable };
     noneDataSources: { [name: string]: CdkTransformerResolver };
-    functionResolvers: { [name: string]: CdkTransformerResolver[] };
+    functionResolvers: { [name: string]: CdkTransformerFunctionResolver[] };
     resolverTableMap: { [name: string]: string };
     gsiResolverTableMap: { [name: string]: string };
 
@@ -61,39 +31,39 @@ export class CdkTransformer extends Transformer {
         Object.keys(this.tables).forEach(tableName => {
             let table = this.tables[tableName];
             Object.keys(this.resolverTableMap).forEach(resolverName => {
-                if (this.resolverTableMap[resolverName] === tableName) table.Resolvers.push(resolverName);
+                if (this.resolverTableMap[resolverName] === tableName) table.resolvers.push(resolverName);
             })
 
             Object.keys(this.gsiResolverTableMap).forEach(resolverName => {
-                if (this.gsiResolverTableMap[resolverName] === tableName) table.GSIResolvers.push(resolverName);
+                if (this.gsiResolverTableMap[resolverName] === tableName) table.gsiResolvers.push(resolverName);
             })
         })
 
         // @ts-ignore - we are overloading the use of outputs here...
-        ctx.setOutput('CDK_TABLES', this.tables);
+        ctx.setOutput('cdkTables', this.tables);
 
         // @ts-ignore - we are overloading the use of outputs here...
-        ctx.setOutput('NONE', this.noneDataSources);
+        ctx.setOutput('noneResolvers', this.noneDataSources);
 
         // @ts-ignore - we are overloading the use of outputs here...
-        ctx.setOutput('FUNCTION_RESOLVERS', this.functionResolvers);
+        ctx.setOutput('functionResolvers', this.functionResolvers);
 
         const query = ctx.getQuery();
         if (query) {
             const queryFields = getFieldArguments(query);
-            ctx.setOutput('QUERIES', queryFields);
+            ctx.setOutput('queries', queryFields);
         }
 
         const mutation = ctx.getMutation();
         if (mutation) {
             const mutationFields = getFieldArguments(mutation);
-            ctx.setOutput('MUTATIONS', mutationFields);
+            ctx.setOutput('mutations', mutationFields);
         }
 
         const subscription = ctx.getSubscription();
         if (subscription) {
             const subscriptionFields = getFieldArguments(subscription);
-            ctx.setOutput('SUBSCRIPTIONS', subscriptionFields);
+            ctx.setOutput('subscriptions', subscriptionFields);
         }
     }
 
@@ -127,7 +97,9 @@ export class CdkTransformer extends Transformer {
 
                     this.functionResolvers[functionName].push({
                         typeName: typeName,
-                        fieldName: fieldName
+                        fieldName: fieldName,
+                        defaultRequestMappingTemplate: MappingTemplate.lambdaRequest().renderTemplate(),
+                        defaultResponseMappingTemplate: functionConfiguration.Properties?.ResponseMappingTemplate // This should handle error messages
                     });
                 } else { // Should be a table/model resolver -> Maybe not true when we add in @searchable, etc
                     let typeName = resource.Properties?.TypeName;
@@ -154,13 +126,13 @@ export class CdkTransformer extends Transformer {
         const keys = this.parseKeySchema(keySchema, attributeDefinitions);
 
         let table: CdkTransformerTable = {
-            TableName: resourceName,
-            PartitionKey: keys.partitionKey,
-            SortKey: keys.sortKey,
-            TTL: tableResource?.Properties?.TimeToLiveSpecification,
-            GlobalSecondaryIndexes: [],
-            Resolvers: [],
-            GSIResolvers: []
+            tableName: resourceName,
+            partitionKey: keys.partitionKey,
+            sortKey: keys.sortKey,
+            ttl: tableResource?.Properties?.TimeToLiveSpecification,
+            globalSecondaryIndexes: [],
+            resolvers: [],
+            gsiResolvers: []
         }
 
         const gsis = tableResource?.Properties?.GlobalSecondaryIndexes;
@@ -168,13 +140,13 @@ export class CdkTransformer extends Transformer {
             gsis.forEach((gsi: any) => {
                 const gsiKeys = this.parseKeySchema(gsi.KeySchema, attributeDefinitions);
                 const gsiDefinition = {
-                    IndexName: gsi.IndexName,
-                    Projection: gsi.Projection,
-                    PartitionKey: gsiKeys.partitionKey,
-                    SortKey: gsiKeys.sortKey,
+                    indexName: gsi.IndexName,
+                    projection: gsi.Projection,
+                    partitionKey: gsiKeys.partitionKey,
+                    sortKey: gsiKeys.sortKey,
                 }
 
-                table.GlobalSecondaryIndexes.push(gsiDefinition);
+                table.globalSecondaryIndexes.push(gsiDefinition);
             })
         }
 

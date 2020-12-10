@@ -1,10 +1,12 @@
+export * from './transformer/transformerTypes';
+
 import { Construct, NestedStack, CfnOutput } from '@aws-cdk/core';
 import { GraphqlApi, AuthorizationType, FieldLogLevel, MappingTemplate, CfnDataSource, Resolver, AuthorizationConfig, Schema } from '@aws-cdk/aws-appsync';
 import { Table, AttributeType, ProjectionType, BillingMode } from '@aws-cdk/aws-dynamodb';
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam'
 
-import { CdkTransformerResolver } from './transformer/cdk-transformer';
-import { SchemaTransformer, SchemaTransformerProps, SchemaTransformerOutputs } from './transformer/schema-transformer';
+import { CdkTransformerResolver, CdkTransformerTable, SchemaTransformerOutputs } from './transformer';
+import { SchemaTransformer, SchemaTransformerProps } from './transformer/schema-transformer';
 
 /**
  * Properties for AppSyncTransformer Construct
@@ -107,7 +109,7 @@ export class AppSyncTransformer extends Construct {
     this.outputs = transformer.transform();
     const resolvers = transformer.getResolvers();
 
-    this.functionResolvers = this.outputs.FUNCTION_RESOLVERS ?? {};
+    this.functionResolvers = this.outputs.functionResolvers ?? {};
 
     for (const [_, resolvers] of Object.entries(this.functionResolvers)) {
       resolvers.forEach((resolver: any) => {
@@ -135,7 +137,7 @@ export class AppSyncTransformer extends Construct {
       schema: Schema.fromAsset('./appsync/schema.graphql')
     })
 
-    let tableData = this.outputs.CDK_TABLES ?? {};
+    let tableData = this.outputs.cdkTables ?? {};
 
     // Check to see if sync is enabled
     if (tableData['DataStore']) {
@@ -145,7 +147,8 @@ export class AppSyncTransformer extends Construct {
     }
 
     this.tableNameMap = this.createTablesAndResolvers(tableData, resolvers);
-    this.createNoneDataSourceAndResolvers(this.outputs.NONE, resolvers);
+    
+    if (this.outputs.noneResolvers) this.createNoneDataSourceAndResolvers(this.outputs.noneResolvers, resolvers);
 
     // Outputs so we can generate exports
     new CfnOutput(scope, 'appsyncGraphQLEndpointOutput', {
@@ -154,10 +157,15 @@ export class AppSyncTransformer extends Construct {
     })
   }
 
-  private createNoneDataSourceAndResolvers(none: any, resolvers: any) {
+  /**
+   * Creates NONE data source and associated resolvers
+   * @param noneResolvers The resolvers that belong to the none data source
+   * @param resolvers The resolver map minus function resolvers
+   */
+  private createNoneDataSourceAndResolvers(noneResolvers: { [name: string]: CdkTransformerResolver }, resolvers: any) {
     const noneDataSource = this.appsyncAPI.addNoneDataSource('NONE');
 
-    Object.keys(none).forEach((resolverKey: any) => {
+    Object.keys(noneResolvers).forEach((resolverKey: any) => {
       const resolver = resolvers[resolverKey];
 
       new Resolver(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
@@ -171,7 +179,14 @@ export class AppSyncTransformer extends Construct {
     });
   }
 
-  private createTablesAndResolvers(tableData: any, resolvers: any) {
+  /**
+   * Creates each dynamodb table, gsis, dynamodb datasource, and associated resolvers
+   * If sync is enabled then TTL configuration is added
+   * Returns tableName: table map in case it is needed for lambda functions, etc
+   * @param tableData The CdkTransformer table information
+   * @param resolvers The resolver map minus function resolvers
+   */
+  private createTablesAndResolvers(tableData: { [name: string]: CdkTransformerTable }, resolvers: any): { [name: string]: string } {
     const tableNameMap: any = {};
 
     Object.keys(tableData).forEach((tableKey: any) => {
@@ -195,7 +210,7 @@ export class AppSyncTransformer extends Construct {
         dataSource.grantPrincipal.addToPolicy(new PolicyStatement({
           effect: Effect.ALLOW,
           actions: [
-            'dynamodb:*'
+            'dynamodb:*' // TODO: This may be too permissive
           ],
           resources: [
             this.syncTable.tableArn
@@ -207,7 +222,7 @@ export class AppSyncTransformer extends Construct {
       tableNameMap[tableKey] = dynamoDbConfig.tableName;
 
       // Loop the basic resolvers
-      tableData[tableKey].Resolvers.forEach((resolverKey: any) => {
+      tableData[tableKey].resolvers.forEach((resolverKey: any) => {
         let resolver = resolvers[resolverKey];
         new Resolver(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
           api: this.appsyncAPI,
@@ -220,7 +235,7 @@ export class AppSyncTransformer extends Construct {
       });
 
       // Loop the gsi resolvers
-      tableData[tableKey].GSIResolvers.forEach((resolverKey: any) => {
+      tableData[tableKey].gsiResolvers.forEach((resolverKey: any) => {
         let resolver = resolvers['gsi'][resolverKey];
         new Resolver(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
           api: this.appsyncAPI,
@@ -236,37 +251,37 @@ export class AppSyncTransformer extends Construct {
     return tableNameMap;
   }
 
-  private createTable(tableData: any) {
+  private createTable(tableData: CdkTransformerTable) {
     let tableProps: any = {
       billingMode: BillingMode.PAY_PER_REQUEST,
       partitionKey: {
-        name: tableData.PartitionKey.name,
-        type: this.convertAttributeType(tableData.PartitionKey.type)
+        name: tableData.partitionKey.name,
+        type: this.convertAttributeType(tableData.partitionKey.type)
       }
     };
 
-    if (tableData.SortKey && tableData.SortKey.name) {
+    if (tableData.sortKey && tableData.sortKey.name) {
       tableProps.sortKey = {
-        name: tableData.SortKey.name,
-        type: this.convertAttributeType(tableData.SortKey.type)
+        name: tableData.sortKey.name,
+        type: this.convertAttributeType(tableData.sortKey.type)
       };
     };
 
-    if (tableData.TTL && tableData.TTL.Enabled) {
-      tableProps.timeToLiveAttribute = tableData.TTL.AttributeName;
+    if (tableData.ttl && tableData.ttl.Enabled) {
+      tableProps.timeToLiveAttribute = tableData.ttl.AttributeName;
     }
 
-    let table = new Table(this.nestedAppsyncStack, tableData.TableName, tableProps);
+    const table = new Table(this.nestedAppsyncStack, tableData.tableName, tableProps);
 
-    if (tableData.GlobalSecondaryIndexes && tableData.GlobalSecondaryIndexes.length > 0) {
-      tableData.GlobalSecondaryIndexes.forEach((gsi: any) => {
+    if (tableData.globalSecondaryIndexes && tableData.globalSecondaryIndexes.length > 0) {
+      tableData.globalSecondaryIndexes.forEach((gsi: any) => {
         table.addGlobalSecondaryIndex({
-          indexName: gsi.IndexName,
+          indexName: gsi.indexName,
           partitionKey: {
-            name: gsi.PartitionKey.name,
-            type: this.convertAttributeType(gsi.PartitionKey.type)
+            name: gsi.partitionKey.name,
+            type: this.convertAttributeType(gsi.partitionKey.type)
           },
-          projectionType: this.convertProjectionType(gsi.Projection.ProjectionType)
+          projectionType: this.convertProjectionType(gsi.projection.ProjectionType)
         })
       })
     }
@@ -274,23 +289,27 @@ export class AppSyncTransformer extends Construct {
     return table;
   }
 
-  // https://docs.aws.amazon.com/appsync/latest/devguide/conflict-detection-and-sync.html
-  private createSyncTable(tableData: any) {
+  /**
+   * Creates the sync table for Amplify DataStore
+   * https://docs.aws.amazon.com/appsync/latest/devguide/conflict-detection-and-sync.html
+   * @param tableData The CdkTransformer table information
+   */
+  private createSyncTable(tableData: CdkTransformerTable): Table {
     return new Table(this, 'appsync-api-sync-table', {
       billingMode: BillingMode.PAY_PER_REQUEST,
       partitionKey: {
-        name: tableData.PartitionKey.name,
-        type: this.convertAttributeType(tableData.PartitionKey.type)
+        name: tableData.partitionKey.name,
+        type: this.convertAttributeType(tableData.partitionKey.type)
       },
       sortKey: {
-        name: tableData.SortKey.name,
-        type: this.convertAttributeType(tableData.SortKey.type)
+        name: tableData.sortKey!.name, // We know it has a sortkey because we forced it to
+        type: this.convertAttributeType(tableData.sortKey!.type) // We know it has a sortkey because we forced it to
       },
-      timeToLiveAttribute: tableData.TTL?.AttributeName || '_ttl'
+      timeToLiveAttribute: tableData.ttl?.AttributeName || '_ttl'
     })
   }
 
-  private convertAttributeType(type: string) {
+  private convertAttributeType(type: string): AttributeType {
     switch (type) {
       case 'N':
         return AttributeType.NUMBER
@@ -302,7 +321,7 @@ export class AppSyncTransformer extends Construct {
     }
   }
 
-  private convertProjectionType(type: string) {
+  private convertProjectionType(type: string): ProjectionType {
     switch (type) {
       case 'INCLUDE':
         return ProjectionType.INCLUDE
