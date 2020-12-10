@@ -30,6 +30,12 @@ export interface CdkTransformerResolver {
   readonly fieldName: string;
 }
 
+export interface CdkTransformerHttpResolver extends CdkTransformerResolver {
+  readonly httpConfig: any;
+  readonly defaultRequestMappingTemplate: string;
+  readonly defaultResponseMappingTemplate: string;
+}
+
 export interface CdkTransformerFunctionResolver extends CdkTransformerResolver {
   readonly defaultRequestMappingTemplate: string;
   readonly defaultResponseMappingTemplate: string;
@@ -39,6 +45,7 @@ export class CdkTransformer extends Transformer {
   tables: { [name: string]: CdkTransformerTable };
   noneDataSources: { [name: string]: CdkTransformerResolver };
   functionResolvers: { [name: string]: CdkTransformerFunctionResolver[] };
+  httpResolvers: { [name: string]: CdkTransformerHttpResolver[] };
   resolverTableMap: { [name: string]: string };
   gsiResolverTableMap: { [name: string]: string };
 
@@ -51,6 +58,7 @@ export class CdkTransformer extends Transformer {
     this.tables = {};
     this.noneDataSources = {};
     this.functionResolvers = {};
+    this.httpResolvers = {};
     this.resolverTableMap = {};
     this.gsiResolverTableMap = {};
   }
@@ -78,6 +86,9 @@ export class CdkTransformer extends Transformer {
 
     // @ts-ignore - we are overloading the use of outputs here...
     ctx.setOutput('functionResolvers', this.functionResolvers);
+
+    // @ts-ignore - we are overloading the use of outputs here...
+    ctx.setOutput('httpResolvers', this.httpResolvers);
 
     const query = ctx.getQuery();
     if (query) {
@@ -133,15 +144,37 @@ export class CdkTransformer extends Transformer {
             defaultResponseMappingTemplate: functionConfiguration.Properties?.ResponseMappingTemplate, // This should handle error messages
           });
         } else { // Should be a table/model resolver -> Maybe not true when we add in @searchable, etc
+          const dataSourceName = resource.Properties?.DataSourceName?.payload[0];
+          const dataSource = templateResources[dataSourceName];
+          const dataSourceType = dataSource.Properties?.Type;
+
           let typeName = resource.Properties?.TypeName;
           let fieldName = resource.Properties?.FieldName;
-          let tableName = resource.Properties?.DataSourceName?.payload[0];
-          tableName = tableName.replace('DataSource', 'Table');
 
-          if (graphqlTypeStatements.indexOf(typeName) >= 0) {
-            this.resolverTableMap[fieldName] = tableName;
-          } else { // this is a GSI
-            this.gsiResolverTableMap[`${typeName}${fieldName}`] = tableName;
+          switch (dataSourceType) {
+            case 'AMAZON_DYNAMODB':
+              let tableName = dataSourceName.replace('DataSource', 'Table');
+              if (graphqlTypeStatements.indexOf(typeName) >= 0) {
+                this.resolverTableMap[fieldName] = tableName;
+              } else { // this is a GSI
+                this.gsiResolverTableMap[`${typeName}${fieldName}`] = tableName;
+              }
+              break;
+            case 'HTTP':
+              const httpConfig = dataSource.Properties?.HttpConfig;
+              const endpoint = httpConfig.Endpoint;
+
+              if (!this.httpResolvers[endpoint]) this.httpResolvers[endpoint] = [];
+              this.httpResolvers[endpoint].push({
+                typeName,
+                fieldName,
+                httpConfig,
+                defaultRequestMappingTemplate: resource.Properties?.RequestMappingTemplate,
+                defaultResponseMappingTemplate: resource.Properties?.ResponseMappingTemplate,
+              });
+              break;
+            default:
+              throw new Error(`Unsupported Data Source Type: ${dataSourceType}`);
           }
         }
       }

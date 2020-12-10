@@ -14,6 +14,7 @@ Name|Description
 [AppSyncTransformerProps](#cdk-appsync-transformer-appsynctransformerprops)|*No description*
 [CdkTransformerFunctionResolver](#cdk-appsync-transformer-cdktransformerfunctionresolver)|*No description*
 [CdkTransformerGlobalSecondaryIndex](#cdk-appsync-transformer-cdktransformerglobalsecondaryindex)|*No description*
+[CdkTransformerHttpResolver](#cdk-appsync-transformer-cdktransformerhttpresolver)|*No description*
 [CdkTransformerResolver](#cdk-appsync-transformer-cdktransformerresolver)|*No description*
 [CdkTransformerTable](#cdk-appsync-transformer-cdktransformertable)|*No description*
 [CdkTransformerTableKey](#cdk-appsync-transformer-cdktransformertablekey)|*No description*
@@ -55,6 +56,7 @@ Name | Type | Description
 -----|------|-------------
 **appsyncAPI**🔹 | <code>[GraphqlApi](#aws-cdk-aws-appsync-graphqlapi)</code> | The cdk GraphqlApi construct.
 **functionResolvers**🔹 | <code>Map<string, Array<[CdkTransformerFunctionResolver](#cdk-appsync-transformer-cdktransformerfunctionresolver)>></code> | The Lambda Function resolvers designated by the function directive https://github.com/kcwinner/cdk-appsync-transformer#functions.
+**httpResolvers**🔹 | <code>Map<string, Array<[CdkTransformerHttpResolver](#cdk-appsync-transformer-cdktransformerhttpresolver)>></code> | <span></span>
 **nestedAppsyncStack**🔹 | <code>[NestedStack](#aws-cdk-core-nestedstack)</code> | The NestedStack that contains the AppSync resources.
 **outputs**🔹 | <code>[SchemaTransformerOutputs](#cdk-appsync-transformer-schematransformeroutputs)</code> | The outputs from the SchemaTransformer.
 **resolvers**🔹 | <code>any</code> | The AppSync resolvers from the transformer minus any function resolvers.
@@ -132,6 +134,23 @@ Name | Type | Description
 
 
 
+## struct CdkTransformerHttpResolver 🔹 <a id="cdk-appsync-transformer-cdktransformerhttpresolver"></a>
+
+
+
+
+
+
+Name | Type | Description 
+-----|------|-------------
+**defaultRequestMappingTemplate**🔹 | <code>string</code> | <span></span>
+**defaultResponseMappingTemplate**🔹 | <code>string</code> | <span></span>
+**fieldName**🔹 | <code>string</code> | <span></span>
+**httpConfig**🔹 | <code>any</code> | <span></span>
+**typeName**🔹 | <code>string</code> | <span></span>
+
+
+
 ## struct CdkTransformerResolver 🔹 <a id="cdk-appsync-transformer-cdktransformerresolver"></a>
 
 
@@ -190,6 +209,7 @@ Name | Type | Description
 -----|------|-------------
 **cdkTables**?🔹 | <code>Map<string, [CdkTransformerTable](#cdk-appsync-transformer-cdktransformertable)></code> | __*Optional*__
 **functionResolvers**?🔹 | <code>Map<string, Array<[CdkTransformerFunctionResolver](#cdk-appsync-transformer-cdktransformerfunctionresolver)>></code> | __*Optional*__
+**httpResolvers**?🔹 | <code>Map<string, Array<[CdkTransformerHttpResolver](#cdk-appsync-transformer-cdktransformerhttpresolver)>></code> | __*Optional*__
 **mutations**?🔹 | <code>Map<string, [CdkTransformerResolver](#cdk-appsync-transformer-cdktransformerresolver)></code> | __*Optional*__
 **noneResolvers**?🔹 | <code>Map<string, [CdkTransformerResolver](#cdk-appsync-transformer-cdktransformerresolver)></code> | __*Optional*__
 **queries**?🔹 | <code>Map<string, string></code> | __*Optional*__

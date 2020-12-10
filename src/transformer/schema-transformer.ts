@@ -3,11 +3,18 @@ import { normalize, join } from 'path';
 import { ModelAuthTransformer, ModelAuthTransformerConfig } from 'graphql-auth-transformer';
 import { ModelConnectionTransformer } from 'graphql-connection-transformer';
 import { DynamoDBModelTransformer } from 'graphql-dynamodb-transformer';
+import { HttpTransformer } from 'graphql-http-transformer';
 import { KeyTransformer } from 'graphql-key-transformer';
 import { GraphQLTransform, TransformConfig, TRANSFORM_CURRENT_VERSION, TRANSFORM_CONFIG_FILE_NAME, ConflictHandlerType } from 'graphql-transformer-core';
 import { VersionedModelTransformer } from 'graphql-versioned-transformer';
 
-import { CdkTransformer, CdkTransformerTable, CdkTransformerResolver, CdkTransformerFunctionResolver } from './cdk-transformer';
+import {
+  CdkTransformer,
+  CdkTransformerTable,
+  CdkTransformerResolver,
+  CdkTransformerFunctionResolver,
+  CdkTransformerHttpResolver,
+} from './cdk-transformer';
 
 // Rebuilt this from cloudform-types because it has type errors
 import { Resource } from './resource';
@@ -46,6 +53,7 @@ export interface SchemaTransformerOutputs {
   readonly cdkTables?: { [name: string]: CdkTransformerTable };
   readonly noneResolvers?: { [name: string]: CdkTransformerResolver };
   readonly functionResolvers?: { [name: string]: CdkTransformerFunctionResolver[] };
+  readonly httpResolvers?: { [name: string]: CdkTransformerHttpResolver[] };
   readonly queries?: { [name: string]: string };
   readonly mutations?: { [name: string]: CdkTransformerResolver };
   readonly subscriptions?: { [name: string]: CdkTransformerResolver };
@@ -109,6 +117,7 @@ export class SchemaTransformer {
         new KeyTransformer(),
         new ModelConnectionTransformer(),
         new ModelAuthTransformer(this.authTransformerConfig),
+        new HttpTransformer(),
         new CdkTransformer(),
       ],
     });
