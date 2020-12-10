@@ -1,11 +1,23 @@
-export * from './transformer/transformerTypes';
+export * from './transformer';
 
-import { GraphqlApi, AuthorizationType, FieldLogLevel, MappingTemplate, CfnDataSource, Resolver, AuthorizationConfig, Schema } from '@aws-cdk/aws-appsync';
+import {
+  GraphqlApi,
+  AuthorizationType,
+  FieldLogLevel,
+  MappingTemplate,
+  CfnDataSource,
+  Resolver,
+  AuthorizationConfig,
+  Schema,
+  DataSourceOptions,
+} from '@aws-cdk/aws-appsync';
+
 import { Table, AttributeType, ProjectionType, BillingMode } from '@aws-cdk/aws-dynamodb';
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam';
+import { IFunction } from '@aws-cdk/aws-lambda';
 import { Construct, NestedStack, CfnOutput } from '@aws-cdk/core';
 
-import { CdkTransformerResolver, CdkTransformerTable, SchemaTransformerOutputs } from './transformer';
+import { CdkTransformerResolver, CdkTransformerFunctionResolver, CdkTransformerTable, SchemaTransformerOutputs } from './transformer';
 import { SchemaTransformer, SchemaTransformerProps } from './transformer/schema-transformer';
 
 export interface AppSyncTransformerProps {
@@ -82,7 +94,7 @@ export class AppSyncTransformer extends Construct {
    * The Lambda Function resolvers designated by the function directive
    * https://github.com/kcwinner/cdk-appsync-transformer#functions
    */
-  public readonly functionResolvers: { [name: string]: CdkTransformerResolver[] };
+  public readonly functionResolvers: { [name: string]: CdkTransformerFunctionResolver[] };
 
   private isSyncEnabled: boolean
   private syncTable: Table | undefined
@@ -322,6 +334,29 @@ export class AppSyncTransformer extends Construct {
       case 'ALL': // Same as default
       default:
         return ProjectionType.ALL;
+    }
+  }
+
+  /**
+   * Adds the function as a lambdaDataSource to the AppSync api
+   * Adds all of the functions resolvers to the AppSync api
+   * @param functionName The function name specified in the @function directive of the schema
+   * @param id The id to give
+   * @param lambdaFunction The lambda function to attach
+   * @param options
+   */
+  public addLambdaDataSourceAndResolvers(functionName: string, id: string, lambdaFunction: IFunction, options?: DataSourceOptions) {
+    const functionDataSource = this.appsyncAPI.addLambdaDataSource(id, lambdaFunction, options);
+
+    for (const resolver of this.functionResolvers[functionName]) {
+      new Resolver(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
+        api: this.appsyncAPI,
+        typeName: resolver.typeName,
+        fieldName: resolver.fieldName,
+        dataSource: functionDataSource,
+        requestMappingTemplate: MappingTemplate.fromString(resolver.defaultRequestMappingTemplate),
+        responseMappingTemplate: MappingTemplate.fromString(resolver.defaultResponseMappingTemplate), // This defaults to allow errors to return to the client instead of throwing
+      });
     }
   }
 }

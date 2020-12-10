@@ -177,6 +177,10 @@ Often you will need to access your table names in a lambda function or elsewhere
 1. Pass `syncEnabled: true` to the `AppSyncTransformerProps`
 1. Generate necessary exports (see [Code Generation](#code-generation) below)
 
+### Cfn Outputs
+
+* `appsyncGraphQLEndpointOutput` - the appsync graphql endpoint
+
 ### Code Generation
 
 I've written some helpers to generate code similarly to how AWS Amplify generates statements and types. You can find the code [here](https://github.com/kcwinner/advocacy/tree/master/cdk-amplify-appsync-helpers).

@@ -1,8 +1,39 @@
 import { MappingTemplate } from '@aws-cdk/aws-appsync';
 import { Transformer, TransformerContext, getFieldArguments } from 'graphql-transformer-core';
-import { CdkTransformerTable, CdkTransformerResolver, CdkTransformerFunctionResolver } from './transformerTypes';
 
 const graphqlTypeStatements = ['Query', 'Mutation', 'Subscription'];
+
+export interface CdkTransformerTableKey {
+  readonly name: string;
+  readonly type: string;
+}
+
+export interface CdkTransformerGlobalSecondaryIndex {
+  readonly indexName: string;
+  readonly projection: any;
+  readonly partitionKey: CdkTransformerTableKey;
+  readonly sortKey: CdkTransformerTableKey;
+}
+
+export interface CdkTransformerTable {
+  readonly tableName: string;
+  readonly partitionKey: CdkTransformerTableKey;
+  readonly sortKey?: CdkTransformerTableKey;
+  readonly ttl?: any; // TODO: Figure this out
+  readonly globalSecondaryIndexes: CdkTransformerGlobalSecondaryIndex[];
+  readonly resolvers: string[];
+  readonly gsiResolvers: string[];
+}
+
+export interface CdkTransformerResolver {
+  readonly typeName: string;
+  readonly fieldName: string;
+}
+
+export interface CdkTransformerFunctionResolver extends CdkTransformerResolver {
+  readonly defaultRequestMappingTemplate: string;
+  readonly defaultResponseMappingTemplate: string;
+}
 
 export class CdkTransformer extends Transformer {
   tables: { [name: string]: CdkTransformerTable };

@@ -7,13 +7,12 @@ import { KeyTransformer } from 'graphql-key-transformer';
 import { GraphQLTransform, TransformConfig, TRANSFORM_CURRENT_VERSION, TRANSFORM_CONFIG_FILE_NAME, ConflictHandlerType } from 'graphql-transformer-core';
 import { VersionedModelTransformer } from 'graphql-versioned-transformer';
 
-// Import this way because FunctionTransformer.d.ts types were throwing an eror. And we didn't write this package so hope for the best :P
-import { CdkTransformer } from './cdk-transformer';
+import { CdkTransformer, CdkTransformerTable, CdkTransformerResolver, CdkTransformerFunctionResolver } from './cdk-transformer';
 
 // Rebuilt this from cloudform-types because it has type errors
 import { Resource } from './resource';
-import { SchemaTransformerOutputs } from './transformerTypes';
 
+// Import this way because FunctionTransformer.d.ts types were throwing an eror. And we didn't write this package so hope for the best :P
 // eslint-disable-next-line
 const { FunctionTransformer } = require('graphql-function-transformer');
 
@@ -41,6 +40,15 @@ export interface SchemaTransformerProps {
    * @default false
    */
   syncEnabled?: boolean;
+}
+
+export interface SchemaTransformerOutputs {
+  readonly cdkTables?: { [name: string]: CdkTransformerTable };
+  readonly noneResolvers?: { [name: string]: CdkTransformerResolver };
+  readonly functionResolvers?: { [name: string]: CdkTransformerFunctionResolver[] };
+  readonly queries?: { [name: string]: string };
+  readonly mutations?: { [name: string]: CdkTransformerResolver };
+  readonly subscriptions?: { [name: string]: CdkTransformerResolver };
 }
 
 export class SchemaTransformer {

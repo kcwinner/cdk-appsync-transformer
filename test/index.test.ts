@@ -2,6 +2,7 @@ import '@aws-cdk/assert/jest';
 import * as path from 'path';
 import { AuthorizationType, AuthorizationConfig, UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
 import { UserPool, UserPoolClient } from '@aws-cdk/aws-cognito';
+import { Runtime, Code, Function } from '@aws-cdk/aws-lambda';
 import { App, Stack } from '@aws-cdk/core';
 
 import { AppSyncTransformer } from '../src/index';
@@ -148,3 +149,41 @@ test('Function Resolvers Match', () => {
   const testFunctionResolvers = functionResolvers!['test-function']; // will fail above if does not exist
   expect(testFunctionResolvers.length).toEqual(4);
 });
+
+test('addLambdaDataSourceAndResolvers', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'user-pool-auth-stack');
+
+  const userPool = new UserPool(stack, 'test-userpool');
+  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+    userPool: userPool,
+  });
+
+  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+    schemaPath: testSchemaPath,
+    apiName: 'user-pool-auth-api',
+    authorizationConfig: {
+      defaultAuthorization: {
+        authorizationType: AuthorizationType.USER_POOL,
+        userPoolConfig: {
+          userPool: userPool,
+          appIdClientRegex: userPoolClient.userPoolClientId,
+          defaultAction: UserPoolDefaultAction.ALLOW,
+        },
+      },
+    },
+  });
+
+  // We don't really need this to work
+  const testFunction = new Function(stack, 'test-function', {
+    runtime: Runtime.NODEJS_12_X,
+    code: Code.fromInline('export function handler() { }'),
+    handler: 'handler',
+  });
+
+  appSyncTransformer.addLambdaDataSourceAndResolvers('test-function', 'test-data-source', testFunction);
+
+  // expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('');
+});
+
+
