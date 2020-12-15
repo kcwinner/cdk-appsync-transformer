@@ -907,14 +907,7 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@jsii/spec@^1.15.0", "@jsii/spec@^1.9.0":
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/@jsii/spec/-/spec-1.15.0.tgz#e7f3a18d231ef6d1826ce7257de7b2f6e2071f40"
-  integrity sha512-aybTXziVMQcCp2EGIMCJgAs4uvXtN/iBVeJMyBRzqznhtctG4flOu37FjIdib/OOJLrRLt4NAA95R5kNm/jLpA==
-  dependencies:
-    jsonschema "^1.4.0"
-
-"@jsii/spec@^1.16.0":
+"@jsii/spec@^1.15.0", "@jsii/spec@^1.16.0", "@jsii/spec@^1.9.0":
   version "1.16.0"
   resolved "https://registry.yarnpkg.com/@jsii/spec/-/spec-1.16.0.tgz#6d7c657ca6b6219f1d36f77486c184724f768958"
   integrity sha512-DH3rDGa781UmRtg/ykFyxrfhjaz1SRz2BblNXDxwArhl0aUiN5HOdzi9icX8CFwdB9+ZxTtXuxap3BwvLa5xnA==
@@ -4254,9 +4247,9 @@ jsii-diff@^1.16.0:
     yargs "^16.1.1"
 
 jsii-docgen@^1.4.114:
-  version "1.4.114"
-  resolved "https://registry.yarnpkg.com/jsii-docgen/-/jsii-docgen-1.4.114.tgz#9f5fb432d858e3ec017951fa017d752b0fe72e26"
-  integrity sha512-a7MFmPo/Y48AYJzGOxSAqNRJ3MwYuIrqGegOPb5wwXhyttm2H7muH3BYYn932LWEsUjNemmZoqmUhYeuM9OeAA==
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/jsii-docgen/-/jsii-docgen-1.5.2.tgz#dbcb80da8997c8904fd05a0aeef06314222165a3"
+  integrity sha512-LUTDly9FH7FamFFq6tG5X115+2rRY6o9DD9mBvzComHyVIQZkTQRoX7QR49YXOnsCFfrW+1VWQAs9pgaDG839A==
   dependencies:
     "@jsii/spec" "^1.9.0"
     fs-extra "^9.0.0"
@@ -4281,7 +4274,7 @@ jsii-pacmak@^1.16.0:
     xmlbuilder "^15.1.1"
     yargs "^16.1.1"
 
-jsii-reflect@^1.16.0:
+jsii-reflect@^1.16.0, jsii-reflect@^1.9.0:
   version "1.16.0"
   resolved "https://registry.yarnpkg.com/jsii-reflect/-/jsii-reflect-1.16.0.tgz#79e4d845078cf058524e560109d7cb01d3029b98"
   integrity sha512-1zxZwni5S9WUQrNJJA+fVVkd1s54u6fdxjuiHpkZUvxkcPUnsuurL8KWImMEvbdz5ykGHEmnjMOOiyRh/XEc2Q==
@@ -4290,17 +4283,6 @@ jsii-reflect@^1.16.0:
     colors "^1.4.0"
     fs-extra "^9.0.1"
     oo-ascii-tree "^1.16.0"
-    yargs "^16.1.1"
-
-jsii-reflect@^1.9.0:
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/jsii-reflect/-/jsii-reflect-1.15.0.tgz#a65297a581b2b7bfbaa213d0bca7f76c693f718e"
-  integrity sha512-8mKV5OVt/FwRdLNmr7By5T0HyhjjLlHsE5oiOta6NdkdMB7magjzZ1bucenJ2DdvPidX2dP6IDujfOKoXVNsjA==
-  dependencies:
-    "@jsii/spec" "^1.15.0"
-    colors "^1.4.0"
-    fs-extra "^9.0.1"
-    oo-ascii-tree "^1.15.0"
     yargs "^16.1.1"
 
 jsii-release@^0.2.7:
@@ -5048,11 +5030,6 @@ onetime@^5.1.0:
   integrity sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg==
   dependencies:
     mimic-fn "^2.1.0"
-
-oo-ascii-tree@^1.15.0:
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/oo-ascii-tree/-/oo-ascii-tree-1.15.0.tgz#51227b6a0a8a1c933afe312556c696058fcc32a3"
-  integrity sha512-FR8ygFwcH9DBkQIcp/lAe49EFcTNMGjU3jgAsRaZ8ktNVxDM9EszlLNEO1K10QTHZwT3iZxq+E+KwT811B4ayw==
 
 oo-ascii-tree@^1.16.0:
   version "1.16.0"
