@@ -46,6 +46,7 @@ new AppSyncTransformer(scope: Construct, id: string, props: AppSyncTransformerPr
   * **authorizationConfig** (<code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code>)  Optional. __*Default*__: API_KEY authorization config
   * **fieldLogLevel** (<code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code>)  Optional. __*Default*__: FieldLogLevel.NONE
   * **syncEnabled** (<code>boolean</code>)  Whether to enable Amplify DataStore and Sync Tables. __*Default*__: false
+  * **xrayEnabled** (<code>boolean</code>)  Determines whether xray should be enabled on the AppSync API. __*Default*__: false
 
 
 
@@ -99,6 +100,7 @@ Name | Type | Description
 **authorizationConfig**?🔹 | <code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code> | Optional.<br/>__*Default*__: API_KEY authorization config
 **fieldLogLevel**?🔹 | <code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code> | Optional.<br/>__*Default*__: FieldLogLevel.NONE
 **syncEnabled**?🔹 | <code>boolean</code> | Whether to enable Amplify DataStore and Sync Tables.<br/>__*Default*__: false
+**xrayEnabled**?🔹 | <code>boolean</code> | Determines whether xray should be enabled on the AppSync API.<br/>__*Default*__: false
 
 
 
