@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.77.3 (2020-12-17)
+
+
+### Bug Fixes
+
+* Add in new prop to support xray on appsync api ([#74](https://github.com/ken/cdk-appsync-transformer/issues/74)) ([af87250](https://github.com/ken/cdk-appsync-transformer/commit/af872503ff6c67a0bc887bbeb4720a7774d573be))
+
 ### 1.77.2 (2020-12-10)
 
 
