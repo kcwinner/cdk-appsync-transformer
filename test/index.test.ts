@@ -28,11 +28,13 @@ test('GraphQL API W/ Defaults Created', () => {
   const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
     schemaPath: testSchemaPath,
     authorizationConfig: apiKeyAuthorizationConfig,
+    xrayEnabled: false,
   });
 
   expect(stack).toHaveResource('AWS::CloudFormation::Stack');
   expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::GraphQLApi', {
     AuthenticationType: 'API_KEY',
+    XrayEnabled: false,
   });
 });
 
@@ -45,12 +47,14 @@ test('GraphQL API W/ Sync Created', () => {
     apiName: 'sync-api',
     authorizationConfig: apiKeyAuthorizationConfig,
     syncEnabled: true,
+    xrayEnabled: true,
   });
 
   expect(stack).toHaveResource('AWS::CloudFormation::Stack');
   expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::GraphQLApi', {
     AuthenticationType: 'API_KEY',
     Name: 'sync-api',
+    XrayEnabled: true,
   });
 });
 

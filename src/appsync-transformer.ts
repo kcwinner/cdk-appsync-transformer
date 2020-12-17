@@ -55,6 +55,12 @@ export interface AppSyncTransformerProps {
    * @default FieldLogLevel.NONE
    */
   readonly fieldLogLevel?: FieldLogLevel;
+
+  /**
+   * Determines whether xray should be enabled on the AppSync API
+   * @default false
+   */
+  readonly xrayEnabled?: boolean;
 }
 
 const defaultAuthorizationConfig: AuthorizationConfig = {
@@ -165,6 +171,7 @@ export class AppSyncTransformer extends Construct {
         fieldLogLevel: props.fieldLogLevel ? props.fieldLogLevel : FieldLogLevel.NONE,
       },
       schema: Schema.fromAsset('./appsync/schema.graphql'),
+      xrayEnabled: props.xrayEnabled ?? false,
     });
 
     let tableData = this.outputs.cdkTables ?? {};
