@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.77.4](https://github.com/ken/cdk-appsync-transformer/compare/v1.77.3...v1.77.4) (2020-12-29)
+
+
+### Bug Fixes
+
+* Adding community created ttl directive ([#86](https://github.com/ken/cdk-appsync-transformer/issues/86)) ([93b8e07](https://github.com/ken/cdk-appsync-transformer/commit/93b8e07d96a08841f1db293238c49539ae8c3413))
+
 ### 1.77.3 (2020-12-17)
 
 
