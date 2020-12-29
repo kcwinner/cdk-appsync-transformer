@@ -6,6 +6,7 @@ import { DynamoDBModelTransformer } from 'graphql-dynamodb-transformer';
 import { HttpTransformer } from 'graphql-http-transformer';
 import { KeyTransformer } from 'graphql-key-transformer';
 import { GraphQLTransform, TransformConfig, TRANSFORM_CURRENT_VERSION, TRANSFORM_CONFIG_FILE_NAME, ConflictHandlerType } from 'graphql-transformer-core';
+import TtlTransformer from 'graphql-ttl-transformer';
 import { VersionedModelTransformer } from 'graphql-versioned-transformer';
 
 import {
@@ -112,6 +113,7 @@ export class SchemaTransformer {
       transformConfig: transformConfig,
       transformers: [
         new DynamoDBModelTransformer(),
+        new TtlTransformer(),
         new VersionedModelTransformer(),
         new FunctionTransformer(),
         new KeyTransformer(),
