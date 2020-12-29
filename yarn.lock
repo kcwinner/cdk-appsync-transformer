@@ -998,7 +998,7 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
-"@types/deep-diff@*":
+"@types/deep-diff@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@types/deep-diff/-/deep-diff-1.0.0.tgz#7eba3202a99b3a207f758f351f7f86387269fc40"
   integrity sha512-ENsJcujGbCU/oXhDfQ12mSo/mCBWodT2tpARZKmatoSrf8+cGRCPi0KVj3I0FORhYZfLXkewXu7AoIWqiBLkNw==
