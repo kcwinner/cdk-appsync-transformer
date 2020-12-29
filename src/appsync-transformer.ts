@@ -304,8 +304,8 @@ export class AppSyncTransformer extends Construct {
       };
     };
 
-    if (tableData.ttl && tableData.ttl.Enabled) {
-      tableProps.timeToLiveAttribute = tableData.ttl.AttributeName;
+    if (tableData.ttl && tableData.ttl.enabled) {
+      tableProps.timeToLiveAttribute = tableData.ttl.attributeName;
     }
 
     const table = new Table(this.nestedAppsyncStack, tableData.tableName, tableProps);
@@ -342,7 +342,7 @@ export class AppSyncTransformer extends Construct {
         name: tableData.sortKey!.name, // We know it has a sortkey because we forced it to
         type: this.convertAttributeType(tableData.sortKey!.type), // We know it has a sortkey because we forced it to
       },
-      timeToLiveAttribute: tableData.ttl?.AttributeName || '_ttl',
+      timeToLiveAttribute: tableData.ttl?.attributeName || '_ttl',
     });
   }
 

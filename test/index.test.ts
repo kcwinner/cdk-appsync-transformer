@@ -2,6 +2,7 @@ import '@aws-cdk/assert/jest';
 import * as path from 'path';
 import { AuthorizationType, AuthorizationConfig, UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
 import { UserPool, UserPoolClient } from '@aws-cdk/aws-cognito';
+import { CfnTable } from '@aws-cdk/aws-dynamodb';
 import { Runtime, Code, Function } from '@aws-cdk/aws-lambda';
 import { App, Stack } from '@aws-cdk/core';
 
@@ -122,6 +123,21 @@ test('Model Tables Created', () => {
       Type: 'AMAZON_DYNAMODB',
     });
   }
+
+  // Make sure ttl is on Order table
+  const orderTable = appSyncTransformer.nestedAppsyncStack.node.findChild('OrderTable') as CfnTable;
+  expect(orderTable).toBeTruthy();
+
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+    KeySchema: [
+      { AttributeName: 'id', KeyType: 'HASH' },
+      { AttributeName: 'productID', KeyType: 'RANGE' },
+    ],
+    TimeToLiveSpecification: {
+      AttributeName: 'expirationUnixTime',
+      Enabled: true,
+    },
+  });
 });
 
 test('HTTP Resolvers Match', () => {

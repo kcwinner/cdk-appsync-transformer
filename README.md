@@ -74,13 +74,15 @@ Tested:
 * [@model](https://docs.amplify.aws/cli/graphql-transformer/directives#model)
 * [@auth](https://docs.amplify.aws/cli/graphql-transformer/directives#auth)
 * [@connection](https://docs.amplify.aws/cli/graphql-transformer/directives#connection)
-
-Experimental:
 * [@key](https://docs.amplify.aws/cli/graphql-transformer/directives#key)
-* [@versioned](https://docs.amplify.aws/cli/graphql-transformer/directives#versioned)
 * [@function](https://docs.amplify.aws/cli/graphql-transformer/directives#function)
   * These work differently here than they do in Amplify - see [Functions](#functions) below
+
+Experimental:
+* [@versioned](https://docs.amplify.aws/cli/graphql-transformer/directives#versioned)
 * [@http](https://docs.amplify.aws/cli/graphql-transformer/directives#http)
+* [@ttl](https://github.com/flogy/graphql-ttl-transformer)
+  * Community directive transformer
 
 Not Yet Supported:
 * [@searchable](https://docs.amplify.aws/cli/graphql-transformer/directives#searchable)

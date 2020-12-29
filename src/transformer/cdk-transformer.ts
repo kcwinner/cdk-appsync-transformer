@@ -15,11 +15,16 @@ export interface CdkTransformerGlobalSecondaryIndex {
   readonly sortKey: CdkTransformerTableKey;
 }
 
+export interface CdkTransformerTableTtl {
+  readonly attributeName: string;
+  readonly enabled: boolean;
+}
+
 export interface CdkTransformerTable {
   readonly tableName: string;
   readonly partitionKey: CdkTransformerTableKey;
   readonly sortKey?: CdkTransformerTableKey;
-  readonly ttl?: any; // TODO: Figure this out
+  readonly ttl?: CdkTransformerTableTtl;
   readonly globalSecondaryIndexes: CdkTransformerGlobalSecondaryIndex[];
   readonly resolvers: string[];
   readonly gsiResolvers: string[];
@@ -189,11 +194,19 @@ export class CdkTransformer extends Transformer {
 
     const keys = this.parseKeySchema(keySchema, attributeDefinitions);
 
+    let ttl = tableResource?.Properties?.TimeToLiveSpecification;
+    if (ttl) {
+      ttl = {
+        attributeName: ttl.AttributeName,
+        enabled: ttl.Enabled,
+      };
+    }
+
     let table: CdkTransformerTable = {
       tableName: resourceName,
       partitionKey: keys.partitionKey,
       sortKey: keys.sortKey,
-      ttl: tableResource?.Properties?.TimeToLiveSpecification,
+      ttl: ttl,
       globalSecondaryIndexes: [],
       resolvers: [],
       gsiResolvers: [],
