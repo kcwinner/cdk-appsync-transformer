@@ -2,9 +2,10 @@ export {
   CdkTransformerResolver,
   CdkTransformerFunctionResolver,
   CdkTransformerHttpResolver,
-  CdkTransformerTable,
   CdkTransformerGlobalSecondaryIndex,
+  CdkTransformerTable,
   CdkTransformerTableKey,
+  CdkTransformerTableTtl,
   SchemaTransformerOutputs,
 } from './transformer';
 

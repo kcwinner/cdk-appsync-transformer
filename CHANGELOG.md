@@ -5,14 +5,14 @@ All notable changes to this project will be documented in this file. See [standa
 ### 1.77.3 (2020-12-17)
 
 
-### Bug Fixes
+### Features
 
 * Add in new prop to support xray on appsync api ([#74](https://github.com/ken/cdk-appsync-transformer/issues/74)) ([af87250](https://github.com/ken/cdk-appsync-transformer/commit/af872503ff6c67a0bc887bbeb4720a7774d573be))
 
 ### 1.77.2 (2020-12-10)
 
 
-### Bug Fixes
+### Features
 
 * adding in [@http](https://github.com/http) directive support ([#65](https://github.com/ken/cdk-appsync-transformer/issues/65)) ([edc0a78](https://github.com/ken/cdk-appsync-transformer/commit/edc0a78c3db5d964eed23323c3b0b33219bd235f))
 

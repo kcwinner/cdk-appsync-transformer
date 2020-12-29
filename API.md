@@ -18,6 +18,7 @@ Name|Description
 [CdkTransformerResolver](#cdk-appsync-transformer-cdktransformerresolver)|*No description*
 [CdkTransformerTable](#cdk-appsync-transformer-cdktransformertable)|*No description*
 [CdkTransformerTableKey](#cdk-appsync-transformer-cdktransformertablekey)|*No description*
+[CdkTransformerTableTtl](#cdk-appsync-transformer-cdktransformertablettl)|*No description*
 [SchemaTransformerOutputs](#cdk-appsync-transformer-schematransformeroutputs)|*No description*
 
 
@@ -182,7 +183,7 @@ Name | Type | Description
 **resolvers**🔹 | <code>Array<string></code> | <span></span>
 **tableName**🔹 | <code>string</code> | <span></span>
 **sortKey**?🔹 | <code>[CdkTransformerTableKey](#cdk-appsync-transformer-cdktransformertablekey)</code> | __*Optional*__
-**ttl**?🔹 | <code>any</code> | __*Optional*__
+**ttl**?🔹 | <code>[CdkTransformerTableTtl](#cdk-appsync-transformer-cdktransformertablettl)</code> | __*Optional*__
 
 
 
@@ -197,6 +198,20 @@ Name | Type | Description
 -----|------|-------------
 **name**🔹 | <code>string</code> | <span></span>
 **type**🔹 | <code>string</code> | <span></span>
+
+
+
+## struct CdkTransformerTableTtl 🔹 <a id="cdk-appsync-transformer-cdktransformertablettl"></a>
+
+
+
+
+
+
+Name | Type | Description 
+-----|------|-------------
+**attributeName**🔹 | <code>string</code> | <span></span>
+**enabled**🔹 | <code>boolean</code> | <span></span>
 
 
 

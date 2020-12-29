@@ -33,6 +33,7 @@ type Order @model
         productID: ID!
         total: String!
         ordered: AWSDateTime!
+        expirationUnixTime: AWSTimestamp! @ttl
 }
 
 type Blog @model {
