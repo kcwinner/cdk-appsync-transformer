@@ -57,7 +57,7 @@ const project = new AwsCdkConstructLibrary({
     'ts-jest',
   ],
   bundledDeps: [
-    'graphql',
+    'graphql@^14.5.8',
     'graphql-auth-transformer',
     'graphql-connection-transformer',
     'graphql-dynamodb-transformer',
