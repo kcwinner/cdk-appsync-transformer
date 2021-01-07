@@ -2,7 +2,7 @@
   "name": "cdk-appsync-transformer",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ken/cdk-appsync-transformer.git"
+    "url": "https://github.com/kcwinner/cdk-appsync-transformer.git"
   },
   "scripts": {
     "projen": "npx projen",
