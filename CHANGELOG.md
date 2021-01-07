@@ -2,33 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [1.77.5](https://github.com/ken/cdk-appsync-transformer/compare/v1.77.4...v1.77.5) (2021-01-07)
+### [1.77.5](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.4...v1.77.5) (2021-01-07)
 
 
-### Bug Fixes
+### Features
 
-* allow additional custom pre/post transformers ([#102](https://github.com/ken/cdk-appsync-transformer/issues/102)) ([913f4fb](https://github.com/ken/cdk-appsync-transformer/commit/913f4fb2abc19a5087a5dcf74e10ade6992c1a6d))
+* allow additional custom pre/post transformers ([#102](https://github.com/kcwinner/cdk-appsync-transformer/issues/102)) ([913f4fb](https://github.com/kcwinner/cdk-appsync-transformer/commit/913f4fb2abc19a5087a5dcf74e10ade6992c1a6d))
 
-### [1.77.4](https://github.com/ken/cdk-appsync-transformer/compare/v1.77.3...v1.77.4) (2020-12-29)
+### [1.77.4](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.3...v1.77.4) (2020-12-29)
 
 
-### Bug Fixes
+### Features
 
-* Adding community created ttl directive ([#86](https://github.com/ken/cdk-appsync-transformer/issues/86)) ([93b8e07](https://github.com/ken/cdk-appsync-transformer/commit/93b8e07d96a08841f1db293238c49539ae8c3413))
+* Adding community created ttl directive ([#86](https://github.com/kcwinner/cdk-appsync-transformer/issues/86)) ([93b8e07](https://github.com/kcwinner/cdk-appsync-transformer/commit/93b8e07d96a08841f1db293238c49539ae8c3413))
 
 ### 1.77.3 (2020-12-17)
 
 
 ### Features
 
-* Add in new prop to support xray on appsync api ([#74](https://github.com/ken/cdk-appsync-transformer/issues/74)) ([af87250](https://github.com/ken/cdk-appsync-transformer/commit/af872503ff6c67a0bc887bbeb4720a7774d573be))
+* Add in new prop to support xray on appsync api ([#74](https://github.com/kcwinner/cdk-appsync-transformer/issues/74)) ([af87250](https://github.com/kcwinner/cdk-appsync-transformer/commit/af872503ff6c67a0bc887bbeb4720a7774d573be))
 
 ### 1.77.2 (2020-12-10)
 
 
 ### Features
 
-* adding in [@http](https://github.com/http) directive support ([#65](https://github.com/ken/cdk-appsync-transformer/issues/65)) ([edc0a78](https://github.com/ken/cdk-appsync-transformer/commit/edc0a78c3db5d964eed23323c3b0b33219bd235f))
+* adding in [@http](https://github.com/http) directive support ([#65](https://github.com/kcwinner/cdk-appsync-transformer/issues/65)) ([edc0a78](https://github.com/kcwinner/cdk-appsync-transformer/commit/edc0a78c3db5d964eed23323c3b0b33219bd235f))
 
 ### 1.77.1 (2020-12-10)
 
@@ -53,63 +53,63 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* bump cdk version ^1.77.0 ([#58](https://github.com/ken/cdk-appsync-transformer/issues/58)) ([5bc0dae](https://github.com/ken/cdk-appsync-transformer/commit/5bc0daea7498dc096391b2d1acfcf8d17a9f5dd3))
+* bump cdk version ^1.77.0 ([#58](https://github.com/kcwinner/cdk-appsync-transformer/issues/58)) ([5bc0dae](https://github.com/kcwinner/cdk-appsync-transformer/commit/5bc0daea7498dc096391b2d1acfcf8d17a9f5dd3))
 
 ## 1.76.0 (2020-12-09)
 
 
 ### Features
 
-* bump cdk version 1.76.0 ([#57](https://github.com/ken/cdk-appsync-transformer/issues/57)) ([88ec501](https://github.com/ken/cdk-appsync-transformer/commit/88ec501a6eac2ff9e03b6a07c5e1a158521b4c62))
+* bump cdk version 1.76.0 ([#57](https://github.com/kcwinner/cdk-appsync-transformer/issues/57)) ([88ec501](https://github.com/kcwinner/cdk-appsync-transformer/commit/88ec501a6eac2ff9e03b6a07c5e1a158521b4c62))
 
 ## 1.75.0 (2020-12-09)
 
 
 ### Features
 
-* bump cdk version to 1.75.0 ([#56](https://github.com/ken/cdk-appsync-transformer/issues/56)) ([9ce67e7](https://github.com/ken/cdk-appsync-transformer/commit/9ce67e7f390205bf37d8f0b4a30cbf0172faced1))
+* bump cdk version to 1.75.0 ([#56](https://github.com/kcwinner/cdk-appsync-transformer/issues/56)) ([9ce67e7](https://github.com/kcwinner/cdk-appsync-transformer/commit/9ce67e7f390205bf37d8f0b4a30cbf0172faced1))
 
 ## 1.74.0 (2020-12-09)
 
 
 ### Features
 
-* bump cdk version to 1.74 ([#55](https://github.com/ken/cdk-appsync-transformer/issues/55)) ([4ef13a4](https://github.com/ken/cdk-appsync-transformer/commit/4ef13a43f69bbcdddf47c71864d64e5d24b6c474))
+* bump cdk version to 1.74 ([#55](https://github.com/kcwinner/cdk-appsync-transformer/issues/55)) ([4ef13a4](https://github.com/kcwinner/cdk-appsync-transformer/commit/4ef13a43f69bbcdddf47c71864d64e5d24b6c474))
 
 ## 1.73.0 (2020-12-09)
 
 
 ### Features
 
-* bump cdk version to 1.73.0 ([#54](https://github.com/ken/cdk-appsync-transformer/issues/54)) ([0be9665](https://github.com/ken/cdk-appsync-transformer/commit/0be966528b51e86307e2f567e8e661b54e786a47))
+* bump cdk version to 1.73.0 ([#54](https://github.com/kcwinner/cdk-appsync-transformer/issues/54)) ([0be9665](https://github.com/kcwinner/cdk-appsync-transformer/commit/0be966528b51e86307e2f567e8e661b54e786a47))
 
 ## 1.72.0 (2020-12-09)
 
 
 ### Features
 
-* bump cdk version to 1.72.0 ([#53](https://github.com/ken/cdk-appsync-transformer/issues/53)) ([c3dce49](https://github.com/ken/cdk-appsync-transformer/commit/c3dce49b2e1cae50fa05cd73cd3d6ec4dff6e2e8))
+* bump cdk version to 1.72.0 ([#53](https://github.com/kcwinner/cdk-appsync-transformer/issues/53)) ([c3dce49](https://github.com/kcwinner/cdk-appsync-transformer/commit/c3dce49b2e1cae50fa05cd73cd3d6ec4dff6e2e8))
 
 ## 1.71.0 (2020-12-08)
 
 
 ### Features
 
-* Bump cdk version to 1.71.0 ([34720a4](https://github.com/ken/cdk-appsync-transformer/commit/34720a4dea6314570f734fb674ad93852933305f))
+* Bump cdk version to 1.71.0 ([34720a4](https://github.com/kcwinner/cdk-appsync-transformer/commit/34720a4dea6314570f734fb674ad93852933305f))
 
 ### 1.70.1 (2020-11-29)
 
 
 ### Bug Fixes
 
-* fixing the cdk transformer so that it won't operate on null fields ([#45](https://github.com/ken/cdk-appsync-transformer/issues/45)) ([b181070](https://github.com/ken/cdk-appsync-transformer/commit/b1810709c63da24f0b810b89866bf0c225047d4b))
+* fixing the cdk transformer so that it won't operate on null fields ([#45](https://github.com/kcwinner/cdk-appsync-transformer/issues/45)) ([b181070](https://github.com/kcwinner/cdk-appsync-transformer/commit/b1810709c63da24f0b810b89866bf0c225047d4b))
 
 ## 1.70.0 (2020-11-29)
 
 
 ### Features
 
-* bumping cdk version to 1.70.0 ([#44](https://github.com/ken/cdk-appsync-transformer/issues/44)) ([46346e5](https://github.com/ken/cdk-appsync-transformer/commit/46346e5d64c3bcacab4fe6f8c9a34b97f3a15216))
+* bumping cdk version to 1.70.0 ([#44](https://github.com/kcwinner/cdk-appsync-transformer/issues/44)) ([46346e5](https://github.com/kcwinner/cdk-appsync-transformer/commit/46346e5d64c3bcacab4fe6f8c9a34b97f3a15216))
 
 ### 1.68.1 (2020-11-29)
 
@@ -118,7 +118,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* bumping cdk version to 1.68.0 ([#42](https://github.com/ken/cdk-appsync-transformer/issues/42)) ([f6bb045](https://github.com/ken/cdk-appsync-transformer/commit/f6bb0454c796fda107cca1011677c4ea160a3439))
+* bumping cdk version to 1.68.0 ([#42](https://github.com/kcwinner/cdk-appsync-transformer/issues/42)) ([f6bb045](https://github.com/kcwinner/cdk-appsync-transformer/commit/f6bb0454c796fda107cca1011677c4ea160a3439))
 
 ## 1.67.0 (2020-11-29)
 

@@ -4,7 +4,7 @@ const project = new AwsCdkConstructLibrary({
   authorAddress: 'kcswinner@gmail.com',
   authorName: 'Ken Winner',
   name: 'cdk-appsync-transformer',
-  repository: 'https://github.com/ken/cdk-appsync-transformer.git',
+  repository: 'https://github.com/kcwinner/cdk-appsync-transformer.git',
   stability: 'experimental',
   catalog: {
     twitter: 'KenWin0x539',
