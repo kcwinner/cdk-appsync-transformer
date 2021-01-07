@@ -1,0 +1,14 @@
+type Query {
+    listCustomTransformHandling: CustomTransformHandling
+        @http(url: "https://jsonplaceholder.typicode.com/todos/:id")
+        @mapped(
+            mappings: [
+                {to: "fooBar", from: "foo_bar"}
+            ]
+        )
+}
+
+# Demonstrate custom transform handling
+type CustomTransformHandling {
+  fooBar: String
+}
