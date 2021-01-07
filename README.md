@@ -88,6 +88,27 @@ Not Yet Supported:
 * [@searchable](https://docs.amplify.aws/cli/graphql-transformer/directives#searchable)
 * [@predictions](https://docs.amplify.aws/cli/graphql-transformer/directives#predictions)
 
+### Custom Transformers & Directives
+
+*This is an advanced feature*
+
+It is possible to add pre/post custom transformers that extend the Amplify ITransformer. To see a simple example please look at [mapped-transformer.ts](./test/mappedTransformer/mapped-transformer.ts) in the tests section.
+
+This allows you to modify the data either before or after the [cdk-transformer](./src/transformer/cdk-transformer.ts) is run.
+
+```ts
+import { PreTransformer, PostTransformer } from './customTransformers';
+new AppSyncTransformer(this, "my-cool-api", {
+    schemaPath: 'schema.graphql',
+    preCdkTransformers: [
+      new PreTransformer(),
+    ],
+    postCdkTransformers: [
+      new PostTransformer(),
+    ]
+});
+```
+
 ### Authentication
 
 User Pool Authentication
@@ -210,6 +231,6 @@ See [CONTRIBUTING](CONTRIBUTING.md) for details
 Distributed under [Apache License, Version 2.0](LICENSE)
 
 ## References
-* [aws cdk]: https://aws.amazon.com/cdk
+* [aws cdk](https://aws.amazon.com/cdk)
 * [amplify-cli](https://github.com/aws-amplify/amplify-cli)
 * [Amplify Directives](https://docs.amplify.aws/cli/graphql-transformer/directives)
