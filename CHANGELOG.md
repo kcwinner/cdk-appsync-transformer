@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.77.5](https://github.com/ken/cdk-appsync-transformer/compare/v1.77.4...v1.77.5) (2021-01-07)
+
+
+### Bug Fixes
+
+* allow additional custom pre/post transformers ([#102](https://github.com/ken/cdk-appsync-transformer/issues/102)) ([913f4fb](https://github.com/ken/cdk-appsync-transformer/commit/913f4fb2abc19a5087a5dcf74e10ade6992c1a6d))
+
 ### [1.77.4](https://github.com/ken/cdk-appsync-transformer/compare/v1.77.3...v1.77.4) (2020-12-29)
 
 
