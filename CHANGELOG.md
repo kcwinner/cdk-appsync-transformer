@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.77.7](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.6...v1.77.7) (2021-01-09)
+
+
+### Bug Fixes
+
+* Fixes the [ITransformer] props issue ([#110](https://github.com/kcwinner/cdk-appsync-transformer/issues/110)) ([b867951](https://github.com/kcwinner/cdk-appsync-transformer/commit/b86795168ef231c64bfb6e5bb4304eb093c647fb))
+
 ### [1.77.6](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.5...v1.77.6) (2021-01-07)
 
 
