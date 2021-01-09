@@ -47,7 +47,7 @@
     "jsii-pacmak": "^1.16.0",
     "jsii-release": "^0.2.10",
     "json-schema": "^0.3.0",
-    "projen": "^0.14.3",
+    "projen": "^0.14.4",
     "standard-version": "^9.0.0",
     "ts-jest": "^26.4.4",
     "typescript": "^4.1.2"
@@ -69,16 +69,16 @@
     "@aws-cdk/aws-lambda": "^1.77.0",
     "@aws-cdk/core": "^1.77.0",
     "graphql": "^14.5.8",
-    "graphql-auth-transformer": "6.23.2",
-    "graphql-connection-transformer": "4.19.4",
-    "graphql-dynamodb-transformer": "6.21.4",
-    "graphql-function-transformer": "2.4.4",
-    "graphql-http-transformer": "4.16.4",
-    "graphql-key-transformer": "2.20.4",
-    "graphql-mapping-template": "4.18.1",
-    "graphql-relational-schema-transformer": "2.16.1",
-    "graphql-transformer-common": "4.18.1",
-    "graphql-transformer-core": "6.25.1",
+    "graphql-auth-transformer": "^6.23.2",
+    "graphql-connection-transformer": "^4.19.4",
+    "graphql-dynamodb-transformer": "^6.21.4",
+    "graphql-function-transformer": "^2.4.4",
+    "graphql-http-transformer": "^4.16.4",
+    "graphql-key-transformer": "^2.20.4",
+    "graphql-mapping-template": "^4.18.1",
+    "graphql-relational-schema-transformer": "^2.16.1",
+    "graphql-transformer-common": "^4.18.1",
+    "graphql-transformer-core": "^6.25.1",
     "graphql-ttl-transformer": "^1.1.0",
     "graphql-versioned-transformer": "4.16.4"
   },
@@ -107,6 +107,9 @@
   "license": "Apache-2.0",
   "version": "1.77.6",
   "jest": {
+    "testPathIgnorePatterns": [
+      "<rootDir>/test/mappedTransformer"
+    ],
     "testMatch": [
       "**/__tests__/**/*.ts?(x)",
       "**/?(*.)+(spec|test).ts?(x)"
@@ -121,10 +124,7 @@
     ],
     "coverageDirectory": "coverage",
     "coveragePathIgnorePatterns": [
-      "/node_modules/"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/"
+      "<rootDir>/test/mappedTransformer"
     ],
     "watchPathIgnorePatterns": [
       "/node_modules/"

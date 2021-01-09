@@ -25,6 +25,7 @@ export class MappedTransformer extends Transformer {
       `,
     );
   }
+
   public field = (
     parent: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
     field: FieldDefinitionNode,
@@ -35,10 +36,11 @@ export class MappedTransformer extends Transformer {
     const fieldName = field.name.value;
     const templateResources = acc.template.Resources;
     if (!templateResources) return;
+
     for (const [_, resource] of Object.entries(templateResources)) {
       if (resource.Type === 'AWS::AppSync::Resolver' && resource.Properties?.FieldName === fieldName) {
         const logicalResourceId = ResolverResourceIDs.ResolverResourceID(parent.name.value, field.name.value);
-        const mappings: { to: string; from: string}[] = getDirectiveArgument(directive, 'mappings');
+        const mappings: { to: string; from: string }[] = getDirectiveArgument(directive, 'mappings');
 
         for (const mapping of mappings) {
           const snippet: string = this.createSingleFieldVTLSnippet(mapping.to, mapping.from);

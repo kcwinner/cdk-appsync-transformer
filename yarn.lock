@@ -3190,7 +3190,7 @@ graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.0, graceful-fs@^4.2.4:
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.4.tgz#2256bde14d3632958c465ebc96dc467ca07a29fb"
   integrity sha512-WjKPNJF79dtJAVniUlGGWHYGz2jWxT6VhN/4m1NdkbZ2nOsEF+cI1Edgql5zCRhs/VsQYRvrXctxktVXZUkixw==
 
-graphql-auth-transformer@6.23.2:
+graphql-auth-transformer@^6.23.2:
   version "6.23.2"
   resolved "https://registry.yarnpkg.com/graphql-auth-transformer/-/graphql-auth-transformer-6.23.2.tgz#bc067fe637c25c148c92844603ef2ef712e4ca0f"
   integrity sha512-ga5myVZgLFt8CHQ5bARd6vaNIuODz6LDKEVDNR/zOd8UzZNocEAskuNLvA40WcD8z8mkqzsCh7QYf8MDtYMQfw==
@@ -3201,7 +3201,7 @@ graphql-auth-transformer@6.23.2:
     graphql-transformer-common "4.18.1"
     graphql-transformer-core "6.25.1"
 
-graphql-connection-transformer@4.19.4:
+graphql-connection-transformer@4.19.4, graphql-connection-transformer@^4.19.4:
   version "4.19.4"
   resolved "https://registry.yarnpkg.com/graphql-connection-transformer/-/graphql-connection-transformer-4.19.4.tgz#fd27826978c401057e305a45c8c85a34ade002ba"
   integrity sha512-/YXzaqHQkYCXGGLMMBPc78oCc72qNjXx9AjcgYRc00kU2TITNvDS97Abahg1X5nTGac8ZCc2h/Z3tCwIw6S1Bw==
@@ -3214,7 +3214,7 @@ graphql-connection-transformer@4.19.4:
     graphql-transformer-common "4.18.1"
     graphql-transformer-core "6.25.1"
 
-graphql-dynamodb-transformer@6.21.4:
+graphql-dynamodb-transformer@6.21.4, graphql-dynamodb-transformer@^6.21.4:
   version "6.21.4"
   resolved "https://registry.yarnpkg.com/graphql-dynamodb-transformer/-/graphql-dynamodb-transformer-6.21.4.tgz#360a09d056572bf07b44d66083e2e7f088252d1d"
   integrity sha512-HyrPR3j5nqueQ575u+jcovQkJ/81K0rK1W6uYymLgSPG9+Hq11Eu+6LZFm5g/6YLqB5V1DwHUR04XAlkIjle0w==
@@ -3228,7 +3228,7 @@ graphql-dynamodb-transformer@6.21.4:
     md5 "^2.2.1"
     pluralize "^8.0.0"
 
-graphql-function-transformer@2.4.4:
+graphql-function-transformer@^2.4.4:
   version "2.4.4"
   resolved "https://registry.yarnpkg.com/graphql-function-transformer/-/graphql-function-transformer-2.4.4.tgz#dfdee0745154134f980e9e5c0609d86743d0b303"
   integrity sha512-X1O0nPVpOy9CXjj0ZNMb0reAuwf1CokO+N+ralNIshElmK5714eyqSpswWIZW3ZO/Cez0tfAjZhJSX8QmN3qVg==
@@ -3239,7 +3239,7 @@ graphql-function-transformer@2.4.4:
     graphql-transformer-common "4.18.1"
     graphql-transformer-core "6.25.1"
 
-graphql-http-transformer@4.16.4:
+graphql-http-transformer@^4.16.4:
   version "4.16.4"
   resolved "https://registry.yarnpkg.com/graphql-http-transformer/-/graphql-http-transformer-4.16.4.tgz#db201b6d766b24b615b25ff8f48b7877943855cb"
   integrity sha512-3UrIVCGFUgDFZBmdReOuU+eGOvfOj/h1IxzSyzfa8qINlZYsgSX7xh4ZRJKaFErkNs1LFF/CXoftguqSrYK/Mw==
@@ -3250,7 +3250,7 @@ graphql-http-transformer@4.16.4:
     graphql-transformer-common "4.18.1"
     graphql-transformer-core "6.25.1"
 
-graphql-key-transformer@2.20.4:
+graphql-key-transformer@2.20.4, graphql-key-transformer@^2.20.4:
   version "2.20.4"
   resolved "https://registry.yarnpkg.com/graphql-key-transformer/-/graphql-key-transformer-2.20.4.tgz#93efd43552029a4aec2473b62a2b9725d0ae6759"
   integrity sha512-6lv1PfE7IB3cDrfs8OvJDvWzQUHZTUE40jF0DhoSW4n9Rjc6mxlzANtLjsQAht0ZDPbZXs4w+eGN3Boi0uRT9Q==
@@ -3262,12 +3262,12 @@ graphql-key-transformer@2.20.4:
     graphql-transformer-common "4.18.1"
     graphql-transformer-core "6.25.1"
 
-graphql-mapping-template@4.18.1:
+graphql-mapping-template@4.18.1, graphql-mapping-template@^4.18.1:
   version "4.18.1"
   resolved "https://registry.yarnpkg.com/graphql-mapping-template/-/graphql-mapping-template-4.18.1.tgz#e78fde27876e1fa50554959ab4c7c4baa777a40d"
   integrity sha512-4pHeRVe8hKPC1ww30+54T8He388mtF27E5GGjK+19y2651F1sB8jYejII3Wr3HhmDosCxdzv+8v3gOYL9oOh7Q==
 
-graphql-relational-schema-transformer@2.16.1:
+graphql-relational-schema-transformer@^2.16.1:
   version "2.16.1"
   resolved "https://registry.yarnpkg.com/graphql-relational-schema-transformer/-/graphql-relational-schema-transformer-2.16.1.tgz#e2e4c934df8866de008246ad7fe71da399c376b5"
   integrity sha512-o6miI8FFXcNgjs6uuJnzhUlCZ2TQAd6MtgJFqQMMX8s4FDJ/i1NQ8zu+saUpaoIcNQA9v5ZiEIuzv284BROxQA==
@@ -3279,7 +3279,7 @@ graphql-relational-schema-transformer@2.16.1:
     graphql-mapping-template "4.18.1"
     graphql-transformer-common "4.18.1"
 
-graphql-transformer-common@4.18.1, graphql-transformer-common@^4.17.11:
+graphql-transformer-common@4.18.1, graphql-transformer-common@^4.17.11, graphql-transformer-common@^4.18.1:
   version "4.18.1"
   resolved "https://registry.yarnpkg.com/graphql-transformer-common/-/graphql-transformer-common-4.18.1.tgz#35fedb372afcc3db47593c2d1a499a2107ef8c36"
   integrity sha512-Fn/rsDHYDPboBw76bp+EqPI7ClPEg0vjaKabGvVQQQfFFc1heTsuu/8ZChMU5Hear+ylzBjyejrmYgRqar+z7g==
@@ -3288,7 +3288,7 @@ graphql-transformer-common@4.18.1, graphql-transformer-common@^4.17.11:
     graphql-mapping-template "4.18.1"
     md5 "^2.2.1"
 
-graphql-transformer-core@6.25.1, graphql-transformer-core@^6.21.7:
+graphql-transformer-core@6.25.1, graphql-transformer-core@^6.21.7, graphql-transformer-core@^6.25.1:
   version "6.25.1"
   resolved "https://registry.yarnpkg.com/graphql-transformer-core/-/graphql-transformer-core-6.25.1.tgz#51133433e639002796eebad17a40152392c9556c"
   integrity sha512-rj/2+ysc8swgn3O592dQF1GhdZxEM+I7Hw8pIjt/+k7hRKG6BVu0nazuvqervNfJeiTOX53z1EIVw3Ffy1MUrw==
@@ -5481,10 +5481,10 @@ progress@^2.0.0:
   resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.3.tgz#7e8cf8d8f5b8f239c1bc68beb4eb78567d572ef8"
   integrity sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==
 
-projen@^0.14.3:
-  version "0.14.3"
-  resolved "https://registry.yarnpkg.com/projen/-/projen-0.14.3.tgz#010687b83c950a662885cb6c95bc3d03cd813a57"
-  integrity sha512-9zW6kYlRGUrSqhDQj8dvJZc5aBhCd2wnYOCwiBAuqcFOGJj9vWW5exDQ1cFCWgftImRUe7MWAfuEjNMz6c8NKA==
+projen@^0.14.4:
+  version "0.14.4"
+  resolved "https://registry.yarnpkg.com/projen/-/projen-0.14.4.tgz#6f1eaa1ca339ca3cc20d957c9560e43dbf4f0164"
+  integrity sha512-81UhIQ/SV6Y11kUs6YOVjztcQH9qk267YLQEeYXjLx7VMiYQwwk1rqcB3aLTFs7BGuSiX6jiOOGvw3MXqqCUXA==
   dependencies:
     "@iarna/toml" "^2.2.5"
     chalk "^4.1.0"

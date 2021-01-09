@@ -96,6 +96,8 @@ It is possible to add pre/post custom transformers that extend the Amplify ITran
 
 This allows you to modify the data either before or after the [cdk-transformer](./src/transformer/cdk-transformer.ts) is run.
 
+*Limitation:* Due to some limitations with `jsii` we are unable to export the ITransformer interface from `graphql-transformer-core` to ensure complete type safety. Instead, there is a validation method that will check for `name`, `directive` and `typeDefinitions` members in the transformers that are passed in.
+
 ```ts
 import { PreTransformer, PostTransformer } from './customTransformers';
 new AppSyncTransformer(this, "my-cool-api", {

@@ -20,7 +20,6 @@ import {
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam';
 import { IFunction } from '@aws-cdk/aws-lambda';
 import { Construct, NestedStack, CfnOutput } from '@aws-cdk/core';
-import { ITransformer } from 'graphql-transformer-core';
 
 import {
   CdkTransformerResolver,
@@ -74,19 +73,21 @@ export interface AppSyncTransformerProps {
   /**
    * Optional. Additonal custom transformers to run prior to the CDK resource generations.
    * Particularly useful for custom directives.
+   * These should extend Transformer class from graphql-transformer-core
    * @default undefined
    */
 
-  readonly preCdkTransformers?: [ITransformer];
+  readonly preCdkTransformers?: any[];
 
 
   /**
    * Optional. Additonal custom transformers to run after the CDK resource generations.
    * Mostly useful for deep level customization of the generated CDK CloudFormation resources.
+   * These should extend Transformer class from graphql-transformer-core
    * @default undefined
    */
 
-  readonly postCdkTransformers?: [ITransformer];
+  readonly postCdkTransformers?: any[];
 }
 
 const defaultAuthorizationConfig: AuthorizationConfig = {
@@ -152,6 +153,17 @@ export class AppSyncTransformer extends Construct {
       schemaPath: props.schemaPath,
       syncEnabled: props.syncEnabled ?? false,
     };
+
+    // Combine the arrays so we only loop once
+    // Test each transformer to see if it implements ITransformer
+    const allCustomTransformers = [...props.preCdkTransformers ?? [], ...props.postCdkTransformers ?? []];
+    if (allCustomTransformers && allCustomTransformers.length > 0) {
+      allCustomTransformers.forEach(transformer => {
+        if (transformer && !this.implementsITransformer(transformer)) {
+          throw new Error(`Transformer does not implement ITransformer from graphql-transformer-core: ${transformer}`);
+        }
+      });
+    }
 
     const transformer = new SchemaTransformer(transformerConfiguration);
     this.outputs = transformer.transform(props.preCdkTransformers, props.postCdkTransformers);
@@ -233,6 +245,20 @@ export class AppSyncTransformer extends Construct {
       value: this.appsyncAPI.graphqlUrl,
       description: 'Output for aws_appsync_graphqlEndpoint',
     });
+  }
+
+  /**
+   * graphql-transformer-core needs to be jsii enabled to pull the ITransformer interface correctly.
+   * Since it's not in peer dependencies it doesn't show up in the jsii deps list.
+   * Since it's not jsii enabled it has to be bundled.
+   * The package can't be in BOTH peer and bundled dependencies
+   * So we do a fake test to make sure it implements these and hope for the best
+   * @param transformer
+   */
+  private implementsITransformer(transformer: any) {
+    return 'name' in transformer
+      && 'directive' in transformer
+      && 'typeDefinitions' in transformer;
   }
 
   /**
