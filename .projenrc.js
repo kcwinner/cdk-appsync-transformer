@@ -24,8 +24,8 @@ const project = new AwsCdkConstructLibrary({
   codeCov: true,
   dependabotOptions: {
     ignore: [
-      { dependencyName: '@aws-cdk*' }
-    ]
+      { dependencyName: '@aws-cdk*' },
+    ],
   },
 
   // Ignore our generated appsync files

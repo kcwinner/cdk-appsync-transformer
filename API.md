@@ -46,8 +46,8 @@ new AppSyncTransformer(scope: Construct, id: string, props: AppSyncTransformerPr
   * **apiName** (<code>string</code>)  String value representing the api name. __*Default*__: `${id}-api`
   * **authorizationConfig** (<code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code>)  Optional. __*Default*__: API_KEY authorization config
   * **fieldLogLevel** (<code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code>)  Optional. __*Default*__: FieldLogLevel.NONE
-  * **postCdkTransformers** (<code>json</code>)  Optional. __*Default*__: undefined
-  * **preCdkTransformers** (<code>json</code>)  Optional. __*Default*__: undefined
+  * **postCdkTransformers** (<code>Array<any></code>)  Optional. __*Default*__: undefined
+  * **preCdkTransformers** (<code>Array<any></code>)  Optional. __*Default*__: undefined
   * **syncEnabled** (<code>boolean</code>)  Whether to enable Amplify DataStore and Sync Tables. __*Default*__: false
   * **xrayEnabled** (<code>boolean</code>)  Determines whether xray should be enabled on the AppSync API. __*Default*__: false
 
@@ -102,8 +102,8 @@ Name | Type | Description
 **apiName**?🔹 | <code>string</code> | String value representing the api name.<br/>__*Default*__: `${id}-api`
 **authorizationConfig**?🔹 | <code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code> | Optional.<br/>__*Default*__: API_KEY authorization config
 **fieldLogLevel**?🔹 | <code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code> | Optional.<br/>__*Default*__: FieldLogLevel.NONE
-**postCdkTransformers**?🔹 | <code>json</code> | Optional.<br/>__*Default*__: undefined
-**preCdkTransformers**?🔹 | <code>json</code> | Optional.<br/>__*Default*__: undefined
+**postCdkTransformers**?🔹 | <code>Array<any></code> | Optional.<br/>__*Default*__: undefined
+**preCdkTransformers**?🔹 | <code>Array<any></code> | Optional.<br/>__*Default*__: undefined
 **syncEnabled**?🔹 | <code>boolean</code> | Whether to enable Amplify DataStore and Sync Tables.<br/>__*Default*__: false
 **xrayEnabled**?🔹 | <code>boolean</code> | Determines whether xray should be enabled on the AppSync API.<br/>__*Default*__: false
 
