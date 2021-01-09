@@ -24,8 +24,16 @@ const project = new AwsCdkConstructLibrary({
   codeCov: true,
   dependabotOptions: {
     ignore: [
-      { dependencyName: '@aws-cdk*' }
-    ]
+      { dependencyName: '@aws-cdk*' },
+    ],
+  },
+
+  jestOptions: {
+    jestConfig: {
+      testPathIgnorePatterns: [
+        '<rootDir>/test/mappedTransformer',
+      ],
+    },
   },
 
   // Ignore our generated appsync files

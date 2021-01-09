@@ -107,6 +107,9 @@
   "license": "Apache-2.0",
   "version": "1.77.6",
   "jest": {
+    "testPathIgnorePatterns": [
+      "<rootDir>/test/mappedTransformer"
+    ],
     "testMatch": [
       "**/__tests__/**/*.ts?(x)",
       "**/?(*.)+(spec|test).ts?(x)"
@@ -121,10 +124,7 @@
     ],
     "coverageDirectory": "coverage",
     "coveragePathIgnorePatterns": [
-      "/node_modules/"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/"
+      "<rootDir>/test/mappedTransformer"
     ],
     "watchPathIgnorePatterns": [
       "/node_modules/"
