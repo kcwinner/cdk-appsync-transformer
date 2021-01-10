@@ -18,7 +18,9 @@ import {
 } from './cdk-transformer';
 
 // Rebuilt this from cloudform-types because it has type errors
+import { PrimaryKeyTransformer } from './pk-transformer';
 import { Resource } from './resource';
+import { SingleTableTransformer } from './single-table-transformer';
 
 // Import this way because FunctionTransformer.d.ts types were throwing an eror. And we didn't write this package so hope for the best :P
 // eslint-disable-next-line
@@ -127,6 +129,8 @@ export class SchemaTransformer {
         new ModelConnectionTransformer(),
         new ModelAuthTransformer(this.authTransformerConfig),
         new HttpTransformer(),
+        new SingleTableTransformer(),
+        new PrimaryKeyTransformer(),
         ...preCdkTransformers,
         new CdkTransformer(),
         ...postCdkTransformers,

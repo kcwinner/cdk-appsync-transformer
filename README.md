@@ -20,6 +20,10 @@ This package is my attempt to convert all of that effort into a separate constru
 
 ## How Do I Use It
 
+### Featured Blog Posts
+
+- [Moving from AWS Amplify to the AWS CDK](https://matthewbonig.com/2021/01/08/from-amplify-to-cdk/)
+
 ### Example Usage
 
 API With Default Values
@@ -153,42 +157,54 @@ new AppSyncTransformer(this, "my-cool-api", {
 You can grant access to the `public` policies generated from the `@auth` transformer by using `appsyncTransformer.grantPublic(...)`. In the example below you can see we give public iam read access for the Product type. This will generate permissions for `listProducts`, `getProduct` and `Product` (to get all the fields). We then attach it to our `publicRole` using the grantPublic method.
 
 Example:
+
 ```graphql
 type Product
-    @model
-    @auth(rules: [
-        { allow: groups, groups: ["Admins"] },
-        { allow: public, provider: iam, operations: [read] }
-    ])
-    @key(name: "productsByName", fields: ["name", "added"], queryField: "productsByName") {
-        id: ID!
-        name: String!
-        description: String!
-        price: String!
-        active: Boolean!
-        added: AWSDateTime!
-        orders: [Order] @connection
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admins"] }
+      { allow: public, provider: iam, operations: [read] }
+    ]
+  )
+  @key(
+    name: "productsByName"
+    fields: ["name", "added"]
+    queryField: "productsByName"
+  ) {
+  id: ID!
+  name: String!
+  description: String!
+  price: String!
+  active: Boolean!
+  added: AWSDateTime!
+  orders: [Order] @connection
 }
 ```
 
 ```ts
-const identityPool = new CfnIdentityPool(stack, 'test-identity-pool', {
-    identityPoolName: 'test-identity-pool',
-    cognitoIdentityProviders: [
-      {
-        clientId: userPoolClient.userPoolClientId,
-        providerName: `cognito-idp.${stack.region}.amazonaws.com/${userPool.userPoolId}`,
-      },
-    ],
-    allowUnauthenticatedIdentities: true,
-  });
+const identityPool = new CfnIdentityPool(stack, "test-identity-pool", {
+  identityPoolName: "test-identity-pool",
+  cognitoIdentityProviders: [
+    {
+      clientId: userPoolClient.userPoolClientId,
+      providerName: `cognito-idp.${stack.region}.amazonaws.com/${userPool.userPoolId}`,
+    },
+  ],
+  allowUnauthenticatedIdentities: true,
+});
 
-const publicRole = new Role(stack, 'public-role', {
-  assumedBy: new WebIdentityPrincipal('cognito-identity.amazonaws.com')
-    .withConditions({
-      'StringEquals': { 'cognito-identity.amazonaws.com:aud': `${identityPool.ref}` },
-      'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': 'unauthenticated' },
-    }),
+const publicRole = new Role(stack, "public-role", {
+  assumedBy: new WebIdentityPrincipal(
+    "cognito-identity.amazonaws.com"
+  ).withConditions({
+    StringEquals: {
+      "cognito-identity.amazonaws.com:aud": `${identityPool.ref}`,
+    },
+    "ForAnyValue:StringLike": {
+      "cognito-identity.amazonaws.com:amr": "unauthenticated",
+    },
+  }),
 });
 
 appSyncTransformer.grantPublic(publicRole);
@@ -196,28 +212,30 @@ appSyncTransformer.grantPublic(publicRole);
 
 ##### Auth Role
 
-You can grant access to the `private` policies generated from the `@auth` transformer by using `appsyncTransformer.grantPrivate(...)`. In the example below you can see we give private iam read and update access for the Customer type. This will generate permissions for `listCustomers`, `getCustomer`, `updateCustomer` and `Customer` (to get all the fields). We then attach it to our `privateFunction` using the grantPrivate method. *You could also use an identity pool as in the unauth example above, I just wanted to show a varied range of use*
+You can grant access to the `private` policies generated from the `@auth` transformer by using `appsyncTransformer.grantPrivate(...)`. In the example below you can see we give private iam read and update access for the Customer type. This will generate permissions for `listCustomers`, `getCustomer`, `updateCustomer` and `Customer` (to get all the fields). We then attach it to our `privateFunction` using the grantPrivate method. _You could also use an identity pool as in the unauth example above, I just wanted to show a varied range of use_
 
 ```graphql
-type Customer 
-    @model
-    @auth(rules: [
-        { allow: groups, groups: ["Admins"] },
-        { allow: private, provider: iam, operations: [read, update] }
-    ]) {
-        id: ID!
-        firstName: String!
-        lastName: String!
-        active: Boolean!
-        address: String!
+type Customer
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admins"] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  ) {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  active: Boolean!
+  address: String!
 }
 ```
 
 ```ts
-const privateFunction = new Function(stack, 'test-function', {
+const privateFunction = new Function(stack, "test-function", {
   runtime: Runtime.NODEJS_12_X,
-  code: Code.fromInline('export function handler() { }'),
-  handler: 'handler',
+  code: Code.fromInline("export function handler() { }"),
+  handler: "handler",
 });
 
 appSyncTransformer.grantPrivate(privateFunction);
@@ -312,12 +330,12 @@ You may need to access your dynamo table L2 constructs. These can be accessed vi
 There are two ways to enable DynamoDB streams for a table. The first version is probably most preferred. You pass in the `@model` type name and the StreamViewType as properties when creating the AppSyncTransformer. This will also allow you to access the `tableStreamArn` property of the L2 table construct from the `tableMap`.
 
 ```ts
-const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
   schemaPath: testSchemaPath,
   dynamoDbStreamConfig: {
     Order: StreamViewType.NEW_IMAGE,
-    Blog: StreamViewType.NEW_AND_OLD_IMAGES
-  }
+    Blog: StreamViewType.NEW_AND_OLD_IMAGES,
+  },
 });
 
 const orderTable = appSyncTransformer.tableMap.OrderTable;
@@ -328,7 +346,7 @@ A convenience method is also available. It returns the stream arn because the L2
 
 ```ts
 const streamArn = appSyncTransformer.addDynamoDBStream({
-  modelTypeName: 'Order',
+  modelTypeName: "Order",
   streamViewType: StreamViewType.NEW_IMAGE,
 });
 

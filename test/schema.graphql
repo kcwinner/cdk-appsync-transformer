@@ -124,3 +124,20 @@ type Mutation {
   createUser(input: CreateUserInput!): User @function(name: "test-function")
   updateUser(input: UpdateUserInput!): User @function(name: "test-function")
 }
+
+type FirstTableTest @singletable(name: "testTable") {
+  id: ID! @pk
+  name: String
+}
+
+type SecondTableTest @singletable(name: "testTable") {
+  id: ID! @pk
+  address: String!
+  street: String!
+}
+
+type ThirdTableTest @singletable(name: "testTable") {
+  id: ID! @pk
+  age: Int!
+  gender: String!
+}
