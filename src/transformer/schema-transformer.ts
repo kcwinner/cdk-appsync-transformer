@@ -145,7 +145,7 @@ export class SchemaTransformer {
      *
      */
   public getResolvers() {
-    const statements = ['Query', 'Mutation', 'Subscription'];
+    const statements = ['Query', 'Mutation'];
     const resolversDirPath = normalize('./appsync/resolvers');
     if (fs.existsSync(resolversDirPath)) {
       const files = fs.readdirSync(resolversDirPath);
