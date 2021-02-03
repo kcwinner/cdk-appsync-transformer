@@ -46,6 +46,11 @@
       "type": "build"
     },
     {
+      "name": "cloudform-types",
+      "version": "^4.2.0",
+      "type": "build"
+    },
+    {
       "name": "eslint",
       "type": "build"
     },
@@ -95,16 +100,12 @@
       "type": "build"
     },
     {
-      "name": "jsii-release",
-      "type": "build"
-    },
-    {
       "name": "json-schema",
       "type": "build"
     },
     {
       "name": "projen",
-      "version": "^0.14.4",
+      "version": "^0.15.17",
       "type": "build"
     },
     {

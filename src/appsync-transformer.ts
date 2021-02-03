@@ -274,7 +274,6 @@ export class AppSyncTransformer extends Construct {
 
     Object.keys(noneResolvers).forEach((resolverKey: any) => {
       const resolver = resolvers[resolverKey];
-
       new Resolver(
         this.nestedAppsyncStack,
         `${resolver.typeName}-${resolver.fieldName}-resolver`,

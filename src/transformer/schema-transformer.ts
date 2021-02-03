@@ -145,7 +145,7 @@ export class SchemaTransformer {
      *
      */
   public getResolvers() {
-    const statements = ['Query', 'Mutation', 'Subscription'];
+    const statements = ['Query', 'Mutation'];
     const resolversDirPath = normalize('./appsync/resolvers');
     if (fs.existsSync(resolversDirPath)) {
       const files = fs.readdirSync(resolversDirPath);
@@ -153,48 +153,85 @@ export class SchemaTransformer {
         // Example: Mutation.createChannel.response
         let args = file.split('.');
         let typeName: string = args[0];
-        let name: string = args[1];
+        let fieldName: string = args[1];
         let templateType = args[2]; // request or response
+
+        // default to composite key of typeName and fieldName, however if it
+        // is Query, Mutation or Subscription (top level) the compositeKey is the
+        // same as fieldName only
+        let compositeKey = `${typeName}${fieldName}`;
+        if (statements.indexOf(typeName) >= 0) {
+          compositeKey = fieldName;
+        }
+
         let filepath = normalize(`${resolversDirPath}/${file}`);
 
-        if (statements.indexOf(typeName) >= 0 || (this.outputs.noneResolvers && this.outputs.noneResolvers[name])) {
-          if (!this.resolvers[name]) {
-            this.resolvers[name] = {
+        if (statements.indexOf(typeName) >= 0 || (this.outputs.noneResolvers && this.outputs.noneResolvers[compositeKey])) {
+          if (!this.resolvers[compositeKey]) {
+            this.resolvers[compositeKey] = {
               typeName: typeName,
-              fieldName: name,
+              fieldName: fieldName,
             };
           }
 
           if (templateType === 'req') {
-            this.resolvers[name].requestMappingTemplate = filepath;
+            this.resolvers[compositeKey].requestMappingTemplate = filepath;
           } else if (templateType === 'res') {
-            this.resolvers[name].responseMappingTemplate = filepath;
+            this.resolvers[compositeKey].responseMappingTemplate = filepath;
+          }
+        } else if (this.isHttpResolver(typeName, fieldName)) {
+          if (!this.resolvers[compositeKey]) {
+            this.resolvers[compositeKey] = {
+              typeName: typeName,
+              fieldName: fieldName,
+            };
           }
 
+          if (templateType === 'req') {
+            this.resolvers[compositeKey].requestMappingTemplate = filepath;
+          } else if (templateType === 'res') {
+            this.resolvers[compositeKey].responseMappingTemplate = filepath;
+          }
         } else { // This is a GSI
           if (!this.resolvers.gsi) {
             this.resolvers.gsi = {};
           }
-
-          let mapName = `${typeName}${name}`;
-          if (!this.resolvers.gsi[mapName]) {
-            this.resolvers.gsi[mapName] = {
+          if (!this.resolvers.gsi[compositeKey]) {
+            this.resolvers.gsi[compositeKey] = {
               typeName: typeName,
-              fieldName: name,
-              tableName: name.charAt(0).toUpperCase() + name.slice(1),
+              fieldName: fieldName,
+              tableName: fieldName.charAt(0).toUpperCase() + fieldName.slice(1),
             };
           }
 
           if (templateType === 'req') {
-            this.resolvers.gsi[mapName].requestMappingTemplate = filepath;
+            this.resolvers.gsi[compositeKey].requestMappingTemplate = filepath;
           } else if (templateType === 'res') {
-            this.resolvers.gsi[mapName].responseMappingTemplate = filepath;
+            this.resolvers.gsi[compositeKey].responseMappingTemplate = filepath;
           }
         }
       });
     }
 
     return this.resolvers;
+  }
+
+  /**
+   * decides if this is a resolver for an HTTP datasource
+   * @param typeName
+   * @param fieldName
+   */
+
+  private isHttpResolver(typeName: string, fieldName: string) {
+    if (!this.outputs.httpResolvers) return false;
+
+    for (const endpoint in this.outputs.httpResolvers) {
+      for (const resolver of this.outputs.httpResolvers[endpoint]) {
+        if (resolver.typeName === typeName && resolver.fieldName === fieldName) return true;
+      }
+    }
+
+    return false;
   }
 
   /**
