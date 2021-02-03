@@ -1,30 +1,25 @@
+import { DeletionPolicy } from 'cloudform-types';
+
 import {
   DirectiveNode,
   ObjectTypeDefinitionNode,
-  FieldDefinitionNode
+  FieldDefinitionNode,
+  InputObjectTypeDefinitionNode
 } from 'graphql';
 
 import {
   // getNonModelObjectArray,
   // makeNonModelInputObject,
+  makeCreateInputObject,
   makeModelConnectionType,
   makeModelSortDirectionEnumObject,
   makeModelXFilterInputObject,
   makeEnumFilterInputObjects,
   makeAttributeTypeEnum,
-  makeScalarFilterInputs
+  makeScalarFilterInputs,
 } from 'graphql-dynamodb-transformer/lib/definitions';
 
-import { ResourceFactory } from 'graphql-dynamodb-transformer/lib/resources';
-
-import {
-  gql,
-  getDirectiveArguments,
-  // getFieldArguments,
-  Transformer,
-  TransformerContext,
-  InvalidDirectiveError,
-} from 'graphql-transformer-core';
+import { ResourceFactory } from './resources';
 
 import {
   blankObject,
@@ -38,6 +33,32 @@ import {
   ResolverResourceIDs,
   getBaseType,
 } from 'graphql-transformer-common';
+import {
+  gql,
+  getDirectiveArguments,
+  // getFieldArguments,
+  Transformer,
+  TransformerContext,
+  InvalidDirectiveError,
+} from 'graphql-transformer-core';
+
+import {
+  // getNonModelObjectArray,
+  // makeCreateInputObject,
+  // makeDeleteInputObject,
+  // makeEnumFilterInputObjects,
+  // makeModelConnectionType,
+  // makeModelSortDirectionEnumObject,
+  // makeModelXFilterInputObject,
+  // makeNonModelInputObject,
+  // makeScalarFilterInputs,
+  // makeSubscriptionField,
+  // makeUpdateInputObject,
+  // makeModelXConditionInputObject,
+  // makeAttributeTypeEnum,
+} from './definitions';
+
+const METADATA_KEY = 'SingleTableTransformerMetadata';
 
 const directiveDefinition = gql`
   directive @singletable(
@@ -53,6 +74,13 @@ export interface tableType {
 export const CONDITIONS_MINIMUM_VERSION = 5;
 
 export class SingleTableTransformer extends Transformer {
+  private static isTimestampCompatibleField(field?: FieldDefinitionNode): boolean {
+    if (field && !(getBaseType(field.type) === 'AWSDateTime' || getBaseType(field.type) === 'String')) {
+      return false;
+    }
+    return true;
+  }
+
   resources: ResourceFactory;
   tableTypes: { [name: string]: tableType };
   schemaTypes: tableType;
@@ -73,6 +101,11 @@ export class SingleTableTransformer extends Transformer {
     });
 
     console.log('### Single Table Types', this.tableTypes);
+
+    // const resource: AppSync.Resolver = ctx.getResource(resourceId) as any;
+    ctx.getResource('resourceId') as any;
+    // resource.Properties.RequestMappingTemplate = [hoistedContent, resource.Properties.RequestMappingTemplate].join('\n');
+    // ctx.setResource(resourceId, resource);
   };
 
   /**
@@ -95,6 +128,9 @@ export class SingleTableTransformer extends Transformer {
     // This is the type name (e.g. type Order, type Post, etc etc)
     const typeName = def.name.value;
 
+    const tableLogicalID = ModelResourceIDs.ModelTableResourceID(typeName);
+    console.log(tableLogicalID);
+
     // console.log('### TYPE NAME:', typeName);
     // console.log('### DEFINITION:', def);
 
@@ -112,8 +148,7 @@ export class SingleTableTransformer extends Transformer {
     console.log(ctx.metadata);
 
     this.createQueries(def, directive, ctx);
-
-    this.addTimestampFields(def, directive, ctx);
+    this.addTimestampFields(def, ctx);
   }
 
   private typeExist(type: string, ctx: TransformerContext): boolean {
@@ -261,7 +296,7 @@ export class SingleTableTransformer extends Transformer {
     }
   }
 
-  private addTimestampFields(def: ObjectTypeDefinitionNode, directive: DirectiveNode, ctx: TransformerContext): void {
+  private addTimestampFields(def: ObjectTypeDefinitionNode, ctx: TransformerContext): void {
     const createdAtField = 'createdAt';
     const updatedAtField = 'updatedAt';
     const existingUpdatedAtField = def.fields?.find(f => f.name.value === updatedAtField);
@@ -297,10 +332,49 @@ export class SingleTableTransformer extends Transformer {
     ctx.updateObject(newObj);
   }
 
-  private static isTimestampCompatibleField(field?: FieldDefinitionNode): boolean {
-    if (field && !(getBaseType(field.type) === 'AWSDateTime' || getBaseType(field.type) === 'String')) {
-      return false;
-    }
-    return true;
+  private createMutations = (
+    def: ObjectTypeDefinitionNode,
+    directive: DirectiveNode,
+    ctx: TransformerContext,
+    nonModelArray: ObjectTypeDefinitionNode[],
+  ) => {
+    const typeName = def.name.value;
+    const mutationFields: FieldDefinitionNode[] = [];
+
+    const conditionInputName = ModelResourceIDs.ModelConditionInputTypeName(typeName);
+
+    const createInput = makeCreateInputObject(def, directive, nonModelArray, ctx);
+      if (!ctx.getType(createInput.name.value)) {
+        ctx.addInput(createInput);
+      }
+
+      const createResolver = this.resources.makeCreateResolver({
+        type: def.name.value
+      });
+
+      const resourceId = ResolverResourceIDs.DynamoDBCreateResolverResourceID(typeName);
+      this.addInitalizationMetadata(ctx, resourceId, () => {
+        const inputObj = ctx.getType(createInput.name.value) as InputObjectTypeDefinitionNode;
+        if (inputObj) {
+          return this.resources.initalizeDefaultInputForCreateMutation(inputObj, timestampFields);
+        }
+      });
+
+      ctx.setResource(resourceId, createResolver);
+      ctx.mapResourceToStack(typeName, resourceId);
+      const args = [makeInputValueDefinition('input', makeNonNullType(makeNamedType(createInput.name.value)))];
+      if (this.supportsConditions(ctx)) {
+        args.push(makeInputValueDefinition('condition', makeNamedType(conditionInputName)));
+      }
+      mutationFields.push(makeField(createResolver.Properties.FieldName.toString(), args, makeNamedType(def.name.value)));
+  }
+
+  private addInitalizationMetadata(ctx: TransformerContext, resourceId: string, initCodeGenerator: () => string | void): void {
+    const ddbMetadata = ctx.metadata.has(METADATA_KEY) ? ctx.metadata.get(METADATA_KEY) : {};
+    ddbMetadata.hoistedRequestMappingContent = {
+      ...ddbMetadata?.hoistedRequestMappingContent,
+      [resourceId]: initCodeGenerator,
+    };
+    ctx.metadata.set(METADATA_KEY, ddbMetadata);
   }
 }

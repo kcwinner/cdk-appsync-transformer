@@ -1,80 +1,94 @@
-import '@aws-cdk/assert/jest';
-import * as path from 'path';
-import { AuthorizationType, AuthorizationConfig, UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
-import { CfnIdentityPool, UserPool, UserPoolClient } from '@aws-cdk/aws-cognito';
-import { StreamViewType } from '@aws-cdk/aws-dynamodb';
-import { Role, WebIdentityPrincipal } from '@aws-cdk/aws-iam';
-import { Runtime, Code, Function } from '@aws-cdk/aws-lambda';
-import { App, Stack } from '@aws-cdk/core';
+import "@aws-cdk/assert/jest";
+import * as path from "path";
+import {
+  AuthorizationType,
+  AuthorizationConfig,
+  UserPoolDefaultAction,
+} from "@aws-cdk/aws-appsync";
+import {
+  CfnIdentityPool,
+  UserPool,
+  UserPoolClient,
+} from "@aws-cdk/aws-cognito";
+import { StreamViewType } from "@aws-cdk/aws-dynamodb";
+import { Role, WebIdentityPrincipal } from "@aws-cdk/aws-iam";
+import { Runtime, Code, Function } from "@aws-cdk/aws-lambda";
+import { App, Stack } from "@aws-cdk/core";
 
-import { AppSyncTransformer } from '../src/index';
-import MappedTransformer from './mappedTransformer';
-import SingleFieldMapTransformer from './singleFieldMapTransformer';
+import { AppSyncTransformer } from "../src/index";
+import MappedTransformer from "./mappedTransformer";
+import SingleFieldMapTransformer from "./singleFieldMapTransformer";
 
-const testSchemaPath = path.join(__dirname, 'schema.graphql');
-const testCustomTransformerSchemaPath = path.join(__dirname, 'customTransformSchema.graphql');
-const functionDirectiveTestFunctionName = 'test-function';
-const testHttpEndpoint = 'https://jsonplaceholder.typicode.com';
+const testSchemaPath = path.join(__dirname, "schema.graphql");
+// const testCustomTransformerSchemaPath = path.join(__dirname, 'customTransformSchema.graphql');
+const functionDirectiveTestFunctionName = "test-function";
+const testHttpEndpoint = "https://jsonplaceholder.typicode.com";
 
 const apiKeyAuthorizationConfig: AuthorizationConfig = {
   defaultAuthorization: {
     authorizationType: AuthorizationType.API_KEY,
     apiKeyConfig: {
-      description: 'Auto generated API Key from construct',
-      name: 'dev',
+      description: "Auto generated API Key from construct",
+      name: "dev",
     },
   },
 };
 
-test('GraphQL API W/ Defaults Created', () => {
+test("GraphQL API W/ Defaults Created", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'testing-stack');
+  const stack = new Stack(mockApp, "testing-stack");
 
-  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
     schemaPath: testSchemaPath,
     authorizationConfig: apiKeyAuthorizationConfig,
     xrayEnabled: false,
   });
 
-  expect(stack).toHaveResource('AWS::CloudFormation::Stack');
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::GraphQLApi', {
-    AuthenticationType: 'API_KEY',
-    XrayEnabled: false,
-  });
+  expect(stack).toHaveResource("AWS::CloudFormation::Stack");
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+    "AWS::AppSync::GraphQLApi",
+    {
+      AuthenticationType: "API_KEY",
+      XrayEnabled: false,
+    }
+  );
 });
 
-test('GraphQL API W/ Sync Created', () => {
+test("GraphQL API W/ Sync Created", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'testing-sync-stack');
+  const stack = new Stack(mockApp, "testing-sync-stack");
 
-  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
     schemaPath: testSchemaPath,
-    apiName: 'sync-api',
+    apiName: "sync-api",
     authorizationConfig: apiKeyAuthorizationConfig,
     syncEnabled: true,
     xrayEnabled: true,
   });
 
-  expect(stack).toHaveResource('AWS::CloudFormation::Stack');
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::GraphQLApi', {
-    AuthenticationType: 'API_KEY',
-    Name: 'sync-api',
-    XrayEnabled: true,
-  });
+  expect(stack).toHaveResource("AWS::CloudFormation::Stack");
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+    "AWS::AppSync::GraphQLApi",
+    {
+      AuthenticationType: "API_KEY",
+      Name: "sync-api",
+      XrayEnabled: true,
+    }
+  );
 });
 
-test('GraphQL API W/ User Pool Auth Created', () => {
+test("GraphQL API W/ User Pool Auth Created", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'user-pool-auth-stack');
+  const stack = new Stack(mockApp, "user-pool-auth-stack");
 
-  const userPool = new UserPool(stack, 'test-userpool');
-  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+  const userPool = new UserPool(stack, "test-userpool");
+  const userPoolClient = new UserPoolClient(stack, "test-userpool-client", {
     userPool: userPool,
   });
 
-  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
     schemaPath: testSchemaPath,
-    apiName: 'user-pool-auth-api',
+    apiName: "user-pool-auth-api",
     authorizationConfig: {
       defaultAuthorization: {
         authorizationType: AuthorizationType.USER_POOL,
@@ -87,25 +101,28 @@ test('GraphQL API W/ User Pool Auth Created', () => {
     },
   });
 
-  expect(stack).toHaveResource('AWS::CloudFormation::Stack');
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::GraphQLApi', {
-    AuthenticationType: 'AMAZON_COGNITO_USER_POOLS',
-    Name: 'user-pool-auth-api',
-  });
+  expect(stack).toHaveResource("AWS::CloudFormation::Stack");
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+    "AWS::AppSync::GraphQLApi",
+    {
+      AuthenticationType: "AMAZON_COGNITO_USER_POOLS",
+      Name: "user-pool-auth-api",
+    }
+  );
 });
 
-test('Model Tables Created and PITR', () => {
+test("Model Tables Created and PITR", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'user-pool-auth-stack');
+  const stack = new Stack(mockApp, "user-pool-auth-stack");
 
-  const userPool = new UserPool(stack, 'test-userpool');
-  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+  const userPool = new UserPool(stack, "test-userpool");
+  const userPoolClient = new UserPoolClient(stack, "test-userpool-client", {
     userPool: userPool,
   });
 
-  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
     schemaPath: testSchemaPath,
-    apiName: 'user-pool-auth-api',
+    apiName: "user-pool-auth-api",
     authorizationConfig: {
       defaultAuthorization: {
         authorizationType: AuthorizationType.USER_POOL,
@@ -120,103 +137,116 @@ test('Model Tables Created and PITR', () => {
   });
 
   const tableData = appSyncTransformer.outputs.cdkTables;
-  if (!tableData) throw new Error('Expected table data');
+  if (!tableData) throw new Error("Expected table data");
 
   for (const [tableName] of Object.entries(tableData)) {
-    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::DataSource', {
-      Name: tableName,
-      Type: 'AMAZON_DYNAMODB',
-    });
+    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+      "AWS::AppSync::DataSource",
+      {
+        Name: tableName,
+        Type: "AMAZON_DYNAMODB",
+      }
+    );
   }
 
   // Make sure LSI is set correctly on Thread table
-  const threadTable = appSyncTransformer.nestedAppsyncStack.node.findChild('ThreadTable');
+  const threadTable =
+    appSyncTransformer.nestedAppsyncStack.node.findChild("ThreadTable");
   expect(threadTable).toBeTruthy();
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
-    KeySchema: [
-      { AttributeName: 'forumName', KeyType: 'HASH' },
-      { AttributeName: 'subject', KeyType: 'RANGE' },
-    ],
-    LocalSecondaryIndexes: [
-      {
-        IndexName: 'threadsByLatestPost',
-        KeySchema: [
-          {
-            AttributeName: 'forumName',
-            KeyType: 'HASH',
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+    "AWS::DynamoDB::Table",
+    {
+      KeySchema: [
+        { AttributeName: "forumName", KeyType: "HASH" },
+        { AttributeName: "subject", KeyType: "RANGE" },
+      ],
+      LocalSecondaryIndexes: [
+        {
+          IndexName: "threadsByLatestPost",
+          KeySchema: [
+            {
+              AttributeName: "forumName",
+              KeyType: "HASH",
+            },
+            {
+              AttributeName: "latestPostAt",
+              KeyType: "RANGE",
+            },
+          ],
+          Projection: {
+            ProjectionType: "ALL",
           },
-          {
-            AttributeName: 'latestPostAt',
-            KeyType: 'RANGE',
-          },
-        ],
-        Projection: {
-          ProjectionType: 'ALL',
         },
-      },
-    ],
-  });
+      ],
+    }
+  );
 
   // Make sure GSI is set correctly on Product table
-  const productTable = appSyncTransformer.nestedAppsyncStack.node.findChild('ProductTable');
+  const productTable =
+    appSyncTransformer.nestedAppsyncStack.node.findChild("ProductTable");
   expect(productTable).toBeTruthy();
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
-    KeySchema: [
-      { AttributeName: 'id', KeyType: 'HASH' },
-    ],
-    GlobalSecondaryIndexes: [
-      {
-        IndexName: 'productsByName',
-        KeySchema: [
-          {
-            AttributeName: 'name',
-            KeyType: 'HASH',
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+    "AWS::DynamoDB::Table",
+    {
+      KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
+      GlobalSecondaryIndexes: [
+        {
+          IndexName: "productsByName",
+          KeySchema: [
+            {
+              AttributeName: "name",
+              KeyType: "HASH",
+            },
+            {
+              AttributeName: "added",
+              KeyType: "RANGE",
+            },
+          ],
+          Projection: {
+            ProjectionType: "ALL",
           },
-          {
-            AttributeName: 'added',
-            KeyType: 'RANGE',
-          },
-        ],
-        Projection: {
-          ProjectionType: 'ALL',
         },
-      },
-    ],
-  });
+      ],
+    }
+  );
 
   // Make sure ttl is on Order table
-  const orderTable = appSyncTransformer.nestedAppsyncStack.node.findChild('OrderTable');
+  const orderTable =
+    appSyncTransformer.nestedAppsyncStack.node.findChild("OrderTable");
   expect(orderTable).toBeTruthy();
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
-    KeySchema: [
-      { AttributeName: 'id', KeyType: 'HASH' },
-      { AttributeName: 'productID', KeyType: 'RANGE' },
-    ],
-    TimeToLiveSpecification: {
-      AttributeName: 'expirationUnixTime',
-      Enabled: true,
-    },
-    PointInTimeRecoverySpecification: {
-      PointInTimeRecoveryEnabled: true,
-    },
-  });
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+    "AWS::DynamoDB::Table",
+    {
+      KeySchema: [
+        { AttributeName: "id", KeyType: "HASH" },
+        { AttributeName: "productID", KeyType: "RANGE" },
+      ],
+      TimeToLiveSpecification: {
+        AttributeName: "expirationUnixTime",
+        Enabled: true,
+      },
+      PointInTimeRecoverySpecification: {
+        PointInTimeRecoveryEnabled: true,
+      },
+    }
+  );
 });
 
-test('HTTP Resolvers Match', () => {
+test("HTTP Resolvers Match", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'user-pool-auth-stack');
+  const stack = new Stack(mockApp, "user-pool-auth-stack");
 
-  const userPool = new UserPool(stack, 'test-userpool');
-  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+  const userPool = new UserPool(stack, "test-userpool");
+  const userPoolClient = new UserPoolClient(stack, "test-userpool-client", {
     userPool: userPool,
   });
 
-  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
     schemaPath: testSchemaPath,
-    apiName: 'user-pool-auth-api',
+    apiName: "user-pool-auth-api",
     authorizationConfig: {
       defaultAuthorization: {
         authorizationType: AuthorizationType.USER_POOL,
@@ -235,25 +265,28 @@ test('HTTP Resolvers Match', () => {
   expect(endpointResolvers.length).toEqual(2);
 
   for (const resolver of endpointResolvers) {
-    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::Resolver', {
-      FieldName: resolver.fieldName,
-      TypeName: resolver.typeName,
-    });
+    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+      "AWS::AppSync::Resolver",
+      {
+        FieldName: resolver.fieldName,
+        TypeName: resolver.typeName,
+      }
+    );
   }
 });
 
-test('Function Resolvers Match', () => {
+test("Function Resolvers Match", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'user-pool-auth-stack');
+  const stack = new Stack(mockApp, "user-pool-auth-stack");
 
-  const userPool = new UserPool(stack, 'test-userpool');
-  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+  const userPool = new UserPool(stack, "test-userpool");
+  const userPoolClient = new UserPoolClient(stack, "test-userpool-client", {
     userPool: userPool,
   });
 
-  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
     schemaPath: testSchemaPath,
-    apiName: 'user-pool-auth-api',
+    apiName: "user-pool-auth-api",
     authorizationConfig: {
       defaultAuthorization: {
         authorizationType: AuthorizationType.USER_POOL,
@@ -270,22 +303,23 @@ test('Function Resolvers Match', () => {
   expect(functionResolvers).toBeTruthy();
   expect(functionResolvers![functionDirectiveTestFunctionName]).toBeTruthy(); // Will fail above if not truthy
 
-  const testFunctionResolvers = functionResolvers![functionDirectiveTestFunctionName]; // will fail above if does not exist
+  const testFunctionResolvers =
+    functionResolvers![functionDirectiveTestFunctionName]; // will fail above if does not exist
   expect(testFunctionResolvers.length).toEqual(4);
 });
 
-test('addLambdaDataSourceAndResolvers', () => {
+test("addLambdaDataSourceAndResolvers", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'user-pool-auth-stack');
+  const stack = new Stack(mockApp, "user-pool-auth-stack");
 
-  const userPool = new UserPool(stack, 'test-userpool');
-  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+  const userPool = new UserPool(stack, "test-userpool");
+  const userPoolClient = new UserPoolClient(stack, "test-userpool-client", {
     userPool: userPool,
   });
 
-  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
     schemaPath: testSchemaPath,
-    apiName: 'user-pool-auth-api',
+    apiName: "user-pool-auth-api",
     authorizationConfig: {
       defaultAuthorization: {
         authorizationType: AuthorizationType.USER_POOL,
@@ -299,39 +333,47 @@ test('addLambdaDataSourceAndResolvers', () => {
   });
 
   // We don't really need this to work
-  const testFunction = new Function(stack, 'test-function', {
+  const testFunction = new Function(stack, "test-function", {
     runtime: Runtime.NODEJS_12_X,
-    code: Code.fromInline('export function handler() { }'),
-    handler: 'handler',
+    code: Code.fromInline("export function handler() { }"),
+    handler: "handler",
   });
 
-  const testFunctionDataSource = appSyncTransformer.addLambdaDataSourceAndResolvers(
-    functionDirectiveTestFunctionName,
-    'test-data-source',
-    testFunction,
+  const testFunctionDataSource =
+    appSyncTransformer.addLambdaDataSourceAndResolvers(
+      functionDirectiveTestFunctionName,
+      "test-data-source",
+      testFunction
+    );
+
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+    "AWS::AppSync::DataSource",
+    {
+      Name: testFunctionDataSource.name,
+      Type: "AWS_LAMBDA",
+    }
   );
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::DataSource', {
-    Name: testFunctionDataSource.name,
-    Type: 'AWS_LAMBDA',
-  });
-
-  const testFunctionResolvers = appSyncTransformer.functionResolvers[functionDirectiveTestFunctionName];
+  const testFunctionResolvers =
+    appSyncTransformer.functionResolvers[functionDirectiveTestFunctionName];
   for (const resolver of testFunctionResolvers) {
-    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::Resolver', {
-      FieldName: resolver.fieldName,
-      TypeName: resolver.typeName,
-    });
+    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+      "AWS::AppSync::Resolver",
+      {
+        FieldName: resolver.fieldName,
+        TypeName: resolver.typeName,
+      }
+    );
   }
 });
 
-test('Custom Pre Transform', () => {
+test("Custom Pre Transform", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'custom-transform-stack');
+  const stack = new Stack(mockApp, "custom-transform-stack");
 
-  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
     schemaPath: testCustomTransformerSchemaPath,
-    apiName: 'custom-transforms',
+    apiName: "custom-transforms",
     authorizationConfig: {
       defaultAuthorization: {
         authorizationType: AuthorizationType.API_KEY,
@@ -349,23 +391,26 @@ test('Custom Pre Transform', () => {
   expect(endpointResolvers.length).toEqual(1);
 
   for (const resolver of endpointResolvers) {
-    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::Resolver', {
-      FieldName: resolver.fieldName,
-      TypeName: resolver.typeName,
-    });
+    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+      "AWS::AppSync::Resolver",
+      {
+        FieldName: resolver.fieldName,
+        TypeName: resolver.typeName,
+      }
+    );
   }
 
   const noneDataResolvers = appSyncTransformer.outputs.noneResolvers ?? {};
   expect(Object.keys(noneDataResolvers).length).toEqual(2);
 });
 
-test('Custom Post Transform', () => {
+test("Custom Post Transform", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'custom-transform-stack');
+  const stack = new Stack(mockApp, "custom-transform-stack");
 
-  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
     schemaPath: testCustomTransformerSchemaPath,
-    apiName: 'custom-transforms',
+    apiName: "custom-transforms",
     authorizationConfig: {
       defaultAuthorization: {
         authorizationType: AuthorizationType.API_KEY,
@@ -383,47 +428,48 @@ test('Custom Post Transform', () => {
   expect(endpointResolvers.length).toEqual(1);
 
   for (const resolver of endpointResolvers) {
-    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::Resolver', {
-      FieldName: resolver.fieldName,
-      TypeName: resolver.typeName,
-    });
+    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+      "AWS::AppSync::Resolver",
+      {
+        FieldName: resolver.fieldName,
+        TypeName: resolver.typeName,
+      }
+    );
   }
 });
 
-test('Invalid Transformer', () => {
+test("Invalid Transformer", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'custom-transform-stack');
+  const stack = new Stack(mockApp, "custom-transform-stack");
 
   const willThrow = () => {
-    new AppSyncTransformer(stack, 'test-transformer', {
+    new AppSyncTransformer(stack, "test-transformer", {
       schemaPath: testCustomTransformerSchemaPath,
-      apiName: 'custom-transforms',
+      apiName: "custom-transforms",
       authorizationConfig: {
         defaultAuthorization: {
           authorizationType: AuthorizationType.API_KEY,
         },
       },
-      preCdkTransformers: [
-        '123abc',
-      ],
+      preCdkTransformers: ["123abc"],
     });
   };
 
   expect(willThrow).toThrow();
 });
 
-test('DynamoDB Stream Config Property', () => {
+test("DynamoDB Stream Config Property", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'user-pool-auth-stack');
+  const stack = new Stack(mockApp, "user-pool-auth-stack");
 
-  const userPool = new UserPool(stack, 'test-userpool');
-  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+  const userPool = new UserPool(stack, "test-userpool");
+  const userPoolClient = new UserPoolClient(stack, "test-userpool-client", {
     userPool: userPool,
   });
 
-  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
     schemaPath: testSchemaPath,
-    apiName: 'user-pool-auth-api',
+    apiName: "user-pool-auth-api",
     authorizationConfig: {
       defaultAuthorization: {
         authorizationType: AuthorizationType.USER_POOL,
@@ -440,31 +486,34 @@ test('DynamoDB Stream Config Property', () => {
   });
 
   const tableData = appSyncTransformer.outputs.cdkTables;
-  if (!tableData) throw new Error('Expected table data');
+  if (!tableData) throw new Error("Expected table data");
 
   // Make sure order table exists
   const orderTable = appSyncTransformer.tableMap.OrderTable;
   expect(orderTable.tableStreamArn).toBeTruthy();
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
-    StreamSpecification: {
-      StreamViewType: StreamViewType.NEW_IMAGE,
-    },
-  });
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+    "AWS::DynamoDB::Table",
+    {
+      StreamSpecification: {
+        StreamViewType: StreamViewType.NEW_IMAGE,
+      },
+    }
+  );
 });
 
-test('DynamoDB Stream Enabled Convenience Method', () => {
+test("DynamoDB Stream Enabled Convenience Method", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'user-pool-auth-stack');
+  const stack = new Stack(mockApp, "user-pool-auth-stack");
 
-  const userPool = new UserPool(stack, 'test-userpool');
-  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+  const userPool = new UserPool(stack, "test-userpool");
+  const userPoolClient = new UserPoolClient(stack, "test-userpool-client", {
     userPool: userPool,
   });
 
-  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
     schemaPath: testSchemaPath,
-    apiName: 'user-pool-auth-api',
+    apiName: "user-pool-auth-api",
     authorizationConfig: {
       defaultAuthorization: {
         authorizationType: AuthorizationType.USER_POOL,
@@ -478,35 +527,37 @@ test('DynamoDB Stream Enabled Convenience Method', () => {
   });
 
   const tableData = appSyncTransformer.outputs.cdkTables;
-  if (!tableData) throw new Error('Expected table data');
+  if (!tableData) throw new Error("Expected table data");
 
   const streamArn = appSyncTransformer.addDynamoDBStream({
-    modelTypeName: 'Order',
+    modelTypeName: "Order",
     streamViewType: StreamViewType.NEW_IMAGE,
   });
 
   expect(streamArn).toBeTruthy();
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
-    StreamSpecification: {
-      StreamViewType: StreamViewType.NEW_IMAGE,
-    },
-  });
-
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource(
+    "AWS::DynamoDB::Table",
+    {
+      StreamSpecification: {
+        StreamViewType: StreamViewType.NEW_IMAGE,
+      },
+    }
+  );
 });
 
-test('Grant Access To Public/Private Fields', () => {
+test("Grant Access To Public/Private Fields", () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'test-grant-stack');
+  const stack = new Stack(mockApp, "test-grant-stack");
 
-  const userPool = new UserPool(stack, 'test-userpool');
-  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+  const userPool = new UserPool(stack, "test-userpool");
+  const userPoolClient = new UserPoolClient(stack, "test-userpool-client", {
     userPool: userPool,
   });
 
-  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, "test-transformer", {
     schemaPath: testSchemaPath,
-    apiName: 'grant-test-api',
+    apiName: "grant-test-api",
     authorizationConfig: {
       defaultAuthorization: {
         authorizationType: AuthorizationType.USER_POOL,
@@ -520,362 +571,362 @@ test('Grant Access To Public/Private Fields', () => {
   });
 
   // We don't really need this to work
-  const testPrivateFunction = new Function(stack, 'test-function', {
+  const testPrivateFunction = new Function(stack, "test-function", {
     runtime: Runtime.NODEJS_12_X,
-    code: Code.fromInline('export function handler() { }'),
-    handler: 'handler',
+    code: Code.fromInline("export function handler() { }"),
+    handler: "handler",
   });
 
   appSyncTransformer.grantPrivate(testPrivateFunction);
-  expect(stack).toHaveResourceLike('AWS::IAM::Policy', {
+  expect(stack).toHaveResourceLike("AWS::IAM::Policy", {
     PolicyDocument: {
       Statement: [
         {
-          Action: 'appsync:GraphQL',
-          Effect: 'Allow',
+          Action: "appsync:GraphQL",
+          Effect: "Allow",
           Resource: [
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Customer/*',
+                  "/types/Customer/*",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Mutation/fields/updateCustomer',
+                  "/types/Mutation/fields/updateCustomer",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Query/fields/getCustomer',
+                  "/types/Query/fields/getCustomer",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Query/fields/listCustomers',
+                  "/types/Query/fields/listCustomers",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Subscription/fields/onCreateCustomer',
+                  "/types/Subscription/fields/onCreateCustomer",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Subscription/fields/onUpdateCustomer',
+                  "/types/Subscription/fields/onUpdateCustomer",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Subscription/fields/onDeleteCustomer',
+                  "/types/Subscription/fields/onDeleteCustomer",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Product/*',
+                  "/types/Product/*",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Query/fields/getProduct',
+                  "/types/Query/fields/getProduct",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Query/fields/listProducts',
+                  "/types/Query/fields/listProducts",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Query/fields/productsByName',
+                  "/types/Query/fields/productsByName",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Subscription/fields/onCreateProduct',
+                  "/types/Subscription/fields/onCreateProduct",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Subscription/fields/onUpdateProduct',
+                  "/types/Subscription/fields/onUpdateProduct",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Subscription/fields/onDeleteProduct',
+                  "/types/Subscription/fields/onDeleteProduct",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/User/*',
+                  "/types/User/*",
                 ],
               ],
             },
@@ -883,16 +934,16 @@ test('Grant Access To Public/Private Fields', () => {
         },
       ],
     },
-    PolicyName: 'testfunctionServiceRoleDefaultPolicy2F277F85',
+    PolicyName: "testfunctionServiceRoleDefaultPolicy2F277F85",
     Roles: [
       {
-        Ref: 'testfunctionServiceRoleFB85AD63',
+        Ref: "testfunctionServiceRoleFB85AD63",
       },
     ],
   });
 
-  const identityPool = new CfnIdentityPool(stack, 'test-identity-pool', {
-    identityPoolName: 'test-identity-pool',
+  const identityPool = new CfnIdentityPool(stack, "test-identity-pool", {
+    identityPoolName: "test-identity-pool",
     cognitoIdentityProviders: [
       {
         clientId: userPoolClient.userPoolClientId,
@@ -902,180 +953,185 @@ test('Grant Access To Public/Private Fields', () => {
     allowUnauthenticatedIdentities: true,
   });
 
-  const testPublicRole = new Role(stack, 'public-role', {
-    assumedBy: new WebIdentityPrincipal('cognito-identity.amazonaws.com')
-      .withConditions({
-        'StringEquals': { 'cognito-identity.amazonaws.com:aud': `${identityPool.ref}` },
-        'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': 'unauthenticated' },
-      }),
+  const testPublicRole = new Role(stack, "public-role", {
+    assumedBy: new WebIdentityPrincipal(
+      "cognito-identity.amazonaws.com"
+    ).withConditions({
+      StringEquals: {
+        "cognito-identity.amazonaws.com:aud": `${identityPool.ref}`,
+      },
+      "ForAnyValue:StringLike": {
+        "cognito-identity.amazonaws.com:amr": "unauthenticated",
+      },
+    }),
   });
 
   appSyncTransformer.grantPublic(testPublicRole);
-  expect(stack).toHaveResourceLike('AWS::IAM::Policy', {
+  expect(stack).toHaveResourceLike("AWS::IAM::Policy", {
     PolicyDocument: {
       Statement: [
         {
-          Action: 'appsync:GraphQL',
-          Effect: 'Allow',
+          Action: "appsync:GraphQL",
+          Effect: "Allow",
           Resource: [
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Product/*',
+                  "/types/Product/*",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Query/fields/getProduct',
+                  "/types/Query/fields/getProduct",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Query/fields/listProducts',
+                  "/types/Query/fields/listProducts",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Query/fields/productsByName',
+                  "/types/Query/fields/productsByName",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Subscription/fields/onCreateProduct',
+                  "/types/Subscription/fields/onCreateProduct",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Subscription/fields/onUpdateProduct',
+                  "/types/Subscription/fields/onUpdateProduct",
                 ],
               ],
             },
             {
-              'Fn::Join': [
-                '',
+              "Fn::Join": [
+                "",
                 [
-                  'arn:aws:appsync:',
+                  "arn:aws:appsync:",
                   {
-                    Ref: 'AWS::Region',
+                    Ref: "AWS::Region",
                   },
-                  ':',
+                  ":",
                   {
-                    Ref: 'AWS::AccountId',
+                    Ref: "AWS::AccountId",
                   },
-                  ':apis/',
+                  ":apis/",
                   {
-                    'Fn::GetAtt': [
-                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
-                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    "Fn::GetAtt": [
+                      "testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073",
+                      "Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId",
                     ],
                   },
-                  '/types/Subscription/fields/onDeleteProduct',
+                  "/types/Subscription/fields/onDeleteProduct",
                 ],
               ],
             },
@@ -1083,10 +1139,10 @@ test('Grant Access To Public/Private Fields', () => {
         },
       ],
     },
-    PolicyName: 'publicroleDefaultPolicy321C2CCD',
+    PolicyName: "publicroleDefaultPolicy321C2CCD",
     Roles: [
       {
-        Ref: 'publicroleEFDEA157',
+        Ref: "publicroleEFDEA157",
       },
     ],
   });

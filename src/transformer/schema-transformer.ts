@@ -18,9 +18,9 @@ import {
 } from './cdk-transformer';
 
 // Rebuilt this from cloudform-types because it has type errors
-import { PrimaryKeyTransformer } from './pk-transformer';
 import { Resource } from './resource';
-import { SingleTableTransformer } from './single-table-transformer';
+import { PrimaryKeyTransformer } from './single-table/pk-transformer';
+import { SingleTableTransformer } from './single-table/single-table-transformer';
 
 // Import this way because FunctionTransformer.d.ts types were throwing an eror. And we didn't write this package so hope for the best :P
 // eslint-disable-next-line

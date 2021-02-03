@@ -14,7 +14,7 @@ import { ResourceFactory } from 'graphql-dynamodb-transformer/lib/resources';
 
 import {
   gql,
-  //   getDirectiveArguments,
+  // getDirectiveArguments,
   //   getFieldArguments,
   Transformer,
   TransformerContext,
@@ -47,17 +47,13 @@ export class PrimaryKeyTransformer extends Transformer {
   public field = (
     parent: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
     def: FieldDefinitionNode,
-    directive: DirectiveNode,
+    _: DirectiveNode,
     ctx: TransformerContext,
   ) => {
     const parentName = parent.name.value;
-
     const metadata = ctx.metadata.get(parentName);
-    console.log('### PARENT METADATA:', metadata);
-
 
     const fieldName = def.name.value;
-    // const args = getDirectiveArguments(directive);
 
     ctx.metadata.set(parentName, {
       ...metadata,

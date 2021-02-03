@@ -158,6 +158,12 @@ export class CdkTransformer extends Transformer {
         } else { // Should be a table/model resolver -> Maybe not true when we add in @searchable, etc
           const dataSourceName = resource.Properties?.DataSourceName?.payload[0];
           const dataSource = templateResources[dataSourceName];
+
+          if (!dataSource) {
+            console.log('DATA SOURCE FOR NAME:', dataSourceName);
+            continue;
+          }
+
           const dataSourceType = dataSource.Properties?.Type;
 
           let typeName = resource.Properties?.TypeName;
