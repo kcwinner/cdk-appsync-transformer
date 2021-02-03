@@ -274,24 +274,22 @@ export class AppSyncTransformer extends Construct {
 
     Object.keys(noneResolvers).forEach((resolverKey: any) => {
       const resolver = resolvers[resolverKey];
-      if (resolver) {
-        new Resolver(
-          this.nestedAppsyncStack,
-          `${resolver.typeName}-${resolver.fieldName}-resolver`,
-          {
-            api: this.appsyncAPI,
-            typeName: resolver.typeName,
-            fieldName: resolver.fieldName,
-            dataSource: noneDataSource,
-            requestMappingTemplate: MappingTemplate.fromFile(
-              resolver.requestMappingTemplate,
-            ),
-            responseMappingTemplate: MappingTemplate.fromFile(
-              resolver.responseMappingTemplate,
-            ),
-          },
-        );
-      }
+      new Resolver(
+        this.nestedAppsyncStack,
+        `${resolver.typeName}-${resolver.fieldName}-resolver`,
+        {
+          api: this.appsyncAPI,
+          typeName: resolver.typeName,
+          fieldName: resolver.fieldName,
+          dataSource: noneDataSource,
+          requestMappingTemplate: MappingTemplate.fromFile(
+            resolver.requestMappingTemplate,
+          ),
+          responseMappingTemplate: MappingTemplate.fromFile(
+            resolver.responseMappingTemplate,
+          ),
+        },
+      );
     });
   }
 
