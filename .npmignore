@@ -10,6 +10,7 @@
 /src
 /test
 /test-reports/
+/tsconfig.eslint.json
 /tsconfig.jest.json
 /tsconfig.json
 appsync/*
