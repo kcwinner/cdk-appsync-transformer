@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.77.9](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.8...v1.77.9) (2021-02-16)
+
+
+### Bug Fixes
+
+* Adding in OIDC support to the transformer config and a test to the schema ([#139](https://github.com/kcwinner/cdk-appsync-transformer/issues/139)) ([4b1ce38](https://github.com/kcwinner/cdk-appsync-transformer/commit/4b1ce380974630d238c8edac17edafc1f1d4d96a)), closes [#135](https://github.com/kcwinner/cdk-appsync-transformer/issues/135)
+
 ### [1.77.8](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.7...v1.77.8) (2021-02-03)
 
 
