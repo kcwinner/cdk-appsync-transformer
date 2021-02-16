@@ -95,16 +95,12 @@
       "type": "build"
     },
     {
-      "name": "jsii-release",
-      "type": "build"
-    },
-    {
       "name": "json-schema",
       "type": "build"
     },
     {
       "name": "projen",
-      "version": "^0.14.4",
+      "version": "^0.16.5",
       "type": "build"
     },
     {
