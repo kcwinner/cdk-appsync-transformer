@@ -100,6 +100,13 @@ export class SchemaTransformer {
           {
             authenticationType: 'AWS_IAM',
           },
+          {
+            authenticationType: 'OPENID_CONNECT',
+            openIDConnectConfig: {
+              name: 'OIDC',
+              issuerUrl: 'https://cognito-idp.us-east-1.amazonaws.com/us-east-1_XXX',
+            },
+          },
         ],
       },
     };
