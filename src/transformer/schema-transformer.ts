@@ -86,22 +86,29 @@ export class SchemaTransformer {
         defaultAuthentication: {
           authenticationType: 'AMAZON_COGNITO_USER_POOLS',
           userPoolConfig: {
-            userPoolId: '12345xyz',
-          },
+            userPoolId: '12345xyz'
+          }
         },
         additionalAuthenticationProviders: [
           {
             authenticationType: 'API_KEY',
             apiKeyConfig: {
               description: 'Testing',
-              apiKeyExpirationDays: 100,
-            },
+              apiKeyExpirationDays: 100
+            }
           },
           {
             authenticationType: 'AWS_IAM',
           },
-        ],
-      },
+          {
+            authenticationType: 'OPENID_CONNECT',
+            openIDConnectConfig: {
+              name: 'OIDC',
+              issuerUrl: 'https://cognito-idp.us-east-1.amazonaws.com/us-east-1_XXX',
+            },
+          },
+        ]
+      }
     };
   }
 

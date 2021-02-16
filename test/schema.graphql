@@ -36,7 +36,10 @@ type Order @model
         expirationUnixTime: AWSTimestamp! @ttl
 }
 
-type Blog @model {
+
+type Blog @model
+  @auth(rules: [{ allow: owner, provider: oidc, identityClaim: "sub" }])
+{
   id: ID!
   name: String!
   posts: [Post] @connection(name: "BlogPosts")
