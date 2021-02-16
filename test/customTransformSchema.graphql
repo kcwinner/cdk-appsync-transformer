@@ -12,3 +12,11 @@ type Query {
 type CustomTransformHandling {
   fooBar: String
 }
+
+type CustomTransformHandlerTwo {
+    foobar: String @from(field: "foo_bar")
+}
+
+type CustomTransformHandlerThree {
+    foobar: String @from(field: "foo_bar")
+}

@@ -8,6 +8,7 @@ import { App, Stack } from '@aws-cdk/core';
 
 import { AppSyncTransformer } from '../src/index';
 import MappedTransformer from './mappedTransformer';
+import SingleFieldMapTransformer from './singleFieldMapTransformer';
 
 const testSchemaPath = path.join(__dirname, 'schema.graphql');
 const testCustomTransformerSchemaPath = path.join(__dirname, 'customTransformSchema.graphql');
@@ -276,6 +277,7 @@ test('Custom Pre Transform', () => {
     },
     preCdkTransformers: [
       new MappedTransformer(),
+      new SingleFieldMapTransformer(),
     ],
   });
 
@@ -290,6 +292,9 @@ test('Custom Pre Transform', () => {
       TypeName: resolver.typeName,
     });
   }
+
+  const noneDataResolvers = appSyncTransformer.outputs.noneResolvers ?? {};
+  expect(Object.keys(noneDataResolvers).length).toEqual(2);
 });
 
 test('Custom Post Transform', () => {
@@ -306,6 +311,7 @@ test('Custom Post Transform', () => {
     },
     postCdkTransformers: [
       new MappedTransformer(),
+      new SingleFieldMapTransformer(),
     ],
   });
 

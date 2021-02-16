@@ -46,6 +46,11 @@
       "type": "build"
     },
     {
+      "name": "cloudform-types",
+      "version": "^4.2.0",
+      "type": "build"
+    },
+    {
       "name": "eslint",
       "type": "build"
     },

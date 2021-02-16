@@ -123,7 +123,7 @@ export class CdkTransformer extends Transformer {
         this.buildTablesFromResource(resourceName, ctx);
       } else if (resource.Type === 'AWS::AppSync::Resolver') {
         if (resource.Properties?.DataSourceName === 'NONE') {
-          this.noneDataSources[resource.Properties.FieldName] = {
+          this.noneDataSources[`${resource.Properties.TypeName}${resource.Properties.FieldName}`] = {
             typeName: resource.Properties.TypeName,
             fieldName: resource.Properties.FieldName,
           };

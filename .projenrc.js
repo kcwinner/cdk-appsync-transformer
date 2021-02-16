@@ -68,6 +68,7 @@ const project = new AwsCdkConstructLibrary({
     'eslint',
     'jest',
     'ts-jest',
+    'cloudform-types@^4.2.0',
   ],
   bundledDeps: [
     'graphql@^14.5.8',
