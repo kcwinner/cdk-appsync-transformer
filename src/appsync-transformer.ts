@@ -62,7 +62,7 @@ export interface AppSyncTransformerProps {
    * Whether to enable dynamo Point In Time Recovery. Default to false for backwards compatibility
    * @default false
    */
-  readonly enableDynamoPitr?: boolean;
+  readonly enableDynamoPointInTimeRecovery?: boolean;
 
   /**
    * Optional. {@link FieldLogLevel} type for AppSync GraphqlApi log level
@@ -155,7 +155,7 @@ export class AppSyncTransformer extends Construct {
     super(scope, id);
 
     this.isSyncEnabled = props.syncEnabled ? props.syncEnabled : false;
-    this.pointInTimeRecovery = props.enableDynamoPitr ?? false;
+    this.pointInTimeRecovery = props.enableDynamoPointInTimeRecovery ?? false;
 
     const transformerConfiguration: SchemaTransformerProps = {
       schemaPath: props.schemaPath,
@@ -400,7 +400,7 @@ export class AppSyncTransformer extends Construct {
         name: tableData.partitionKey.name,
         type: this.convertAttributeType(tableData.partitionKey.type),
       },
-      pointInTimeRecovery: this.pointInTimeRecovery
+      pointInTimeRecovery: this.pointInTimeRecovery,
     };
 
     if (tableData.sortKey && tableData.sortKey.name) {

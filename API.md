@@ -45,6 +45,7 @@ new AppSyncTransformer(scope: Construct, id: string, props: AppSyncTransformerPr
   * **schemaPath** (<code>string</code>)  Relative path where schema.graphql exists. 
   * **apiName** (<code>string</code>)  String value representing the api name. __*Default*__: `${id}-api`
   * **authorizationConfig** (<code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code>)  Optional. __*Default*__: API_KEY authorization config
+  * **enableDynamoPointInTimeRecovery** (<code>boolean</code>)  Whether to enable dynamo Point In Time Recovery. __*Default*__: false
   * **fieldLogLevel** (<code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code>)  Optional. __*Default*__: FieldLogLevel.NONE
   * **postCdkTransformers** (<code>Array<any></code>)  Optional. __*Default*__: undefined
   * **preCdkTransformers** (<code>Array<any></code>)  Optional. __*Default*__: undefined
@@ -101,6 +102,7 @@ Name | Type | Description
 **schemaPath**🔹 | <code>string</code> | Relative path where schema.graphql exists.
 **apiName**?🔹 | <code>string</code> | String value representing the api name.<br/>__*Default*__: `${id}-api`
 **authorizationConfig**?🔹 | <code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code> | Optional.<br/>__*Default*__: API_KEY authorization config
+**enableDynamoPointInTimeRecovery**?🔹 | <code>boolean</code> | Whether to enable dynamo Point In Time Recovery.<br/>__*Default*__: false
 **fieldLogLevel**?🔹 | <code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code> | Optional.<br/>__*Default*__: FieldLogLevel.NONE
 **postCdkTransformers**?🔹 | <code>Array<any></code> | Optional.<br/>__*Default*__: undefined
 **preCdkTransformers**?🔹 | <code>Array<any></code> | Optional.<br/>__*Default*__: undefined
