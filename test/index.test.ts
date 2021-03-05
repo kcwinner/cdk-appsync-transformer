@@ -93,7 +93,7 @@ test('GraphQL API W/ User Pool Auth Created', () => {
   });
 });
 
-test('Model Tables Created', () => {
+test('Model Tables Created and PITR', () => {
   const mockApp = new App();
   const stack = new Stack(mockApp, 'user-pool-auth-stack');
 
@@ -115,6 +115,7 @@ test('Model Tables Created', () => {
         },
       },
     },
+    enableDynamoPointInTimeRecovery: true,
   });
 
   const tableData = appSyncTransformer.outputs.cdkTables;
@@ -139,6 +140,9 @@ test('Model Tables Created', () => {
     TimeToLiveSpecification: {
       AttributeName: 'expirationUnixTime',
       Enabled: true,
+    },
+    PointInTimeRecoverySpecification: {
+      PointInTimeRecoveryEnabled: true,
     },
   });
 });
