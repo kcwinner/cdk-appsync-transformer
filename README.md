@@ -14,15 +14,16 @@ For CDK versions < 1.64.0 please use [aws-cdk-appsync-transformer](https://githu
 
 ## Why This Package
 
-In April 2020 I wrote a [blog post](https://www.trek10.com/blog/appsync-with-the-aws-cloud-development-kit) on using the AWS Cloud Development Kit with AppSync. I wrote my own transformer in order to emulate AWS Amplify's method of using GraphQL directives in order to template a lot of the Schema Definition Language. 
+In April 2020 I wrote a [blog post](https://www.trek10.com/blog/appsync-with-the-aws-cloud-development-kit) on using the AWS Cloud Development Kit with AppSync. I wrote my own transformer in order to emulate AWS Amplify's method of using GraphQL directives in order to template a lot of the Schema Definition Language.
 
-This package is my attempt to convert all of that effort into a separate construct in order to clean up the process. 
+This package is my attempt to convert all of that effort into a separate construct in order to clean up the process.
 
 ## How Do I Use It
 
 ### Example Usage
 
 API With Default Values
+
 ```ts
 import { AppSyncTransformer } from 'cdk-appsync-transformer';
 ...
@@ -32,88 +33,94 @@ new AppSyncTransformer(this, "my-cool-api", {
 ```
 
 schema.graphql
+
 ```graphql
-type Customer @model
-    @auth(rules: [
-        { allow: groups, groups: ["Admins"] },
-        { allow: private, provider: iam, operations: [read, update] }
-    ]) {
-        id: ID!
-        firstName: String!
-        lastName: String!
-        active: Boolean!
-        address: String!
+type Customer
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admins"] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  ) {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  active: Boolean!
+  address: String!
 }
 
-type Product @model
-    @auth(rules: [
-        { allow: groups, groups: ["Admins"] },
-        { allow: public, provider: iam, operations: [read] }
-    ]) {
-        id: ID!
-        name: String!
-        description: String!
-        price: String!
-        active: Boolean!
-        added: AWSDateTime!
-        orders: [Order] @connection
+type Product
+  @model
+  @auth(
+    rules: [
+      { allow: groups, groups: ["Admins"] }
+      { allow: public, provider: iam, operations: [read] }
+    ]
+  ) {
+  id: ID!
+  name: String!
+  description: String!
+  price: String!
+  active: Boolean!
+  added: AWSDateTime!
+  orders: [Order] @connection
 }
 
-type Order @model
-    @key(fields: ["id", "productID"]) {
-        id: ID!
-        productID: ID!
-        total: String!
-        ordered: AWSDateTime!
+type Order @model @key(fields: ["id", "productID"]) {
+  id: ID!
+  productID: ID!
+  total: String!
+  ordered: AWSDateTime!
 }
 ```
 
 ### [Supported Amplify Directives](https://docs.amplify.aws/cli/graphql-transformer/directives)
 
 Tested:
-* [@model](https://docs.amplify.aws/cli/graphql-transformer/directives#model)
-* [@auth](https://docs.amplify.aws/cli/graphql-transformer/directives#auth)
-* [@connection](https://docs.amplify.aws/cli/graphql-transformer/directives#connection)
-* [@key](https://docs.amplify.aws/cli/graphql-transformer/directives#key)
-* [@function](https://docs.amplify.aws/cli/graphql-transformer/directives#function)
-  * These work differently here than they do in Amplify - see [Functions](#functions) below
+
+- [@model](https://docs.amplify.aws/cli/graphql-transformer/directives#model)
+- [@auth](https://docs.amplify.aws/cli/graphql-transformer/directives#auth)
+- [@connection](https://docs.amplify.aws/cli/graphql-transformer/directives#connection)
+- [@key](https://docs.amplify.aws/cli/graphql-transformer/directives#key)
+- [@function](https://docs.amplify.aws/cli/graphql-transformer/directives#function)
+  - These work differently here than they do in Amplify - see [Functions](#functions) below
 
 Experimental:
-* [@versioned](https://docs.amplify.aws/cli/graphql-transformer/directives#versioned)
-* [@http](https://docs.amplify.aws/cli/graphql-transformer/directives#http)
-* [@ttl](https://github.com/flogy/graphql-ttl-transformer)
-  * Community directive transformer
+
+- [@versioned](https://docs.amplify.aws/cli/graphql-transformer/directives#versioned)
+- [@http](https://docs.amplify.aws/cli/graphql-transformer/directives#http)
+- [@ttl](https://github.com/flogy/graphql-ttl-transformer)
+  - Community directive transformer
 
 Not Yet Supported:
-* [@searchable](https://docs.amplify.aws/cli/graphql-transformer/directives#searchable)
-* [@predictions](https://docs.amplify.aws/cli/graphql-transformer/directives#predictions)
+
+- [@searchable](https://docs.amplify.aws/cli/graphql-transformer/directives#searchable)
+- [@predictions](https://docs.amplify.aws/cli/graphql-transformer/directives#predictions)
 
 ### Custom Transformers & Directives
 
-*This is an advanced feature*
+_This is an advanced feature_
 
 It is possible to add pre/post custom transformers that extend the Amplify ITransformer. To see a simple example please look at [mapped-transformer.ts](./test/mappedTransformer/mapped-transformer.ts) in the tests section.
 
 This allows you to modify the data either before or after the [cdk-transformer](./src/transformer/cdk-transformer.ts) is run.
 
-*Limitation:* Due to some limitations with `jsii` we are unable to export the ITransformer interface from `graphql-transformer-core` to ensure complete type safety. Instead, there is a validation method that will check for `name`, `directive` and `typeDefinitions` members in the transformers that are passed in.
+_Limitation:_ Due to some limitations with `jsii` we are unable to export the ITransformer interface from `graphql-transformer-core` to ensure complete type safety. Instead, there is a validation method that will check for `name`, `directive` and `typeDefinitions` members in the transformers that are passed in.
 
 ```ts
-import { PreTransformer, PostTransformer } from './customTransformers';
+import { PreTransformer, PostTransformer } from "./customTransformers";
 new AppSyncTransformer(this, "my-cool-api", {
-    schemaPath: 'schema.graphql',
-    preCdkTransformers: [
-      new PreTransformer(),
-    ],
-    postCdkTransformers: [
-      new PostTransformer(),
-    ]
+  schemaPath: "schema.graphql",
+  preCdkTransformers: [new PreTransformer()],
+  postCdkTransformers: [new PostTransformer()],
 });
 ```
 
 ### Authentication
 
 User Pool Authentication
+
 ```ts
 const userPool = new UserPool(this, 'my-cool-user-pool', {
     ...
@@ -139,7 +146,7 @@ new AppSyncTransformer(this, "my-cool-api", {
 });
 ```
 
-#### IAM 
+#### IAM
 
 Unauth Role: TODO
 
@@ -147,15 +154,34 @@ Auth Role: Unsupported. Authorized roles (Lambda Functions, EC2 roles, etc) are 
 
 ### Functions
 
+#### Directive Example
+
+```graphql
+type Query {
+  listUsers: UserConnection @function(name: "myFunction")
+  getUser(id: ID!): User @function(name: "myFunction")
+}
+```
+
 There are two ways to add functions as data sources (and their resolvers)
 
-#### Convenience Method
+#### Construct Convenience Method
 
-`addLambdaDataSourceAndResolvers` will do the same thing as the manual version below. However, if you want to customize mapping templates you will have to bypass this and set up the data source and resolvers yourself
+```ts
+const myFunction = new Function(...);
+
+// first argument is the name in the @function directive
+appsyncTransformer.addLambdaDataSourceAndResolvers('myFunction', 'unique-id', myFunction, {
+  name: 'lambdaDatasourceName'
+})
+```
+
+`addLambdaDataSourceAndResolvers` does the same thing as the manual version below. However, if you want to customize mapping templates you will have to bypass this and set up the data source and resolvers yourself
 
 #### Manually
 
 Fields with the `@function` directive will be accessible via `appsyncTransformer.functionResolvers`. It will return a map like so:
+
 ```ts
 {
   'user-function': [
@@ -168,6 +194,7 @@ Fields with the `@function` directive will be accessible via `appsyncTransformer
 ```
 
 You can grab your function resolvers via the map and assign them your own function(s). Example might be something like:
+
 ```ts
 const userFunction = new Function(...);
 const userFunctionDataSource = appsyncTransformer.appsyncAPI.addLambdaDataSource('some-id', userFunction);
@@ -212,7 +239,7 @@ Often you will need to access your table names in a lambda function or elsewhere
 
 ### Cfn Outputs
 
-* `appsyncGraphQLEndpointOutput` - the appsync graphql endpoint
+- `appsyncGraphQLEndpointOutput` - the appsync graphql endpoint
 
 ### Code Generation
 
@@ -220,7 +247,7 @@ I've written some helpers to generate code similarly to how AWS Amplify generate
 
 ## Versioning
 
-I will *attempt* to align the major and minor version of this package with [AWS CDK], but always check the release descriptions for compatibility.
+I will _attempt_ to align the major and minor version of this package with [AWS CDK], but always check the release descriptions for compatibility.
 
 I currently support [![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/kcwinner/cdk-appsync-transformer/@aws-cdk/core)](https://github.com/aws/aws-cdk)
 
@@ -233,6 +260,7 @@ See [CONTRIBUTING](CONTRIBUTING.md) for details
 Distributed under [Apache License, Version 2.0](LICENSE)
 
 ## References
-* [aws cdk](https://aws.amazon.com/cdk)
-* [amplify-cli](https://github.com/aws-amplify/amplify-cli)
-* [Amplify Directives](https://docs.amplify.aws/cli/graphql-transformer/directives)
+
+- [aws cdk](https://aws.amazon.com/cdk)
+- [amplify-cli](https://github.com/aws-amplify/amplify-cli)
+- [Amplify Directives](https://docs.amplify.aws/cli/graphql-transformer/directives)
