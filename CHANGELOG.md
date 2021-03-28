@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.77.11](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.10...v1.77.11) (2021-03-28)
+
+
+### Bug Fixes
+
+* Fixing the none data source resolver issue for Query and Mutation ([#172](https://github.com/kcwinner/cdk-appsync-transformer/issues/172)) ([fdc4025](https://github.com/kcwinner/cdk-appsync-transformer/commit/fdc40258e9d0fdca97ca7cc8ddcc091fbc56c6b2))
+
 ### [1.77.10](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.9...v1.77.10) (2021-03-05)
 
 ### [1.77.9](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.8...v1.77.9) (2021-02-16)
