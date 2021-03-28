@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.77.12](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.11...v1.77.12) (2021-03-28)
+
+
+### Bug Fixes
+
+* Adding in dynamodb stream configuration ([#174](https://github.com/kcwinner/cdk-appsync-transformer/issues/174)) ([08594aa](https://github.com/kcwinner/cdk-appsync-transformer/commit/08594aaa5455c3c2f6abb1203a5041d32982fb65))
+
 ### [1.77.11](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.10...v1.77.11) (2021-03-28)
 
 
