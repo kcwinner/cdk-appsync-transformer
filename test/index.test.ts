@@ -2,7 +2,7 @@ import '@aws-cdk/assert/jest';
 import * as path from 'path';
 import { AuthorizationType, AuthorizationConfig, UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
 import { UserPool, UserPoolClient } from '@aws-cdk/aws-cognito';
-import { CfnTable } from '@aws-cdk/aws-dynamodb';
+import { StreamViewType } from '@aws-cdk/aws-dynamodb';
 import { Runtime, Code, Function } from '@aws-cdk/aws-lambda';
 import { App, Stack } from '@aws-cdk/core';
 
@@ -129,7 +129,7 @@ test('Model Tables Created and PITR', () => {
   }
 
   // Make sure ttl is on Order table
-  const orderTable = appSyncTransformer.nestedAppsyncStack.node.findChild('OrderTable') as CfnTable;
+  const orderTable = appSyncTransformer.nestedAppsyncStack.node.findChild('OrderTable');
   expect(orderTable).toBeTruthy();
 
   expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
@@ -352,4 +352,87 @@ test('Invalid Transformer', () => {
   };
 
   expect(willThrow).toThrow();
+});
+
+test('DynamoDB Stream Config Property', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'user-pool-auth-stack');
+
+  const userPool = new UserPool(stack, 'test-userpool');
+  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+    userPool: userPool,
+  });
+
+  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+    schemaPath: testSchemaPath,
+    apiName: 'user-pool-auth-api',
+    authorizationConfig: {
+      defaultAuthorization: {
+        authorizationType: AuthorizationType.USER_POOL,
+        userPoolConfig: {
+          userPool: userPool,
+          appIdClientRegex: userPoolClient.userPoolClientId,
+          defaultAction: UserPoolDefaultAction.ALLOW,
+        },
+      },
+    },
+    dynamoDbStreamConfig: {
+      Order: StreamViewType.NEW_IMAGE,
+    },
+  });
+
+  const tableData = appSyncTransformer.outputs.cdkTables;
+  if (!tableData) throw new Error('Expected table data');
+
+  // Make sure order table exists
+  const orderTable = appSyncTransformer.tableMap.OrderTable;
+  expect(orderTable.tableStreamArn).toBeTruthy();
+
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+    StreamSpecification: {
+      StreamViewType: StreamViewType.NEW_IMAGE,
+    },
+  });
+});
+
+test('DynamoDB Stream Enabled Convenience Method', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'user-pool-auth-stack');
+
+  const userPool = new UserPool(stack, 'test-userpool');
+  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+    userPool: userPool,
+  });
+
+  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+    schemaPath: testSchemaPath,
+    apiName: 'user-pool-auth-api',
+    authorizationConfig: {
+      defaultAuthorization: {
+        authorizationType: AuthorizationType.USER_POOL,
+        userPoolConfig: {
+          userPool: userPool,
+          appIdClientRegex: userPoolClient.userPoolClientId,
+          defaultAction: UserPoolDefaultAction.ALLOW,
+        },
+      },
+    },
+  });
+
+  const tableData = appSyncTransformer.outputs.cdkTables;
+  if (!tableData) throw new Error('Expected table data');
+
+  const streamArn = appSyncTransformer.addDynamoDBStream({
+    modelTypeName: 'Order',
+    streamViewType: StreamViewType.NEW_IMAGE,
+  });
+
+  expect(streamArn).toBeTruthy();
+
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+    StreamSpecification: {
+      StreamViewType: StreamViewType.NEW_IMAGE,
+    },
+  });
+
 });

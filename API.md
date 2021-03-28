@@ -19,6 +19,7 @@ Name|Description
 [CdkTransformerTable](#cdk-appsync-transformer-cdktransformertable)|*No description*
 [CdkTransformerTableKey](#cdk-appsync-transformer-cdktransformertablekey)|*No description*
 [CdkTransformerTableTtl](#cdk-appsync-transformer-cdktransformertablettl)|*No description*
+[DynamoDBStreamProps](#cdk-appsync-transformer-dynamodbstreamprops)|*No description*
 [SchemaTransformerOutputs](#cdk-appsync-transformer-schematransformeroutputs)|*No description*
 
 
@@ -45,6 +46,7 @@ new AppSyncTransformer(scope: Construct, id: string, props: AppSyncTransformerPr
   * **schemaPath** (<code>string</code>)  Relative path where schema.graphql exists. 
   * **apiName** (<code>string</code>)  String value representing the api name. __*Default*__: `${id}-api`
   * **authorizationConfig** (<code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code>)  Optional. __*Default*__: API_KEY authorization config
+  * **dynamoDbStreamConfig** (<code>Map<string, [StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)></code>)  A map of @model type names to stream view type e.g { Blog: StreamViewType.NEW_IMAGE }. __*Optional*__
   * **enableDynamoPointInTimeRecovery** (<code>boolean</code>)  Whether to enable dynamo Point In Time Recovery. __*Default*__: false
   * **fieldLogLevel** (<code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code>)  Optional. __*Default*__: FieldLogLevel.NONE
   * **postCdkTransformers** (<code>Array<any></code>)  Optional. __*Default*__: undefined
@@ -65,10 +67,26 @@ Name | Type | Description
 **nestedAppsyncStack**🔹 | <code>[NestedStack](#aws-cdk-core-nestedstack)</code> | The NestedStack that contains the AppSync resources.
 **outputs**🔹 | <code>[SchemaTransformerOutputs](#cdk-appsync-transformer-schematransformeroutputs)</code> | The outputs from the SchemaTransformer.
 **resolvers**🔹 | <code>any</code> | The AppSync resolvers from the transformer minus any function resolvers.
+**tableMap**🔹 | <code>Map<string, [Table](#aws-cdk-aws-dynamodb-table)></code> | Map of cdk table keys to L2 Table e.g. { 'TaskTable': Table }.
 **tableNameMap**🔹 | <code>Map<string, any></code> | Map of cdk table tokens to table names.
 
 ### Methods
 
+
+#### addDynamoDBStream(props)🔹 <a id="cdk-appsync-transformer-appsynctransformer-adddynamodbstream"></a>
+
+Adds a stream to the dynamodb table associated with the type.
+
+```ts
+addDynamoDBStream(props: DynamoDBStreamProps): string
+```
+
+* **props** (<code>[DynamoDBStreamProps](#cdk-appsync-transformer-dynamodbstreamprops)</code>)  *No description*
+  * **modelTypeName** (<code>string</code>)  The @model type name from the graph schema e.g. Blog. 
+  * **streamViewType** (<code>[StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)</code>)  *No description* 
+
+__Returns__:
+* <code>string</code>
 
 #### addLambdaDataSourceAndResolvers(functionName, id, lambdaFunction, options?)🔹 <a id="cdk-appsync-transformer-appsynctransformer-addlambdadatasourceandresolvers"></a>
 
@@ -102,6 +120,7 @@ Name | Type | Description
 **schemaPath**🔹 | <code>string</code> | Relative path where schema.graphql exists.
 **apiName**?🔹 | <code>string</code> | String value representing the api name.<br/>__*Default*__: `${id}-api`
 **authorizationConfig**?🔹 | <code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code> | Optional.<br/>__*Default*__: API_KEY authorization config
+**dynamoDbStreamConfig**?🔹 | <code>Map<string, [StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)></code> | A map of @model type names to stream view type e.g { Blog: StreamViewType.NEW_IMAGE }.<br/>__*Optional*__
 **enableDynamoPointInTimeRecovery**?🔹 | <code>boolean</code> | Whether to enable dynamo Point In Time Recovery.<br/>__*Default*__: false
 **fieldLogLevel**?🔹 | <code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code> | Optional.<br/>__*Default*__: FieldLogLevel.NONE
 **postCdkTransformers**?🔹 | <code>Array<any></code> | Optional.<br/>__*Default*__: undefined
@@ -218,6 +237,20 @@ Name | Type | Description
 -----|------|-------------
 **attributeName**🔹 | <code>string</code> | <span></span>
 **enabled**🔹 | <code>boolean</code> | <span></span>
+
+
+
+## struct DynamoDBStreamProps 🔹 <a id="cdk-appsync-transformer-dynamodbstreamprops"></a>
+
+
+
+
+
+
+Name | Type | Description 
+-----|------|-------------
+**modelTypeName**🔹 | <code>string</code> | The @model type name from the graph schema e.g. Blog.
+**streamViewType**🔹 | <code>[StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)</code> | <span></span>
 
 
 

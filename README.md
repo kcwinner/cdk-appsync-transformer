@@ -232,6 +232,38 @@ Often you will need to access your table names in a lambda function or elsewhere
 }
 ```
 
+### Table Map
+
+You may need to access your dynamo table L2 constructs. These can be accessed via `appSyncTransformer.tableMap`.
+
+### DynamoDB Streams
+
+There are two ways to enable DynamoDB streams for a table. The first version is probably most preferred. You pass in the `@model` type name and the StreamViewType as properties when creating the AppSyncTransformer. This will also allow you to access the `tableStreamArn` property of the L2 table construct from the `tableMap`.
+
+```ts
+const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+  schemaPath: testSchemaPath,
+  dynamoDbStreamConfig: {
+    Order: StreamViewType.NEW_IMAGE,
+    Blog: StreamViewType.NEW_AND_OLD_IMAGES
+  }
+});
+
+const orderTable = appSyncTransformer.tableMap.OrderTable;
+// Do something with the table stream arn - orderTable.tableStreamArn
+```
+
+A convenience method is also available. It returns the stream arn because the L2 Table construct does not seem to update with the value since we are updating the underlying CfnTable. Normally a Table construct must pass in the stream specification as a prop
+
+```ts
+const streamArn = appSyncTransformer.addDynamoDBStream({
+  modelTypeName: 'Order',
+  streamViewType: StreamViewType.NEW_IMAGE,
+});
+
+// Do something with the streamArn
+```
+
 ### DataStore Support
 
 1. Pass `syncEnabled: true` to the `AppSyncTransformerProps`
