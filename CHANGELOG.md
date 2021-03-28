@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.77.11](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.3...v1.77.11) (2021-03-28)
+
+
+### Bug Fixes
+
+* Adding community created ttl directive ([#86](https://github.com/kcwinner/cdk-appsync-transformer/issues/86)) ([93b8e07](https://github.com/kcwinner/cdk-appsync-transformer/commit/93b8e07d96a08841f1db293238c49539ae8c3413))
+* Adding in OIDC support to the transformer config and a test to the schema ([#139](https://github.com/kcwinner/cdk-appsync-transformer/issues/139)) ([4b1ce38](https://github.com/kcwinner/cdk-appsync-transformer/commit/4b1ce380974630d238c8edac17edafc1f1d4d96a)), closes [#135](https://github.com/kcwinner/cdk-appsync-transformer/issues/135)
+* allow additional custom pre/post transformers ([#102](https://github.com/kcwinner/cdk-appsync-transformer/issues/102)) ([913f4fb](https://github.com/kcwinner/cdk-appsync-transformer/commit/913f4fb2abc19a5087a5dcf74e10ade6992c1a6d))
+* Fixes the [ITransformer] props issue ([#110](https://github.com/kcwinner/cdk-appsync-transformer/issues/110)) ([b867951](https://github.com/kcwinner/cdk-appsync-transformer/commit/b86795168ef231c64bfb6e5bb4304eb093c647fb))
+* fixing the repository link and changelog ([#105](https://github.com/kcwinner/cdk-appsync-transformer/issues/105)) ([c108a75](https://github.com/kcwinner/cdk-appsync-transformer/commit/c108a75190558e2277b4344b7153de77d9a6a00a))
+* none data sources collisions ([#128](https://github.com/kcwinner/cdk-appsync-transformer/issues/128)) ([12d42ad](https://github.com/kcwinner/cdk-appsync-transformer/commit/12d42ad94da53bdd8495c4f551fa73a1d856163d))
+
 ### [1.77.10](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.9...v1.77.10) (2021-03-05)
 
 ### [1.77.9](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.8...v1.77.9) (2021-02-16)
