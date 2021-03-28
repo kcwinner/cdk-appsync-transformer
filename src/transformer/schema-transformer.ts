@@ -149,8 +149,9 @@ export class SchemaTransformer {
   }
 
   /**
-     *
-     */
+   * Gets the resolvers from the `./appsync/resolvers` folder
+   * @returns all resolvers
+   */
   public getResolvers() {
     const statements = ['Query', 'Mutation'];
     const resolversDirPath = normalize('./appsync/resolvers');
@@ -168,7 +169,7 @@ export class SchemaTransformer {
         // same as fieldName only
         let compositeKey = `${typeName}${fieldName}`;
         if (statements.indexOf(typeName) >= 0) {
-          compositeKey = fieldName;
+          if (!this.outputs.noneResolvers || !this.outputs.noneResolvers[compositeKey]) compositeKey = fieldName;
         }
 
         let filepath = normalize(`${resolversDirPath}/${file}`);
