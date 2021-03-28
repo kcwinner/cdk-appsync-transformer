@@ -12,10 +12,13 @@ import {
 } from '@aws-cdk/aws-appsync';
 
 import {
+  CfnTable,
   Table,
   AttributeType,
   ProjectionType,
   BillingMode,
+  StreamViewType,
+  TableProps,
 } from '@aws-cdk/aws-dynamodb';
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam';
 import { IFunction } from '@aws-cdk/aws-lambda';
@@ -77,6 +80,12 @@ export interface AppSyncTransformerProps {
   readonly xrayEnabled?: boolean;
 
   /**
+   * A map of @model type names to stream view type
+   * e.g { Blog: StreamViewType.NEW_IMAGE }
+   */
+  readonly dynamoDbStreamConfig?: { [name: string]: StreamViewType };
+
+  /**
    * Optional. Additonal custom transformers to run prior to the CDK resource generations.
    * Particularly useful for custom directives.
    * These should extend Transformer class from graphql-transformer-core
@@ -84,7 +93,6 @@ export interface AppSyncTransformerProps {
    */
 
   readonly preCdkTransformers?: any[];
-
 
   /**
    * Optional. Additonal custom transformers to run after the CDK resource generations.
@@ -126,6 +134,12 @@ export class AppSyncTransformer extends Construct {
   public readonly tableNameMap: { [name: string]: any };
 
   /**
+   * Map of cdk table keys to L2 Table
+   * e.g. { 'TaskTable': Table }
+   */
+  public readonly tableMap: { [name: string]: Table };
+
+  /**
    * The outputs from the SchemaTransformer
    */
   public readonly outputs: SchemaTransformerOutputs;
@@ -147,6 +161,7 @@ export class AppSyncTransformer extends Construct {
     [name: string]: CdkTransformerHttpResolver[];
   };
 
+  private props: AppSyncTransformerProps
   private isSyncEnabled: boolean;
   private syncTable: Table | undefined;
   private pointInTimeRecovery: boolean;
@@ -154,6 +169,8 @@ export class AppSyncTransformer extends Construct {
   constructor(scope: Construct, id: string, props: AppSyncTransformerProps) {
     super(scope, id);
 
+    this.props = props;
+    this.tableMap = {};
     this.isSyncEnabled = props.syncEnabled ? props.syncEnabled : false;
     this.pointInTimeRecovery = props.enableDynamoPointInTimeRecovery ?? false;
 
@@ -316,6 +333,8 @@ export class AppSyncTransformer extends Construct {
 
     Object.keys(tableData).forEach((tableKey: any) => {
       const table = this.createTable(tableData[tableKey]);
+      this.tableMap[tableKey] = table;
+
       const dataSource = this.appsyncAPI.addDynamoDbDataSource(tableKey, table);
 
       // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-appsync-datasource-deltasyncconfig.html
@@ -394,25 +413,24 @@ export class AppSyncTransformer extends Construct {
   }
 
   private createTable(tableData: CdkTransformerTable) {
-    let tableProps: any = {
+    // I do not want to force people to pass `TypeTable` - this way they are only passing the @model Type name
+    const modelTypeName = tableData.tableName.replace('Table', '');
+    const streamSpecification = this.props.dynamoDbStreamConfig && this.props.dynamoDbStreamConfig[modelTypeName];
+    const tableProps: TableProps = {
       billingMode: BillingMode.PAY_PER_REQUEST,
       partitionKey: {
         name: tableData.partitionKey.name,
         type: this.convertAttributeType(tableData.partitionKey.type),
       },
       pointInTimeRecovery: this.pointInTimeRecovery,
+      sortKey: tableData.sortKey && tableData.sortKey.name
+        ? {
+          name: tableData.sortKey.name,
+          type: this.convertAttributeType(tableData.sortKey.type),
+        } : undefined,
+      timeToLiveAttribute: tableData?.ttl?.enabled ? tableData.ttl.attributeName : undefined,
+      stream: streamSpecification,
     };
-
-    if (tableData.sortKey && tableData.sortKey.name) {
-      tableProps.sortKey = {
-        name: tableData.sortKey.name,
-        type: this.convertAttributeType(tableData.sortKey.type),
-      };
-    }
-
-    if (tableData.ttl && tableData.ttl.enabled) {
-      tableProps.timeToLiveAttribute = tableData.ttl.attributeName;
-    }
 
     const table = new Table(
       this.nestedAppsyncStack,
@@ -557,4 +575,31 @@ export class AppSyncTransformer extends Construct {
 
     return functionDataSource;
   }
+
+  /**
+   * Adds a stream to the dynamodb table associated with the type
+   * @param props
+   * @returns string - the stream arn token
+   */
+  public addDynamoDBStream(props: DynamoDBStreamProps): string {
+    const tableName = `${props.modelTypeName}Table`;
+    const table = this.tableMap[tableName];
+    if (!table) throw new Error(`Table with name '${tableName}' not found.`);
+
+    const cfnTable = table.node.defaultChild as CfnTable;
+    cfnTable.streamSpecification = {
+      streamViewType: props.streamViewType,
+    };
+
+    return cfnTable.attrStreamArn;
+  }
+}
+
+export interface DynamoDBStreamProps {
+  /**
+   * The @model type name from the graph schema
+   * e.g. Blog
+   */
+  readonly modelTypeName: string;
+  readonly streamViewType: StreamViewType;
 }
