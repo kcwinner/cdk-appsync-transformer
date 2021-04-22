@@ -434,5 +434,476 @@ test('DynamoDB Stream Enabled Convenience Method', () => {
       StreamViewType: StreamViewType.NEW_IMAGE,
     },
   });
+});
 
+test('GraphQL API W/ IAM Auth Roles Created', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'iam-auth-stack');
+
+  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+    schemaPath: testSchemaPath,
+    apiName: 'iam-auth-api',
+    authorizationConfig: {
+      defaultAuthorization: {
+        authorizationType: AuthorizationType.IAM,
+      },
+    },
+  });
+
+  expect(stack).toHaveResource('AWS::CloudFormation::Stack');
+
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::GraphQLApi', {
+    AuthenticationType: 'AWS_IAM',
+    Name: 'iam-auth-api',
+  });
+
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResourceLike('AWS::IAM::Policy', {
+    PolicyDocument: {
+      Statement: [
+        {
+          Action: ['mobileanalytics:PutEvents', 'cognito-sync:*', 'cognito-identity:*'],
+          Effect: 'Allow',
+          Resource: '*',
+        },
+        {
+          Action: 'appsync:GraphQL',
+          Effect: 'Allow',
+          Resource: [
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Customer/*',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Mutation/fields/updateCustomer',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Query/fields/getCustomer',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Query/fields/listCustomers',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Subscription/fields/onCreateCustomer',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Subscription/fields/onUpdateCustomer',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Subscription/fields/onDeleteCustomer',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Product/*',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Query/fields/getProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Query/fields/listProducts',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Subscription/fields/onCreateProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Subscription/fields/onUpdateProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Subscription/fields/onDeleteProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/User/*',
+                ],
+              ],
+            },
+          ],
+        },
+      ],
+      Version: '2012-10-17',
+    },
+    PolicyName: 'AuthenticatedRoleDefaultPolicy8B1AC271',
+    Roles: [
+      {
+        Ref: 'AuthenticatedRole86104F1A',
+      },
+    ],
+  });
+
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResourceLike('AWS::IAM::Policy', {
+    PolicyDocument: {
+      Statement: [
+        {
+          Action: ['mobileanalytics:PutEvents', 'cognito-sync:*'],
+          Effect: 'Allow',
+          Resource: '*',
+        },
+        {
+          Action: 'appsync:GraphQL',
+          Effect: 'Allow',
+          Resource: [
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Product/*',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Query/fields/getProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Query/fields/listProducts',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Subscription/fields/onCreateProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Subscription/fields/onUpdateProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': ['testtransformerapi4F4ACB56', 'ApiId'],
+                  },
+                  '/types/Subscription/fields/onDeleteProduct',
+                ],
+              ],
+            },
+          ],
+        },
+      ],
+      Version: '2012-10-17',
+    },
+    PolicyName: 'UnauthenticatedRoleDefaultPolicyAD16B58E',
+    Roles: [
+      {
+        Ref: 'UnauthenticatedRole01CC4258',
+      },
+    ],
+  });
 });

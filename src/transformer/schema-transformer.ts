@@ -136,8 +136,8 @@ export class SchemaTransformer {
     const schema = fs.readFileSync(this.schemaPath);
     const cfdoc = transformer.transform(schema.toString());
 
-    // TODO: Get Unauth Role and Auth Role policies for authorization stuff
     this.unauthRolePolicy = cfdoc.rootStack.Resources?.UnauthRolePolicy01 as Resource || undefined;
+    this.authRolePolicy = cfdoc.rootStack.Resources?.AuthRolePolicy01 as Resource || undefined;
 
     this.writeSchema(cfdoc.schema);
     this.writeResolversToFile(cfdoc.resolvers);

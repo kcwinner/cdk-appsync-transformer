@@ -10,6 +10,10 @@ import {
   DataSourceOptions,
   LambdaDataSource,
 } from '@aws-cdk/aws-appsync';
+import {
+  CfnIdentityPool,
+  CfnIdentityPoolRoleAttachment,
+} from '@aws-cdk/aws-cognito';
 
 import {
   CfnTable,
@@ -20,7 +24,12 @@ import {
   StreamViewType,
   TableProps,
 } from '@aws-cdk/aws-dynamodb';
-import { Effect, PolicyStatement } from '@aws-cdk/aws-iam';
+import {
+  Effect,
+  PolicyStatement,
+  Role,
+  WebIdentityPrincipal,
+} from '@aws-cdk/aws-iam';
 import { IFunction } from '@aws-cdk/aws-lambda';
 import { Construct, NestedStack, CfnOutput } from '@aws-cdk/core';
 
@@ -31,6 +40,7 @@ import {
   CdkTransformerTable,
   SchemaTransformerOutputs,
 } from './transformer';
+import { Resource } from './transformer/resource';
 
 import {
   SchemaTransformer,
@@ -264,6 +274,7 @@ export class AppSyncTransformer extends Construct {
       );
     }
     this.createHttpResolvers();
+    this.createIamRoles(transformer.authRolePolicy, transformer.unauthRolePolicy);
 
     // Outputs so we can generate exports
     new CfnOutput(scope, 'appsyncGraphQLEndpointOutput', {
@@ -532,6 +543,100 @@ export class AppSyncTransformer extends Construct {
         );
       });
     }
+  }
+
+  private createIamRoles(authRole?: Resource, unauthRole?: Resource) {
+    if (authRole === undefined && unauthRole === undefined) {
+      return;
+    }
+
+    const identityPool = new CfnIdentityPool(this.nestedAppsyncStack, 'IdentityPool', {
+      allowUnauthenticatedIdentities: !!unauthRole,
+    });
+
+    let unauthenticatedRole: Role | undefined = undefined;
+    if (unauthRole) {
+      unauthenticatedRole = new Role(this.nestedAppsyncStack, 'UnauthenticatedRole', {
+        assumedBy: new WebIdentityPrincipal('cognito-identity.amazonaws.com', {
+          'StringEquals': { 'cognito-identity.amazonaws.com:aud': identityPool.ref },
+          'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': 'unauthenticated' },
+        }),
+      });
+
+      unauthenticatedRole.addToPolicy(
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ['mobileanalytics:PutEvents', 'cognito-sync:*'],
+          resources: ['*'],
+        }),
+      );
+
+      const resources = this.getResourcesFromRole(unauthRole);
+      unauthenticatedRole.addToPolicy(
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ['appsync:GraphQL'],
+          resources,
+        }),
+      );
+    }
+
+    let authenticatedRole: Role | undefined = undefined;
+    if (authRole) {
+      authenticatedRole = new Role(this.nestedAppsyncStack, 'AuthenticatedRole', {
+        assumedBy: new WebIdentityPrincipal('cognito-identity.amazonaws.com', {
+          'StringEquals': { 'cognito-identity.amazonaws.com:aud': identityPool.ref },
+          'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': 'authenticated' },
+        }),
+      });
+
+      authenticatedRole.addToPolicy(
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ['mobileanalytics:PutEvents', 'cognito-sync:*', 'cognito-identity:*'],
+          resources: ['*'],
+        }),
+      );
+
+      const resources = this.getResourcesFromRole(authRole);
+      authenticatedRole.addToPolicy(
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ['appsync:GraphQL'],
+          resources,
+        }),
+      );
+    }
+
+    new CfnIdentityPoolRoleAttachment(this.nestedAppsyncStack, 'IdentityPoolRoleAttachment', {
+      identityPoolId: identityPool.ref,
+      roles: {
+        unauthenticated: unauthenticatedRole?.roleArn,
+        authenticated: authenticatedRole?.roleArn,
+      },
+    });
+  }
+
+  private getResourcesFromRole(role: Resource): string[] {
+    const { region, account } = this.nestedAppsyncStack;
+
+    const { PolicyDocument } = role.Properties || {};
+    const { Statement: statements = [] } = PolicyDocument || {};
+
+    const resolvedResources: string[] = [];
+    for (const statement of statements) {
+      const { Resource: resources = [] } = statement || {};
+      for (const resource of resources) {
+        const subs = resource['Fn::Sub'][1];
+        const { typeName, fieldName } = subs || {};
+        if (fieldName !== undefined) {
+          resolvedResources.push(`arn:aws:appsync:${region}:${account}:apis/${this.appsyncAPI.apiId}/types/${typeName}/fields/${fieldName}`);
+        } else {
+          resolvedResources.push(`arn:aws:appsync:${region}:${account}:apis/${this.appsyncAPI.apiId}/types/${typeName}/*`);
+        }
+      }
+    }
+    return resolvedResources;
   }
 
   /**
