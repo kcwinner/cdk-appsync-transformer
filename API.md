@@ -15,6 +15,7 @@ Name|Description
 [CdkTransformerFunctionResolver](#cdk-appsync-transformer-cdktransformerfunctionresolver)|*No description*
 [CdkTransformerGlobalSecondaryIndex](#cdk-appsync-transformer-cdktransformerglobalsecondaryindex)|*No description*
 [CdkTransformerHttpResolver](#cdk-appsync-transformer-cdktransformerhttpresolver)|*No description*
+[CdkTransformerLocalSecondaryIndex](#cdk-appsync-transformer-cdktransformerlocalsecondaryindex)|*No description*
 [CdkTransformerResolver](#cdk-appsync-transformer-cdktransformerresolver)|*No description*
 [CdkTransformerTable](#cdk-appsync-transformer-cdktransformertable)|*No description*
 [CdkTransformerTableKey](#cdk-appsync-transformer-cdktransformertablekey)|*No description*
@@ -179,6 +180,21 @@ Name | Type | Description
 
 
 
+## struct CdkTransformerLocalSecondaryIndex 🔹 <a id="cdk-appsync-transformer-cdktransformerlocalsecondaryindex"></a>
+
+
+
+
+
+
+Name | Type | Description 
+-----|------|-------------
+**indexName**🔹 | <code>string</code> | <span></span>
+**projection**🔹 | <code>any</code> | <span></span>
+**sortKey**🔹 | <code>[CdkTransformerTableKey](#cdk-appsync-transformer-cdktransformertablekey)</code> | <span></span>
+
+
+
 ## struct CdkTransformerResolver 🔹 <a id="cdk-appsync-transformer-cdktransformerresolver"></a>
 
 
@@ -204,6 +220,7 @@ Name | Type | Description
 -----|------|-------------
 **globalSecondaryIndexes**🔹 | <code>Array<[CdkTransformerGlobalSecondaryIndex](#cdk-appsync-transformer-cdktransformerglobalsecondaryindex)></code> | <span></span>
 **gsiResolvers**🔹 | <code>Array<string></code> | <span></span>
+**localSecondaryIndexes**🔹 | <code>Array<[CdkTransformerLocalSecondaryIndex](#cdk-appsync-transformer-cdktransformerlocalsecondaryindex)></code> | <span></span>
 **partitionKey**🔹 | <code>[CdkTransformerTableKey](#cdk-appsync-transformer-cdktransformertablekey)</code> | <span></span>
 **resolvers**🔹 | <code>Array<string></code> | <span></span>
 **tableName**🔹 | <code>string</code> | <span></span>

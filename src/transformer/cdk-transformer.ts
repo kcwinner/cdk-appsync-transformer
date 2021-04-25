@@ -8,6 +8,12 @@ export interface CdkTransformerTableKey {
   readonly type: string;
 }
 
+export interface CdkTransformerLocalSecondaryIndex {
+  readonly indexName: string;
+  readonly projection: any;
+  readonly sortKey: CdkTransformerTableKey;
+}
+
 export interface CdkTransformerGlobalSecondaryIndex {
   readonly indexName: string;
   readonly projection: any;
@@ -25,6 +31,7 @@ export interface CdkTransformerTable {
   readonly partitionKey: CdkTransformerTableKey;
   readonly sortKey?: CdkTransformerTableKey;
   readonly ttl?: CdkTransformerTableTtl;
+  readonly localSecondaryIndexes: CdkTransformerLocalSecondaryIndex[];
   readonly globalSecondaryIndexes: CdkTransformerGlobalSecondaryIndex[];
   readonly resolvers: string[];
   readonly gsiResolvers: string[];
@@ -207,10 +214,25 @@ export class CdkTransformer extends Transformer {
       partitionKey: keys.partitionKey,
       sortKey: keys.sortKey,
       ttl: ttl,
+      localSecondaryIndexes: [],
       globalSecondaryIndexes: [],
       resolvers: [],
       gsiResolvers: [],
     };
+
+    const lsis = tableResource?.Properties?.LocalSecondaryIndexes;
+    if (lsis) {
+      lsis.forEach((lsi: any) => {
+        const lsiKeys = this.parseKeySchema(lsi.KeySchema, attributeDefinitions);
+        const lsiDefinition = {
+          indexName: lsi.IndexName,
+          projection: lsi.Projection,
+          sortKey: lsiKeys.sortKey,
+        };
+
+        table.localSecondaryIndexes.push(lsiDefinition);
+      });
+    }
 
     const gsis = tableResource?.Properties?.GlobalSecondaryIndexes;
     if (gsis) {

@@ -16,7 +16,8 @@ type Product
     @auth(rules: [
         { allow: groups, groups: ["Admins"] },
         { allow: public, provider: iam, operations: [read] }
-    ]) {
+    ])
+    @key(name: "productsByName", fields: ["name", "added"], queryField: "productsByName") {
         id: ID!
         name: String!
         description: String!
@@ -36,6 +37,17 @@ type Order @model
         expirationUnixTime: AWSTimestamp! @ttl
 }
 
+type Thread @model
+    @key(fields: ["forumName", "subject"])
+    @key(
+      name: "threadsByLatestPost",
+      fields: ["forumName", "latestPostAt"],
+      queryField: "threadsByLatestPost") {
+        forumName: String!
+        subject:  String!
+        latestPostAt: AWSDateTime!
+        replies: Int!
+}
 
 type Blog @model
   @auth(rules: [{ allow: owner, provider: oidc, identityClaim: "sub" }])
