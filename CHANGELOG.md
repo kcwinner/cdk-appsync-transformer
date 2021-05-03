@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.77.13](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.12...v1.77.13) (2021-05-03)
+
+
+### Bug Fixes
+
+* Add support for LSIs and fix GSI primary keys ([#196](https://github.com/kcwinner/cdk-appsync-transformer/issues/196)) ([1bfadcf](https://github.com/kcwinner/cdk-appsync-transformer/commit/1bfadcf260cadc5cb0b0992da7b5fb261bbfa2b1))
+
 ### [1.77.12](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.11...v1.77.12) (2021-03-28)
 
 
