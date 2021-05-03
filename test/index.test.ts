@@ -128,6 +128,63 @@ test('Model Tables Created and PITR', () => {
     });
   }
 
+  // Make sure LSI is set correctly on Thread table
+  const threadTable = appSyncTransformer.nestedAppsyncStack.node.findChild('ThreadTable');
+  expect(threadTable).toBeTruthy();
+
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+    KeySchema: [
+      { AttributeName: 'forumName', KeyType: 'HASH' },
+      { AttributeName: 'subject', KeyType: 'RANGE' },
+    ],
+    LocalSecondaryIndexes: [
+      {
+        IndexName: 'threadsByLatestPost',
+        KeySchema: [
+          {
+            AttributeName: 'forumName',
+            KeyType: 'HASH',
+          },
+          {
+            AttributeName: 'latestPostAt',
+            KeyType: 'RANGE',
+          },
+        ],
+        Projection: {
+          ProjectionType: 'ALL',
+        },
+      },
+    ],
+  });
+
+  // Make sure GSI is set correctly on Product table
+  const productTable = appSyncTransformer.nestedAppsyncStack.node.findChild('ProductTable');
+  expect(productTable).toBeTruthy();
+
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+    KeySchema: [
+      { AttributeName: 'id', KeyType: 'HASH' },
+    ],
+    GlobalSecondaryIndexes: [
+      {
+        IndexName: 'productsByName',
+        KeySchema: [
+          {
+            AttributeName: 'name',
+            KeyType: 'HASH',
+          },
+          {
+            AttributeName: 'added',
+            KeyType: 'RANGE',
+          },
+        ],
+        Projection: {
+          ProjectionType: 'ALL',
+        },
+      },
+    ],
+  });
+
   // Make sure ttl is on Order table
   const orderTable = appSyncTransformer.nestedAppsyncStack.node.findChild('OrderTable');
   expect(orderTable).toBeTruthy();

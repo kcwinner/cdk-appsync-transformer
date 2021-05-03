@@ -438,23 +438,36 @@ export class AppSyncTransformer extends Construct {
       tableProps,
     );
 
-    if (
-      tableData.globalSecondaryIndexes &&
-      tableData.globalSecondaryIndexes.length > 0
-    ) {
-      tableData.globalSecondaryIndexes.forEach((gsi: any) => {
-        table.addGlobalSecondaryIndex({
-          indexName: gsi.indexName,
-          partitionKey: {
-            name: gsi.partitionKey.name,
-            type: this.convertAttributeType(gsi.partitionKey.type),
-          },
-          projectionType: this.convertProjectionType(
-            gsi.projection.ProjectionType,
-          ),
-        });
+    tableData.localSecondaryIndexes.forEach((lsi: any) => {
+      table.addLocalSecondaryIndex({
+        indexName: lsi.indexName,
+        sortKey: {
+          name: lsi.sortKey.name,
+          type: this.convertAttributeType(lsi.sortKey.type),
+        },
+        projectionType: this.convertProjectionType(
+          lsi.projection.ProjectionType,
+        ),
       });
-    }
+    });
+
+    tableData.globalSecondaryIndexes.forEach((gsi: any) => {
+      table.addGlobalSecondaryIndex({
+        indexName: gsi.indexName,
+        partitionKey: {
+          name: gsi.partitionKey.name,
+          type: this.convertAttributeType(gsi.partitionKey.type),
+        },
+        sortKey: gsi.sortKey && gsi.sortKey.name
+          ? {
+            name: gsi.sortKey.name,
+            type: this.convertAttributeType(gsi.sortKey.type),
+          } : undefined,
+        projectionType: this.convertProjectionType(
+          gsi.projection.ProjectionType,
+        ),
+      });
+    });
 
     return table;
   }
