@@ -3297,10 +3297,19 @@ graphql-relational-schema-transformer@^2.16.1:
     graphql-mapping-template "4.18.1"
     graphql-transformer-common "4.18.1"
 
-graphql-transformer-common@4.18.1, graphql-transformer-common@^4.17.11, graphql-transformer-common@^4.18.1:
+graphql-transformer-common@4.18.1:
   version "4.18.1"
   resolved "https://registry.yarnpkg.com/graphql-transformer-common/-/graphql-transformer-common-4.18.1.tgz#35fedb372afcc3db47593c2d1a499a2107ef8c36"
   integrity sha512-Fn/rsDHYDPboBw76bp+EqPI7ClPEg0vjaKabGvVQQQfFFc1heTsuu/8ZChMU5Hear+ylzBjyejrmYgRqar+z7g==
+  dependencies:
+    graphql "^14.5.8"
+    graphql-mapping-template "4.18.1"
+    md5 "^2.2.1"
+
+graphql-transformer-common@^4.17.11, graphql-transformer-common@^4.18.1:
+  version "4.19.3"
+  resolved "https://registry.yarnpkg.com/graphql-transformer-common/-/graphql-transformer-common-4.19.3.tgz#20919925a2ccc843ea3c4169b05a004cd4feffae"
+  integrity sha512-hQFbkme30NqI3NhxIY5cM80F+F0U6g9p4nVbeQFyM07GcQq/Z9uLajvwbIWJKEFpPFDUwyeGbe7hjpX3Vo5z7Q==
   dependencies:
     graphql "^14.5.8"
     graphql-mapping-template "4.18.1"
