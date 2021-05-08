@@ -147,7 +147,7 @@ export class AppSyncTransformer extends Construct {
   /**
    * The AppSync resolvers from the transformer minus any function resolvers
    */
-  public readonly resolvers: any;
+  public readonly resolvers: { [name: string]: CdkTransformerResolver };
 
   /**
    * The Lambda Function resolvers designated by the function directive

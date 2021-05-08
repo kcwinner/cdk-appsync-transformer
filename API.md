@@ -67,7 +67,7 @@ Name | Type | Description
 **httpResolvers**🔹 | <code>Map<string, Array<[CdkTransformerHttpResolver](#cdk-appsync-transformer-cdktransformerhttpresolver)>></code> | <span></span>
 **nestedAppsyncStack**🔹 | <code>[NestedStack](#aws-cdk-core-nestedstack)</code> | The NestedStack that contains the AppSync resources.
 **outputs**🔹 | <code>[SchemaTransformerOutputs](#cdk-appsync-transformer-schematransformeroutputs)</code> | The outputs from the SchemaTransformer.
-**resolvers**🔹 | <code>any</code> | The AppSync resolvers from the transformer minus any function resolvers.
+**resolvers**🔹 | <code>Map<string, [CdkTransformerResolver](#cdk-appsync-transformer-cdktransformerresolver)></code> | The AppSync resolvers from the transformer minus any function resolvers.
 **tableMap**🔹 | <code>Map<string, [Table](#aws-cdk-aws-dynamodb-table)></code> | Map of cdk table keys to L2 Table e.g. { 'TaskTable': Table }.
 **tableNameMap**🔹 | <code>Map<string, any></code> | Map of cdk table tokens to table names.
 
