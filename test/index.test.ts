@@ -1,8 +1,9 @@
 import '@aws-cdk/assert/jest';
 import * as path from 'path';
 import { AuthorizationType, AuthorizationConfig, UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
-import { UserPool, UserPoolClient } from '@aws-cdk/aws-cognito';
+import { CfnIdentityPool, UserPool, UserPoolClient } from '@aws-cdk/aws-cognito';
 import { StreamViewType } from '@aws-cdk/aws-dynamodb';
+import { Role, WebIdentityPrincipal } from '@aws-cdk/aws-iam';
 import { Runtime, Code, Function } from '@aws-cdk/aws-lambda';
 import { App, Stack } from '@aws-cdk/core';
 
@@ -492,4 +493,601 @@ test('DynamoDB Stream Enabled Convenience Method', () => {
     },
   });
 
+});
+
+test('Grant Access To Public/Private Fields', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'test-grant-stack');
+
+  const userPool = new UserPool(stack, 'test-userpool');
+  const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
+    userPool: userPool,
+  });
+
+  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+    schemaPath: testSchemaPath,
+    apiName: 'grant-test-api',
+    authorizationConfig: {
+      defaultAuthorization: {
+        authorizationType: AuthorizationType.USER_POOL,
+        userPoolConfig: {
+          userPool: userPool,
+          appIdClientRegex: userPoolClient.userPoolClientId,
+          defaultAction: UserPoolDefaultAction.ALLOW,
+        },
+      },
+    },
+  });
+
+  // We don't really need this to work
+  const testPrivateFunction = new Function(stack, 'test-function', {
+    runtime: Runtime.NODEJS_12_X,
+    code: Code.fromInline('export function handler() { }'),
+    handler: 'handler',
+  });
+
+  appSyncTransformer.grantPrivate(testPrivateFunction);
+  expect(stack).toHaveResourceLike('AWS::IAM::Policy', {
+    PolicyDocument: {
+      Statement: [
+        {
+          Action: 'appsync:GraphQL',
+          Effect: 'Allow',
+          Resource: [
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Customer/*',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Mutation/fields/updateCustomer',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Query/fields/getCustomer',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Query/fields/listCustomers',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Subscription/fields/onCreateCustomer',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Subscription/fields/onUpdateCustomer',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Subscription/fields/onDeleteCustomer',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Product/*',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Query/fields/getProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Query/fields/listProducts',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Query/fields/productsByName',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Subscription/fields/onCreateProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Subscription/fields/onUpdateProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Subscription/fields/onDeleteProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/User/*',
+                ],
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    PolicyName: 'testfunctionServiceRoleDefaultPolicy2F277F85',
+    Roles: [
+      {
+        Ref: 'testfunctionServiceRoleFB85AD63',
+      },
+    ],
+  });
+
+  const identityPool = new CfnIdentityPool(stack, 'test-identity-pool', {
+    identityPoolName: 'test-identity-pool',
+    cognitoIdentityProviders: [
+      {
+        clientId: userPoolClient.userPoolClientId,
+        providerName: `cognito-idp.${stack.region}.amazonaws.com/${userPool.userPoolId}`,
+      },
+    ],
+    allowUnauthenticatedIdentities: true,
+  });
+
+  const testPublicRole = new Role(stack, 'public-role', {
+    assumedBy: new WebIdentityPrincipal('cognito-identity.amazonaws.com')
+      .withConditions({
+        'StringEquals': { 'cognito-identity.amazonaws.com:aud': `${identityPool.ref}` },
+        'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': 'unauthenticated' },
+      }),
+  });
+
+  appSyncTransformer.grantPublic(testPublicRole);
+  expect(stack).toHaveResourceLike('AWS::IAM::Policy', {
+    PolicyDocument: {
+      Statement: [
+        {
+          Action: 'appsync:GraphQL',
+          Effect: 'Allow',
+          Resource: [
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Product/*',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Query/fields/getProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Query/fields/listProducts',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Query/fields/productsByName',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Subscription/fields/onCreateProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Subscription/fields/onUpdateProduct',
+                ],
+              ],
+            },
+            {
+              'Fn::Join': [
+                '',
+                [
+                  'arn:aws:appsync:',
+                  {
+                    Ref: 'AWS::Region',
+                  },
+                  ':',
+                  {
+                    Ref: 'AWS::AccountId',
+                  },
+                  ':apis/',
+                  {
+                    'Fn::GetAtt': [
+                      'testtransformerappsyncnestedstackNestedStackappsyncnestedstackNestedStackResourceC669E073',
+                      'Outputs.testgrantstacktesttransformerappsyncnestedstacktesttransformerapiBA0BE26BApiId',
+                    ],
+                  },
+                  '/types/Subscription/fields/onDeleteProduct',
+                ],
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    PolicyName: 'publicroleDefaultPolicy321C2CCD',
+    Roles: [
+      {
+        Ref: 'publicroleEFDEA157',
+      },
+    ],
+  });
 });

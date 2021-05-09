@@ -138,6 +138,7 @@ export class SchemaTransformer {
 
     // TODO: Get Unauth Role and Auth Role policies for authorization stuff
     this.unauthRolePolicy = cfdoc.rootStack.Resources?.UnauthRolePolicy01 as Resource || undefined;
+    this.authRolePolicy = cfdoc.rootStack.Resources?.AuthRolePolicy01 as Resource || undefined;
 
     this.writeSchema(cfdoc.schema);
     this.writeResolversToFile(cfdoc.resolvers);

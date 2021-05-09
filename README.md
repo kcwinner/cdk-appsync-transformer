@@ -148,9 +148,80 @@ new AppSyncTransformer(this, "my-cool-api", {
 
 #### IAM
 
-Unauth Role: TODO
+##### Unauth Role
 
-Auth Role: Unsupported. Authorized roles (Lambda Functions, EC2 roles, etc) are required to setup their own role permissions.
+You can grant access to the `public` policies generated from the `@auth` transformer by using `appsyncTransformer.grantPublic(...)`. In the example below you can see we give public iam read access for the Product type. This will generate permissions for `listProducts`, `getProduct` and `Product` (to get all the fields). We then attach it to our `publicRole` using the grantPublic method.
+
+Example:
+```graphql
+type Product
+    @model
+    @auth(rules: [
+        { allow: groups, groups: ["Admins"] },
+        { allow: public, provider: iam, operations: [read] }
+    ])
+    @key(name: "productsByName", fields: ["name", "added"], queryField: "productsByName") {
+        id: ID!
+        name: String!
+        description: String!
+        price: String!
+        active: Boolean!
+        added: AWSDateTime!
+        orders: [Order] @connection
+}
+```
+
+```ts
+const identityPool = new CfnIdentityPool(stack, 'test-identity-pool', {
+    identityPoolName: 'test-identity-pool',
+    cognitoIdentityProviders: [
+      {
+        clientId: userPoolClient.userPoolClientId,
+        providerName: `cognito-idp.${stack.region}.amazonaws.com/${userPool.userPoolId}`,
+      },
+    ],
+    allowUnauthenticatedIdentities: true,
+  });
+
+const publicRole = new Role(stack, 'public-role', {
+  assumedBy: new WebIdentityPrincipal('cognito-identity.amazonaws.com')
+    .withConditions({
+      'StringEquals': { 'cognito-identity.amazonaws.com:aud': `${identityPool.ref}` },
+      'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': 'unauthenticated' },
+    }),
+});
+
+appSyncTransformer.grantPublic(publicRole);
+```
+
+##### Auth Role
+
+You can grant access to the `private` policies generated from the `@auth` transformer by using `appsyncTransformer.grantPrivate(...)`. In the example below you can see we give private iam read and update access for the Customer type. This will generate permissions for `listCustomers`, `getCustomer`, `updateCustomer` and `Customer` (to get all the fields). We then attach it to our `privateFunction` using the grantPrivate method. *You could also use an identity pool as in the unauth example above, I just wanted to show a varied range of use*
+
+```graphql
+type Customer 
+    @model
+    @auth(rules: [
+        { allow: groups, groups: ["Admins"] },
+        { allow: private, provider: iam, operations: [read, update] }
+    ]) {
+        id: ID!
+        firstName: String!
+        lastName: String!
+        active: Boolean!
+        address: String!
+}
+```
+
+```ts
+const privateFunction = new Function(stack, 'test-function', {
+  runtime: Runtime.NODEJS_12_X,
+  code: Code.fromInline('export function handler() { }'),
+  handler: 'handler',
+});
+
+appSyncTransformer.grantPrivate(privateFunction);
+```
 
 ### Functions
 
