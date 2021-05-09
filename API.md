@@ -107,6 +107,38 @@ addLambdaDataSourceAndResolvers(functionName: string, id: string, lambdaFunction
 __Returns__:
 * <code>[LambdaDataSource](#aws-cdk-aws-appsync-lambdadatasource)</code>
 
+#### grantPrivate(grantee)🔹 <a id="cdk-appsync-transformer-appsynctransformer-grantprivate"></a>
+
+Adds an IAM policy statement granting access to the private fields of the AppSync API.
+
+Policy is based off of the @auth transformer
+https://docs.amplify.aws/cli/graphql-transformer/auth
+
+```ts
+grantPrivate(grantee: IGrantable): Grant
+```
+
+* **grantee** (<code>[IGrantable](#aws-cdk-aws-iam-igrantable)</code>)  *No description*
+
+__Returns__:
+* <code>[Grant](#aws-cdk-aws-iam-grant)</code>
+
+#### grantPublic(grantee)🔹 <a id="cdk-appsync-transformer-appsynctransformer-grantpublic"></a>
+
+Adds an IAM policy statement granting access to the public fields of the AppSync API.
+
+Policy is based off of the @auth transformer
+https://docs.amplify.aws/cli/graphql-transformer/auth
+
+```ts
+grantPublic(grantee: IGrantable): Grant
+```
+
+* **grantee** (<code>[IGrantable](#aws-cdk-aws-iam-igrantable)</code>)  The principal to grant access to.
+
+__Returns__:
+* <code>[Grant](#aws-cdk-aws-iam-grant)</code>
+
 
 
 ## struct AppSyncTransformerProps 🔹 <a id="cdk-appsync-transformer-appsynctransformerprops"></a>
