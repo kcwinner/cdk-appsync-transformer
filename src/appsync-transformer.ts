@@ -166,8 +166,8 @@ export class AppSyncTransformer extends Construct {
   private isSyncEnabled: boolean;
   private syncTable: Table | undefined;
   private pointInTimeRecovery: boolean;
-  private publicResourceArns: string[];
-  private privateResourceArns: string[];
+  private readonly publicResourceArns: string[];
+  private readonly privateResourceArns: string[];
 
   constructor(scope: Construct, id: string, props: AppSyncTransformerProps) {
     super(scope, id);
