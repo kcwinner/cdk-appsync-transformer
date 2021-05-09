@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.77.15](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.14...v1.77.15) (2021-05-09)
+
+
+### Bug Fixes
+
+* Add support for grantPublic and grantPrivate ([#204](https://github.com/kcwinner/cdk-appsync-transformer/issues/204)) ([c9a2476](https://github.com/kcwinner/cdk-appsync-transformer/commit/c9a24768b4d704e2bad7bd377abdbb6242e799ca))
+
 ### [1.77.14](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.13...v1.77.14) (2021-05-08)
 
 
