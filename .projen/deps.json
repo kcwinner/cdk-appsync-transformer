@@ -102,8 +102,18 @@
       "type": "build"
     },
     {
+      "name": "npm-check-updates",
+      "version": "^11",
+      "type": "build"
+    },
+    {
+      "name": "npm-check-updates",
+      "version": "^11",
+      "type": "build"
+    },
+    {
       "name": "projen",
-      "version": "^0.17.17",
+      "version": "^0.18.5",
       "type": "build"
     },
     {

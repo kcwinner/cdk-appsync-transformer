@@ -4,7 +4,6 @@
 /.idea
 /.projen
 /.projenrc.js
-/.versionrc.json
 /.vscode
 /coverage
 /src
@@ -16,6 +15,7 @@
 appsync/*
 dist
 junit.xml
+tsconfig.tsbuildinfo
 !.jsii
 !/lib
 !/lib/**/*.d.ts

@@ -13,36 +13,23 @@ const project = new AwsCdkConstructLibrary({
   workflowNodeVersion: '12.17.0',
   defaultReleaseBranch: 'main',
   typescriptVersion: '^4.1.2',
-  keywords: [
-    'aws',
-    'cdk',
-    'appsync',
-    'amplify',
-  ],
+  keywords: ['aws', 'cdk', 'appsync', 'amplify'],
   mergify: false,
   rebuildBot: false,
   codeCov: true,
   dependabotOptions: {
-    ignore: [
-      { dependencyName: '@aws-cdk*' },
-    ],
+    ignore: [{ dependencyName: '@aws-cdk*' }],
   },
 
   jestOptions: {
     jestConfig: {
-      testPathIgnorePatterns: [
-        '<rootDir>/test/mappedTransformer',
-      ],
+      testPathIgnorePatterns: ['<rootDir>/test/mappedTransformer'],
     },
   },
 
   // Ignore our generated appsync files
-  npmignore: [
-    'appsync/*',
-  ],
-  gitignore: [
-    'appsync/*',
-  ],
+  npmignore: ['appsync/*'],
+  gitignore: ['appsync/*'],
 
   // Jsii packaging
   python: {
