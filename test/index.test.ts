@@ -1091,3 +1091,46 @@ test('Grant Access To Public/Private Fields', () => {
     ],
   });
 });
+
+test('Custom Table Names Are Applied', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'custom-table-names-stack');
+
+  const customerTableName = 'CustomerTableCustomName';
+  const orderTableName = 'OrderTableCustomName';
+
+  const appSyncTransformer = new AppSyncTransformer(stack, 'test-transformer', {
+    schemaPath: testSchemaPath,
+    apiName: 'custom-table-names-api',
+    tableNames: {
+      CustomerTable: customerTableName,
+      OrderTable: orderTableName,
+    },
+  });
+
+  const tableData = appSyncTransformer.outputs.cdkTables;
+  if (!tableData) throw new Error('Expected table data');
+
+  // Make sure custom name was applied to CustomerTable
+  const customerTable = appSyncTransformer.nestedAppsyncStack.node.findChild('CustomerTable');
+  expect(customerTable).toBeTruthy();
+
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+    TableName: customerTableName,
+    KeySchema: [
+      { AttributeName: 'id', KeyType: 'HASH' },
+    ],
+  });
+
+  // Make sure custom name was applied to OrderTable
+  const orderTable = appSyncTransformer.nestedAppsyncStack.node.findChild('OrderTable');
+  expect(orderTable).toBeTruthy();
+
+  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+    TableName: orderTableName,
+    KeySchema: [
+      { AttributeName: 'id', KeyType: 'HASH' },
+      { AttributeName: 'productID', KeyType: 'RANGE' },
+    ],
+  });
+});

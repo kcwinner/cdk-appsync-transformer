@@ -81,6 +81,12 @@ export interface AppSyncTransformerProps {
   readonly xrayEnabled?: boolean;
 
   /**
+   * A map of names to specify the generated dynamo table names instead of auto generated names
+   * @default undefined
+   */
+  readonly tableNames?: Record<string, string>;
+
+  /**
    * A map of @model type names to stream view type
    * e.g { Blog: StreamViewType.NEW_IMAGE }
    */
@@ -132,7 +138,7 @@ export class AppSyncTransformer extends Construct {
   /**
    * Map of cdk table tokens to table names
    */
-  public readonly tableNameMap: { [name: string]: any };
+  public readonly tableNameMap: { [name: string]: string };
 
   /**
    * Map of cdk table keys to L2 Table
@@ -204,7 +210,7 @@ export class AppSyncTransformer extends Construct {
     for (const [_, functionResolvers] of Object.entries(
       this.functionResolvers,
     )) {
-      functionResolvers.forEach((resolver: any) => {
+      functionResolvers.forEach((resolver) => {
         switch (resolver.typeName) {
           case 'Query':
           case 'Mutation':
@@ -220,7 +226,7 @@ export class AppSyncTransformer extends Construct {
     // Remove any http resolvers from the total list of resolvers
     // Otherwise it will add them twice
     for (const [_, httpResolvers] of Object.entries(this.httpResolvers)) {
-      httpResolvers.forEach((resolver: any) => {
+      httpResolvers.forEach((resolver) => {
         switch (resolver.typeName) {
           case 'Query':
           case 'Mutation':
@@ -259,7 +265,7 @@ export class AppSyncTransformer extends Construct {
       delete tableData.DataStore; // We don't want to create this again below so remove it from the tableData map
     }
 
-    this.tableNameMap = this.createTablesAndResolvers(tableData, resolvers);
+    this.tableNameMap = this.createTablesAndResolvers(tableData, resolvers, props.tableNames);
     if (this.outputs.noneResolvers) {
       this.createNoneDataSourceAndResolvers(
         this.outputs.noneResolvers,
@@ -303,7 +309,7 @@ export class AppSyncTransformer extends Construct {
   ) {
     const noneDataSource = this.appsyncAPI.addNoneDataSource('NONE');
 
-    Object.keys(noneResolvers).forEach((resolverKey: any) => {
+    Object.keys(noneResolvers).forEach((resolverKey) => {
       const resolver = resolvers[resolverKey];
       new Resolver(
         this.nestedAppsyncStack,
@@ -334,11 +340,13 @@ export class AppSyncTransformer extends Construct {
   private createTablesAndResolvers(
     tableData: { [name: string]: CdkTransformerTable },
     resolvers: any,
+    tableNames: Record<string, string> = {},
   ): { [name: string]: string } {
     const tableNameMap: any = {};
 
-    Object.keys(tableData).forEach((tableKey: any) => {
-      const table = this.createTable(tableData[tableKey]);
+    Object.keys(tableData).forEach((tableKey) => {
+      const tableName = tableNames[tableKey] ?? undefined;
+      const table = this.createTable(tableData[tableKey], tableName);
       this.tableMap[tableKey] = table;
 
       const dataSource = this.appsyncAPI.addDynamoDbDataSource(tableKey, table);
@@ -373,7 +381,7 @@ export class AppSyncTransformer extends Construct {
       tableNameMap[tableKey] = dynamoDbConfig.tableName;
 
       // Loop the basic resolvers
-      tableData[tableKey].resolvers.forEach((resolverKey: any) => {
+      tableData[tableKey].resolvers.forEach((resolverKey) => {
         let resolver = resolvers[resolverKey];
         new Resolver(
           this.nestedAppsyncStack,
@@ -394,7 +402,7 @@ export class AppSyncTransformer extends Construct {
       });
 
       // Loop the gsi resolvers
-      tableData[tableKey].gsiResolvers.forEach((resolverKey: any) => {
+      tableData[tableKey].gsiResolvers.forEach((resolverKey) => {
         let resolver = resolvers.gsi[resolverKey];
         new Resolver(
           this.nestedAppsyncStack,
@@ -418,11 +426,12 @@ export class AppSyncTransformer extends Construct {
     return tableNameMap;
   }
 
-  private createTable(tableData: CdkTransformerTable) {
+  private createTable(tableData: CdkTransformerTable, tableName?: string) {
     // I do not want to force people to pass `TypeTable` - this way they are only passing the @model Type name
     const modelTypeName = tableData.tableName.replace('Table', '');
     const streamSpecification = this.props.dynamoDbStreamConfig && this.props.dynamoDbStreamConfig[modelTypeName];
     const tableProps: TableProps = {
+      tableName,
       billingMode: BillingMode.PAY_PER_REQUEST,
       partitionKey: {
         name: tableData.partitionKey.name,
@@ -444,7 +453,7 @@ export class AppSyncTransformer extends Construct {
       tableProps,
     );
 
-    tableData.localSecondaryIndexes.forEach((lsi: any) => {
+    tableData.localSecondaryIndexes.forEach((lsi) => {
       table.addLocalSecondaryIndex({
         indexName: lsi.indexName,
         sortKey: {
@@ -457,7 +466,7 @@ export class AppSyncTransformer extends Construct {
       });
     });
 
-    tableData.globalSecondaryIndexes.forEach((gsi: any) => {
+    tableData.globalSecondaryIndexes.forEach((gsi) => {
       table.addGlobalSecondaryIndex({
         indexName: gsi.indexName,
         partitionKey: {
