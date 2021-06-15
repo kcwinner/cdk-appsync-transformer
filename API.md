@@ -50,9 +50,11 @@ new AppSyncTransformer(scope: Construct, id: string, props: AppSyncTransformerPr
   * **dynamoDbStreamConfig** (<code>Map<string, [StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)></code>)  A map of @model type names to stream view type e.g { Blog: StreamViewType.NEW_IMAGE }. __*Optional*__
   * **enableDynamoPointInTimeRecovery** (<code>boolean</code>)  Whether to enable dynamo Point In Time Recovery. __*Default*__: false
   * **fieldLogLevel** (<code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code>)  Optional. __*Default*__: FieldLogLevel.NONE
+  * **nestedStackName** (<code>string</code>)  Specify a custom nested stack name. __*Default*__: "appsync-nested-stack"
   * **postCdkTransformers** (<code>Array<any></code>)  Optional. __*Default*__: undefined
   * **preCdkTransformers** (<code>Array<any></code>)  Optional. __*Default*__: undefined
   * **syncEnabled** (<code>boolean</code>)  Whether to enable Amplify DataStore and Sync Tables. __*Default*__: false
+  * **tableNames** (<code>Map<string, string></code>)  A map of names to specify the generated dynamo table names instead of auto generated names. __*Default*__: undefined
   * **xrayEnabled** (<code>boolean</code>)  Determines whether xray should be enabled on the AppSync API. __*Default*__: false
 
 
@@ -69,7 +71,7 @@ Name | Type | Description
 **outputs**🔹 | <code>[SchemaTransformerOutputs](#cdk-appsync-transformer-schematransformeroutputs)</code> | The outputs from the SchemaTransformer.
 **resolvers**🔹 | <code>Map<string, [CdkTransformerResolver](#cdk-appsync-transformer-cdktransformerresolver)></code> | The AppSync resolvers from the transformer minus any function resolvers.
 **tableMap**🔹 | <code>Map<string, [Table](#aws-cdk-aws-dynamodb-table)></code> | Map of cdk table keys to L2 Table e.g. { 'TaskTable': Table }.
-**tableNameMap**🔹 | <code>Map<string, any></code> | Map of cdk table tokens to table names.
+**tableNameMap**🔹 | <code>Map<string, string></code> | Map of cdk table tokens to table names.
 
 ### Methods
 
@@ -156,9 +158,11 @@ Name | Type | Description
 **dynamoDbStreamConfig**?🔹 | <code>Map<string, [StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)></code> | A map of @model type names to stream view type e.g { Blog: StreamViewType.NEW_IMAGE }.<br/>__*Optional*__
 **enableDynamoPointInTimeRecovery**?🔹 | <code>boolean</code> | Whether to enable dynamo Point In Time Recovery.<br/>__*Default*__: false
 **fieldLogLevel**?🔹 | <code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code> | Optional.<br/>__*Default*__: FieldLogLevel.NONE
+**nestedStackName**?🔹 | <code>string</code> | Specify a custom nested stack name.<br/>__*Default*__: "appsync-nested-stack"
 **postCdkTransformers**?🔹 | <code>Array<any></code> | Optional.<br/>__*Default*__: undefined
 **preCdkTransformers**?🔹 | <code>Array<any></code> | Optional.<br/>__*Default*__: undefined
 **syncEnabled**?🔹 | <code>boolean</code> | Whether to enable Amplify DataStore and Sync Tables.<br/>__*Default*__: false
+**tableNames**?🔹 | <code>Map<string, string></code> | A map of names to specify the generated dynamo table names instead of auto generated names.<br/>__*Default*__: undefined
 **xrayEnabled**?🔹 | <code>boolean</code> | Determines whether xray should be enabled on the AppSync API.<br/>__*Default*__: false
 
 
