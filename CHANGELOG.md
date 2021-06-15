@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.77.16](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.15...v1.77.16) (2021-06-15)
+
+
+### Bug Fixes
+
+* allow custom table names via props ([#221](https://github.com/kcwinner/cdk-appsync-transformer/issues/221)) ([02f6041](https://github.com/kcwinner/cdk-appsync-transformer/commit/02f60416308a89db4c1df3d3bf72758faf70b84a))
+
 ### [1.77.15](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.14...v1.77.15) (2021-05-09)
 
 
