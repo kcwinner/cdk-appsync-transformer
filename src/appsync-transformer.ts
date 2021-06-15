@@ -93,6 +93,12 @@ export interface AppSyncTransformerProps {
   readonly dynamoDbStreamConfig?: { [name: string]: StreamViewType };
 
   /**
+   * Specify a custom nested stack name
+   * @default "appsync-nested-stack"
+   */
+  readonly nestedStackName?: string;
+
+  /**
    * Optional. Additonal custom transformers to run prior to the CDK resource generations.
    * Particularly useful for custom directives.
    * These should extend Transformer class from graphql-transformer-core
@@ -239,7 +245,7 @@ export class AppSyncTransformer extends Construct {
 
     this.resolvers = resolvers;
 
-    this.nestedAppsyncStack = new NestedStack(this, 'appsync-nested-stack');
+    this.nestedAppsyncStack = new NestedStack(this, props.nestedStackName ?? 'appsync-nested-stack');
 
     // AppSync
     this.appsyncAPI = new GraphqlApi(this.nestedAppsyncStack, `${id}-api`, {
