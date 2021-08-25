@@ -3280,10 +3280,15 @@ graphql-key-transformer@2.20.4, graphql-key-transformer@^2.20.4:
     graphql-transformer-common "4.18.1"
     graphql-transformer-core "6.25.1"
 
-graphql-mapping-template@4.18.1, graphql-mapping-template@^4.18.1:
+graphql-mapping-template@4.18.1:
   version "4.18.1"
   resolved "https://registry.yarnpkg.com/graphql-mapping-template/-/graphql-mapping-template-4.18.1.tgz#e78fde27876e1fa50554959ab4c7c4baa777a40d"
   integrity sha512-4pHeRVe8hKPC1ww30+54T8He388mtF27E5GGjK+19y2651F1sB8jYejII3Wr3HhmDosCxdzv+8v3gOYL9oOh7Q==
+
+graphql-mapping-template@4.18.3, graphql-mapping-template@^4.18.1:
+  version "4.18.3"
+  resolved "https://registry.yarnpkg.com/graphql-mapping-template/-/graphql-mapping-template-4.18.3.tgz#2c002df699d46353a3c695422e4193ff03a983d0"
+  integrity sha512-3VoxldV/8ioVXvATiVkYXnw1YjRS+ndmWyL/tH06gVl5y3nIMycDCdiNDxel6qKkVM36H27vyTdov98JtZ+L/A==
 
 graphql-relational-schema-transformer@^2.16.1:
   version "2.16.1"
@@ -3297,7 +3302,7 @@ graphql-relational-schema-transformer@^2.16.1:
     graphql-mapping-template "4.18.1"
     graphql-transformer-common "4.18.1"
 
-graphql-transformer-common@4.18.1, graphql-transformer-common@^4.17.11, graphql-transformer-common@^4.18.1:
+graphql-transformer-common@4.18.1:
   version "4.18.1"
   resolved "https://registry.yarnpkg.com/graphql-transformer-common/-/graphql-transformer-common-4.18.1.tgz#35fedb372afcc3db47593c2d1a499a2107ef8c36"
   integrity sha512-Fn/rsDHYDPboBw76bp+EqPI7ClPEg0vjaKabGvVQQQfFFc1heTsuu/8ZChMU5Hear+ylzBjyejrmYgRqar+z7g==
@@ -3305,6 +3310,16 @@ graphql-transformer-common@4.18.1, graphql-transformer-common@^4.17.11, graphql-
     graphql "^14.5.8"
     graphql-mapping-template "4.18.1"
     md5 "^2.2.1"
+
+graphql-transformer-common@^4.17.11, graphql-transformer-common@^4.18.1:
+  version "4.19.8"
+  resolved "https://registry.yarnpkg.com/graphql-transformer-common/-/graphql-transformer-common-4.19.8.tgz#391f837513f645be2112bb7663a25b2b0f49102c"
+  integrity sha512-dWJ+9FE0VQSXyR7bsuw8qJNRyfGM7jXWkf7C9zFKvIAwc22OETfsgQIJg2bk81RyhwRGno/9XSRkzK1ctFvEog==
+  dependencies:
+    graphql "^14.5.8"
+    graphql-mapping-template "4.18.3"
+    md5 "^2.2.1"
+    pluralize "8.0.0"
 
 graphql-transformer-core@6.25.1, graphql-transformer-core@^6.21.7, graphql-transformer-core@^6.25.1:
   version "6.25.1"
@@ -5416,7 +5431,7 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-pluralize@^8.0.0:
+pluralize@8.0.0, pluralize@^8.0.0:
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/pluralize/-/pluralize-8.0.0.tgz#1a6fa16a38d12a1901e0320fa017051c539ce3b1"
   integrity sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==
