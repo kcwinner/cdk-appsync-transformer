@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.121.18](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.16...v1.121.18) (2021-09-03)
+
 ### [1.77.16](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.15...v1.77.16) (2021-06-15)
 
 
