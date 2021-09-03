@@ -10,7 +10,6 @@
 
 ## Notice
 
-For CDK versions <= 1.77.0 please use [aws-cdk-appsync-transformer](https://github.com/kcwinner/cdk-appsync-transformer).
 For CDK versions < 1.64.0 please use [aws-cdk-appsync-transformer](https://github.com/kcwinner/aws-cdk-appsync-transformer).
 
 ## Why This Package
