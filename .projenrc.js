@@ -42,6 +42,8 @@ const project = new AwsCdkConstructLibrary({
   ],
   gitignore: [
     'appsync/*',
+    // Since projen is using yarn
+    'package-lock.json',
   ],
 
   // Jsii packaging
@@ -51,7 +53,7 @@ const project = new AwsCdkConstructLibrary({
   },
 
   // Dependency information
-  cdkVersion: '1.77.0',
+  cdkVersion: '1.121.0',
   cdkDependencies: [
     '@aws-cdk/aws-appsync',
     '@aws-cdk/aws-cognito',
