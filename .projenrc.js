@@ -1,4 +1,4 @@
-const { AwsCdkConstructLibrary } = require('projen');
+const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
 
 const project = new AwsCdkConstructLibrary({
   authorAddress: 'kcswinner@gmail.com',
@@ -10,9 +10,7 @@ const project = new AwsCdkConstructLibrary({
     twitter: 'KenWin0x539',
   },
   license: 'Apache-2.0',
-  workflowNodeVersion: '12.17.0',
   defaultReleaseBranch: 'main',
-  typescriptVersion: '^4.1.2',
   keywords: [
     'aws',
     'cdk',
@@ -22,11 +20,13 @@ const project = new AwsCdkConstructLibrary({
   mergify: false,
   rebuildBot: false,
   codeCov: true,
-  dependabotOptions: {
+
+  depsUpgrade: DependenciesUpgradeMechanism.dependabot({
+    ignoreProjen: true,
     ignore: [
       { dependencyName: '@aws-cdk*' },
     ],
-  },
+  }),
 
   jestOptions: {
     jestConfig: {
@@ -51,7 +51,8 @@ const project = new AwsCdkConstructLibrary({
   },
 
   // Dependency information
-  cdkVersion: '1.77.0',
+  cdkVersion: '1.110.1',
+  cdkDependenciesAsDeps: false,
   cdkDependencies: [
     '@aws-cdk/aws-appsync',
     '@aws-cdk/aws-cognito',
@@ -86,8 +87,5 @@ const project = new AwsCdkConstructLibrary({
     'graphql-versioned-transformer',
   ],
 });
-
-// Override the @types/node version so dependabot leaves us alone
-project.addDevDeps('@types/node@^10.17.48');
 
 project.synth();

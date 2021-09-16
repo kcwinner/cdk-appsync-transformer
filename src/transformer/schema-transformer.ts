@@ -5,7 +5,15 @@ import { ModelConnectionTransformer } from 'graphql-connection-transformer';
 import { DynamoDBModelTransformer } from 'graphql-dynamodb-transformer';
 import { HttpTransformer } from 'graphql-http-transformer';
 import { KeyTransformer } from 'graphql-key-transformer';
-import { GraphQLTransform, TransformConfig, TRANSFORM_CURRENT_VERSION, TRANSFORM_CONFIG_FILE_NAME, ConflictHandlerType, ITransformer } from 'graphql-transformer-core';
+import {
+  GraphQLTransform,
+  TransformConfig,
+  TRANSFORM_CURRENT_VERSION,
+  TRANSFORM_CONFIG_FILE_NAME,
+  ConflictHandlerType,
+  ITransformer,
+  FeatureFlagProvider,
+} from 'graphql-transformer-core';
 import TtlTransformer from 'graphql-ttl-transformer';
 import { VersionedModelTransformer } from 'graphql-versioned-transformer';
 
@@ -115,9 +123,27 @@ export class SchemaTransformer {
   public transform(preCdkTransformers: ITransformer[] = [], postCdkTransformers: ITransformer[] = []) {
     const transformConfig = this.isSyncEnabled ? this.loadConfigSync() : {};
 
+    const provider = new TransformerFeatureFlagProvider();
+
+    // const featureFlags = {
+    //   getBoolean: (name: string, defaultValue: boolean) => {
+    //     if (name === 'improvePluralization') {
+    //       return true;
+    //     }
+    //     if (name === 'validateTypeNameReservedWords') {
+    //       return false;
+    //     }
+    //     return defaultValue;
+    //   },
+    //   getString: (featureName: string, options?: string) => { return options },
+    //   getNumber: (featureName: string, options?: number) =>  { return options },
+    //   getObject: () => {},
+    // };
+
     // Note: This is not exact as we are omitting the @searchable transformer as well as some others.
     const transformer = new GraphQLTransform({
       transformConfig: transformConfig,
+      featureFlags: provider,
       transformers: [
         new DynamoDBModelTransformer(),
         new TtlTransformer(),
@@ -312,5 +338,40 @@ export class SchemaTransformer {
     } catch (err) {
       return config;
     }
+  }
+}
+
+
+/**
+ * Grabbed from Amplify
+ * https://github.com/aws-amplify/amplify-cli/blob/eb9257eaee117d0ed53ebc23aa28ecd7b7510fa1/packages/graphql-transformer-core/src/FeatureFlags.ts
+ */
+export class TransformerFeatureFlagProvider implements FeatureFlagProvider {
+  getBoolean(featureName: string, options?: boolean): boolean {
+    switch (featureName) {
+      case 'improvePluralization':
+        return true;
+      case 'validateTypeNameReservedWords':
+        return false;
+      default:
+        return this.getValue<boolean>(featureName, options);
+    }
+  }
+  getString(featureName: string, options?: string): string {
+    return this.getValue<string>(featureName, options);
+  }
+  getNumber(featureName: string, options?: number): number {
+    return this.getValue<number>(featureName, options);
+  }
+  getObject(): object {
+    // Todo: for future extensibility
+    throw new Error('Not implemented');
+  }
+
+  protected getValue<T extends string | number | boolean>(featureName: string, defaultValue?: T): T {
+    if (defaultValue !== undefined) {
+      return defaultValue;
+    }
+    throw new Error(`No value found for feature ${featureName}`);
   }
 }
