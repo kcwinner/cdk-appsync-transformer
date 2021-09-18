@@ -1,4 +1,4 @@
-const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
+const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism, NodePackageManager } = require('projen');
 
 const project = new AwsCdkConstructLibrary({
   authorAddress: 'kcswinner@gmail.com',
@@ -21,6 +21,7 @@ const project = new AwsCdkConstructLibrary({
   rebuildBot: false,
   codeCov: true,
 
+  packageManager: NodePackageManager.NPM,
   depsUpgrade: DependenciesUpgradeMechanism.dependabot({
     ignoreProjen: true,
     ignore: [

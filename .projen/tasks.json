@@ -160,10 +160,10 @@
           "exec": "npm-check-updates --upgrade --target=minor --filter='projen'"
         },
         {
-          "exec": "yarn install --check-files"
+          "exec": "npm install"
         },
         {
-          "exec": "yarn upgrade projen"
+          "exec": "npm update projen"
         },
         {
           "exec": "npx projen"

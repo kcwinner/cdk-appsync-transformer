@@ -24,7 +24,7 @@ jobs:
           git config user.name "Automation"
           git config user.email "github-actions@github.com"
       - name: Install dependencies
-        run: yarn install --check-files --frozen-lockfile
+        run: npm ci
       - name: build
         run: npx projen build
       - name: Upload coverage to Codecov

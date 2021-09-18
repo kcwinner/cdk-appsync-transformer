@@ -25,7 +25,7 @@ jobs:
           git config user.name "Automation"
           git config user.email "github-actions@github.com"
       - name: Install dependencies
-        run: yarn install --check-files --frozen-lockfile
+        run: npm ci
       - name: release
         run: npx projen release
       - name: Check for new commits
