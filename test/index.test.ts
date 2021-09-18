@@ -1135,6 +1135,43 @@ test('Custom Table Names Are Applied', () => {
   });
 });
 
+test('Can override resolver', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'override-resolver-stack');
+
+  const appsyncTransformer = new AppSyncTransformer(stack, 'override-transformer', {
+    schemaPath: testSchemaPath,
+    authorizationConfig: apiKeyAuthorizationConfig,
+    xrayEnabled: false,
+  });
+
+  expect(appsyncTransformer.resolvers.gsi).toMatchObject({
+    ...appsyncTransformer.resolvers.gsi,
+    Postcomments: {
+      typeName: 'Post',
+      fieldName: 'comments',
+      tableName: 'Comments',
+      requestMappingTemplate: 'appsync/resolvers/Post.comments.req',
+      responseMappingTemplate: 'appsync/resolvers/Post.comments.res',
+    },
+  });
+
+  appsyncTransformer.overrideResolver({
+    typeName: 'Post',
+    fieldName: 'comments',
+    requestMappingTemplateFile: path.join(process.cwd(), 'test', 'custom-resolvers', 'Test', 'request.vtl'),
+    responseMappingTemplateFile: path.join(process.cwd(), 'test', 'custom-resolvers', 'Test', 'response.vtl'),
+  });
+
+  expect(appsyncTransformer.nestedAppsyncStack).toHaveResourceLike('AWS::AppSync::Resolver', {
+    FieldName: 'comments',
+    TypeName: 'Post',
+    Kind: 'UNIT',
+    RequestMappingTemplate: '{\n  "version": "2018-05-29"\n}',
+    ResponseMappingTemplate: '$util.toJson({})',
+  });
+});
+
 const customVtlTestSchemaPath = path.join(__dirname, 'customVtlTransformerSchema.graphql');
 
 test('Custom VTL Transformer Creates Resolvers', () => {

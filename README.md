@@ -137,6 +137,26 @@ type Query {
 The above will generate a `Query.listThingCustom` request and response resolver.
 You can customize the location of custom resolvers using the `customVtlTransformerRootDirectory` property.
 
+### Overriding generated vtl
+
+_This is an advanced feature_
+
+You can override generated request and response mapping templates using the `overrideResolver` convenience method.
+
+```ts
+const appsyncTransformer = new AppSyncTransformer(this, "my-cool-api", {
+  schemaPath: "schema.graphql",
+});
+
+// You can override the just the request, just the response, or BOTH
+appsyncTransformer.overrideResolver({
+  typeName: 'Query',
+  fieldName: 'listThings',
+  requestMappingTemplateFile: path.join(process.cwd(), 'custom-resolvers', 'Things', 'request.vtl'),
+  responseMappingTemplateFile: path.join(process.cwd(), 'custom-resolvers', 'Things', 'response.vtl'),
+});
+```
+
 ### Authentication
 
 User Pool Authentication

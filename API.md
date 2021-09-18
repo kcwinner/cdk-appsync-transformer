@@ -21,6 +21,7 @@ Name|Description
 [CdkTransformerTableKey](#cdk-appsync-transformer-cdktransformertablekey)|*No description*
 [CdkTransformerTableTtl](#cdk-appsync-transformer-cdktransformertablettl)|*No description*
 [DynamoDBStreamProps](#cdk-appsync-transformer-dynamodbstreamprops)|*No description*
+[OverrideResolverProps](#cdk-appsync-transformer-overrideresolverprops)|*No description*
 [SchemaTransformerOutputs](#cdk-appsync-transformer-schematransformeroutputs)|*No description*
 
 
@@ -141,6 +142,23 @@ grantPublic(grantee: IGrantable): Grant
 
 __Returns__:
 * <code>[Grant](#aws-cdk-aws-iam-grant)</code>
+
+#### overrideResolver(props)🔹 <a id="cdk-appsync-transformer-appsynctransformer-overrideresolver"></a>
+
+Allows for overriding the generated request and response mapping templates.
+
+```ts
+overrideResolver(props: OverrideResolverProps): void
+```
+
+* **props** (<code>[OverrideResolverProps](#cdk-appsync-transformer-overrideresolverprops)</code>)  *No description*
+  * **fieldName** (<code>string</code>)  The fieldname to override e.g. listThings, createStuff. 
+  * **typeName** (<code>string</code>)  Example: Query, Mutation, Subscription For a GSI this might be Post, Comment, etc. 
+  * **requestMappingTemplateFile** (<code>string</code>)  The full path to the request mapping template file. __*Optional*__
+  * **responseMappingTemplateFile** (<code>string</code>)  The full path to the resposne mapping template file. __*Optional*__
+
+
+
 
 
 
@@ -306,6 +324,22 @@ Name | Type | Description
 -----|------|-------------
 **modelTypeName**🔹 | <code>string</code> | The @model type name from the graph schema e.g. Blog.
 **streamViewType**🔹 | <code>[StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)</code> | <span></span>
+
+
+
+## struct OverrideResolverProps 🔹 <a id="cdk-appsync-transformer-overrideresolverprops"></a>
+
+
+
+
+
+
+Name | Type | Description 
+-----|------|-------------
+**fieldName**🔹 | <code>string</code> | The fieldname to override e.g. listThings, createStuff.
+**typeName**🔹 | <code>string</code> | Example: Query, Mutation, Subscription For a GSI this might be Post, Comment, etc.
+**requestMappingTemplateFile**?🔹 | <code>string</code> | The full path to the request mapping template file.<br/>__*Optional*__
+**responseMappingTemplateFile**?🔹 | <code>string</code> | The full path to the resposne mapping template file.<br/>__*Optional*__
 
 
 
