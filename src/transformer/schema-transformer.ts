@@ -24,6 +24,7 @@ import {
   CdkTransformerFunctionResolver,
   CdkTransformerHttpResolver,
 } from './cdk-transformer';
+import { CustomVTLTransformer } from './custom-vtl-transformer';
 
 // Rebuilt this from cloudform-types because it has type errors
 import { Resource } from './resource';
@@ -56,6 +57,12 @@ export interface SchemaTransformerProps {
    * @default false
    */
   readonly syncEnabled?: boolean;
+
+  /**
+   * The root directory to use for finding custom resolvers
+   * @default process.cwd()
+   */
+  readonly customVtlTransformerRootDirectory?: string;
 }
 
 export interface SchemaTransformerOutputs {
@@ -72,6 +79,7 @@ export class SchemaTransformer {
   public readonly schemaPath: string
   public readonly outputPath: string
   public readonly isSyncEnabled: boolean
+  public readonly customVtlTransformerRootDirectory: string;
 
   private readonly authTransformerConfig: ModelAuthTransformerConfig
 
@@ -81,9 +89,10 @@ export class SchemaTransformer {
   unauthRolePolicy: Resource | undefined
 
   constructor(props: SchemaTransformerProps) {
-    this.schemaPath = props.schemaPath || './schema.graphql';
-    this.outputPath = props.outputPath || './appsync';
-    this.isSyncEnabled = props.syncEnabled || false;
+    this.schemaPath = props.schemaPath ?? './schema.graphql';
+    this.outputPath = props.outputPath ?? './appsync';
+    this.isSyncEnabled = props.syncEnabled ?? false;
+    this.customVtlTransformerRootDirectory = props.customVtlTransformerRootDirectory ?? process.cwd();
 
     this.outputs = {};
     this.resolvers = {};
@@ -125,21 +134,6 @@ export class SchemaTransformer {
 
     const provider = new TransformerFeatureFlagProvider();
 
-    // const featureFlags = {
-    //   getBoolean: (name: string, defaultValue: boolean) => {
-    //     if (name === 'improvePluralization') {
-    //       return true;
-    //     }
-    //     if (name === 'validateTypeNameReservedWords') {
-    //       return false;
-    //     }
-    //     return defaultValue;
-    //   },
-    //   getString: (featureName: string, options?: string) => { return options },
-    //   getNumber: (featureName: string, options?: number) =>  { return options },
-    //   getObject: () => {},
-    // };
-
     // Note: This is not exact as we are omitting the @searchable transformer as well as some others.
     const transformer = new GraphQLTransform({
       transformConfig: transformConfig,
@@ -153,6 +147,7 @@ export class SchemaTransformer {
         new ModelConnectionTransformer(),
         new ModelAuthTransformer(this.authTransformerConfig),
         new HttpTransformer(),
+        new CustomVTLTransformer(this.customVtlTransformerRootDirectory),
         ...preCdkTransformers,
         new CdkTransformer(),
         ...postCdkTransformers,

@@ -92,4 +92,13 @@ const project = new AwsCdkConstructLibrary({
 const unbumpTask = project.tasks.tryFind('unbump');
 unbumpTask.exec('git checkout package-lock.json');
 
+project.eslint.overrides.push({
+  files: [
+    'custom-vtl-transformer.ts',
+  ],
+  rules: {
+    'import/no-extraneous-dependencies': 'off',
+  },
+});
+
 project.synth();

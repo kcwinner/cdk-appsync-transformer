@@ -1134,3 +1134,48 @@ test('Custom Table Names Are Applied', () => {
     ],
   });
 });
+
+const customVtlTestSchemaPath = path.join(__dirname, 'customVtlTransformerSchema.graphql');
+
+test('Custom VTL Transformer Creates Resolvers', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'custom-vtl-stack');
+
+  const appsyncTransformer = new AppSyncTransformer(stack, 'custom-vtl-transformer', {
+    schemaPath: customVtlTestSchemaPath,
+    authorizationConfig: apiKeyAuthorizationConfig,
+    xrayEnabled: false,
+  });
+
+  expect(appsyncTransformer.resolvers).toMatchObject({
+    QuerylistThingCustom: {
+      typeName: 'Query',
+      fieldName: 'listThingCustom',
+      requestMappingTemplate: 'appsync/resolvers/Query.listThingCustom.req',
+      responseMappingTemplate: 'appsync/resolvers/Query.listThingCustom.res',
+    },
+  });
+
+  expect(appsyncTransformer.nestedAppsyncStack).toHaveResourceLike('AWS::AppSync::Resolver', {
+    FieldName: 'listThingCustom',
+    TypeName: 'Query',
+    DataSourceName: 'NONE',
+    Kind: 'UNIT',
+    RequestMappingTemplate: '{\n  "version": "2018-05-29"\n}',
+    ResponseMappingTemplate: '$util.toJson({})',
+  });
+});
+
+test('Can Set Custom Directory', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'custom-vtl-stack');
+
+  const customDir = path.join(process.cwd(), '..', 'cdk-appsync-transformer');
+
+  new AppSyncTransformer(stack, 'custom-vtl-transformer', {
+    schemaPath: customVtlTestSchemaPath,
+    authorizationConfig: apiKeyAuthorizationConfig,
+    xrayEnabled: false,
+    customVtlTransformerRootDirectory: customDir,
+  });
+});

@@ -117,6 +117,26 @@ new AppSyncTransformer(this, "my-cool-api", {
 });
 ```
 
+#### Custom VTL Transformer
+
+Can be used to create custom [NONE](https://docs.aws.amazon.com/appsync/latest/devguide/resolver-mapping-template-reference-none.html) datasource resolvers.This allows for custom or special logic to be used and added via a transformer.
+
+Example:
+
+```graphql
+type Thing {
+  fooBar: String
+}
+
+type Query {
+  listThingCustom: Thing
+    @custom(request: "test/custom-resolvers/Test/request.vtl", response: "test/custom-resolvers/Test/response.vtl")
+}
+```
+
+The above will generate a `Query.listThingCustom` request and response resolver.
+You can customize the location of custom resolvers using the `customVtlTransformerRootDirectory` property.
+
 ### Authentication
 
 User Pool Authentication
@@ -380,3 +400,8 @@ Distributed under [Apache License, Version 2.0](LICENSE)
 - [aws cdk](https://aws.amazon.com/cdk)
 - [amplify-cli](https://github.com/aws-amplify/amplify-cli)
 - [Amplify Directives](https://docs.amplify.aws/cli/graphql-transformer/directives)
+
+
+# Sponsors
+
+## [Stedi](https://www.stedi.com/)

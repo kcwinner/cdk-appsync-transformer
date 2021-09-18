@@ -1,0 +1,10 @@
+# Demonstrate custom vtl transform
+
+type Thing {
+  fooBar: String
+}
+
+type Query {
+  listThingCustom: Thing
+    @custom(request: "test/custom-resolvers/Test/request.vtl", response: "test/custom-resolvers/Test/response.vtl")
+}
