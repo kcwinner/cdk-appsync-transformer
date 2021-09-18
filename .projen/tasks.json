@@ -133,6 +133,9 @@
       "steps": [
         {
           "builtin": "release/reset-version"
+        },
+        {
+          "exec": "git checkout package-lock.json"
         }
       ]
     },
