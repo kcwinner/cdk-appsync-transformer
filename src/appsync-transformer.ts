@@ -99,6 +99,12 @@ export interface AppSyncTransformerProps {
   readonly nestedStackName?: string;
 
   /**
+   * The root directory to use for finding custom resolvers
+   * @default process.cwd()
+   */
+  readonly customVtlTransformerRootDirectory?: string;
+
+  /**
    * Optional. Additonal custom transformers to run prior to the CDK resource generations.
    * Particularly useful for custom directives.
    * These should extend Transformer class from graphql-transformer-core
@@ -192,6 +198,7 @@ export class AppSyncTransformer extends Construct {
     const transformerConfiguration: SchemaTransformerProps = {
       schemaPath: props.schemaPath,
       syncEnabled: props.syncEnabled ?? false,
+      customVtlTransformerRootDirectory: props.customVtlTransformerRootDirectory,
     };
 
     // Combine the arrays so we only loop once
