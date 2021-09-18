@@ -89,4 +89,7 @@ const project = new AwsCdkConstructLibrary({
   ],
 });
 
+const unbumpTask = project.tasks.tryFind('unbump');
+unbumpTask.exec('git checkout package-lock.json');
+
 project.synth();
