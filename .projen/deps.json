@@ -2,37 +2,37 @@
   "dependencies": [
     {
       "name": "@aws-cdk/assert",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "build"
     },
     {
       "name": "@aws-cdk/aws-appsync",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "build"
     },
     {
       "name": "@aws-cdk/aws-cognito",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "build"
     },
     {
       "name": "@aws-cdk/aws-dynamodb",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "build"
     },
     {
       "name": "@aws-cdk/aws-iam",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "build"
     },
     {
       "name": "@aws-cdk/aws-lambda",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "build"
     },
     {
       "name": "@aws-cdk/core",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "build"
     },
     {
@@ -183,32 +183,32 @@
     },
     {
       "name": "@aws-cdk/aws-appsync",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-cognito",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-dynamodb",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-iam",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-lambda",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/core",
-      "version": "^1.110.1",
+      "version": "^1.123.0",
       "type": "peer"
     },
     {
