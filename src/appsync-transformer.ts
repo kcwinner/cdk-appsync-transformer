@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import {
   GraphqlApi,
   AuthorizationType,
@@ -5,6 +6,7 @@ import {
   MappingTemplate,
   CfnDataSource,
   Resolver,
+  CfnResolver,
   AuthorizationConfig,
   Schema,
   DataSourceOptions,
@@ -395,7 +397,7 @@ export class AppSyncTransformer extends Construct {
 
       // Loop the basic resolvers
       tableData[tableKey].resolvers.forEach((resolverKey) => {
-        let resolver = resolvers[resolverKey];
+        const resolver = resolvers[resolverKey];
         new Resolver(
           this.nestedAppsyncStack,
           `${resolver.typeName}-${resolver.fieldName}-resolver`,
@@ -416,7 +418,7 @@ export class AppSyncTransformer extends Construct {
 
       // Loop the gsi resolvers
       tableData[tableKey].gsiResolvers.forEach((resolverKey) => {
-        let resolver = resolvers.gsi[resolverKey];
+        const resolver = resolvers.gsi[resolverKey];
         new Resolver(
           this.nestedAppsyncStack,
           `${resolver.typeName}-${resolver.fieldName}-resolver`,
@@ -663,6 +665,26 @@ export class AppSyncTransformer extends Construct {
   }
 
   /**
+   * Allows for overriding the generated request and response mapping templates
+   * @param props
+   */
+  public overrideResolver(props: OverrideResolverProps) {
+    const resolver = this.nestedAppsyncStack.node.tryFindChild(`${props.typeName}-${props.fieldName}-resolver`) as Resolver;
+    if (!resolver) throw new Error(`Resolver with typeName '${props.typeName}' and fieldName '${props.fieldName}' not found`);
+
+    const cfnResolver = resolver.node.defaultChild as CfnResolver;
+    if (!cfnResolver) throw new Error(`Resolver with typeName '${props.typeName}' and fieldName '${props.fieldName}' not found`);
+
+    if (props.requestMappingTemplateFile) {
+      cfnResolver.requestMappingTemplate = fs.readFileSync(props.requestMappingTemplateFile).toString('utf-8');
+    }
+
+    if (props.responseMappingTemplateFile) {
+      cfnResolver.responseMappingTemplate = fs.readFileSync(props.responseMappingTemplateFile).toString('utf-8');
+    }
+  }
+
+  /**
    * Adds an IAM policy statement granting access to the public fields of
    * the AppSync API. Policy is based off of the @auth transformer
    * https://docs.amplify.aws/cli/graphql-transformer/auth
@@ -699,4 +721,27 @@ export interface DynamoDBStreamProps {
    */
   readonly modelTypeName: string;
   readonly streamViewType: StreamViewType;
+}
+
+export interface OverrideResolverProps {
+  /**
+   * Example: Query, Mutation, Subscription
+   * For a GSI this might be Post, Comment, etc
+   */
+  readonly typeName: string;
+
+  /**
+   * The fieldname to override e.g. listThings, createStuff
+   */
+  readonly fieldName: string;
+
+  /**
+   * The full path to the request mapping template file
+   */
+  readonly requestMappingTemplateFile?: string;
+
+  /**
+   * The full path to the resposne mapping template file
+   */
+  readonly responseMappingTemplateFile?: string;
 }
