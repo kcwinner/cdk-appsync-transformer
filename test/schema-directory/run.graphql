@@ -2,6 +2,6 @@ type Run
 @model
 @key(fields: ["id"])
 {
-    id:             ID!
+    id:             ID! @http(url: "https://www.example.com/runById")
     input: [VariableDeclaration!]!
 }
