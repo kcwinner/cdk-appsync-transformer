@@ -14,6 +14,7 @@ import { KeyTransformer } from 'graphql-key-transformer';
 import { AppSyncTransformer } from '../src/index';
 import MappedTransformer from './mappedTransformer';
 import SingleFieldMapTransformer from './singleFieldMapTransformer';
+import {HttpTransformer} from "graphql-http-transformer";
 // eslint-disable-next-line
 const { FunctionTransformer } = require('graphql-function-transformer') as any;
 
@@ -1278,7 +1279,7 @@ test('Can override amplifyTransformers', () => {
   })).toThrow();
   expect(() => new AppSyncTransformer(stack, 'amplifyTransformers-noThrow', {
     schemaPath: path.resolve(__dirname, 'schema-directory'),
-    amplifyTransformers: [new DynamoDBModelTransformer(), new KeyTransformer(), new FunctionTransformer()],
+    amplifyTransformers: [new DynamoDBModelTransformer(), new KeyTransformer(), new HttpTransformer(), new FunctionTransformer()],
   })).not.toThrow();
 });
 
@@ -1288,7 +1289,7 @@ test('Lambda resources use provided schema', () => {
 
   const transformer = new AppSyncTransformer(stack, 'amplifyTransformers-noThrow', {
     schemaPath: path.resolve(__dirname, 'schema-directory'),
-    amplifyTransformers: [new DynamoDBModelTransformer(), new KeyTransformer(), new FunctionTransformer()],
+    amplifyTransformers: [new DynamoDBModelTransformer(), new KeyTransformer(), new HttpTransformer(), new FunctionTransformer()],
   });
   expect(transformer);
 });

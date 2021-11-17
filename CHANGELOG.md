@@ -2,16 +2,6 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [1.78.0](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.5...v1.78.0) (2021-11-17)
-
-### Features
-
-* Capability to access resolvers to do deep configuration
-* Capability to reference a schema directory as an alternative to a pre-merged schema file.
-* Capability to modify transformConfig
-* Capability to modify amplifyTransformers
-* Capability to modify featureFlags
-
 ### [1.77.16](https://github.com/kcwinner/cdk-appsync-transformer/compare/v1.77.15...v1.77.16) (2021-06-15)
 
 
