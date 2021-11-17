@@ -391,7 +391,26 @@ const streamArn = appSyncTransformer.addDynamoDBStream({
 ### DataStore Support
 
 1. Pass `syncEnabled: true` to the `AppSyncTransformerProps`
-1. Generate necessary exports (see [Code Generation](#code-generation) below)
+2. Generate necessary exports (see [Code Generation](#code-generation) below)
+
+### Modifying resolver syncConfig
+
+1. Create `AppSyncTransformer`
+2. Access `Resolver` by your fieldName (e.g. Mutation `updateMyModel`)
+3. Access the CfnResolver via the Resolver's defaultChild;
+4. Modify CfnResolver.syncConfig
+
+```ts
+const transformer = new AppSyncTransformer(myConfig)
+const cfnResolver = transformer.fieldResolvers['updateMyModel']?.[0]!
+        .node.defaultChild as CfnResolver | undefined;
+if (cfnResolver) {
+  cfnResolver.syncConfig = {
+    conflictDetection: 'VERSION',
+    conflictHandler: 'OPTIMISTIC_CONCURRENCY',
+  };
+}
+```
 
 ### Cfn Outputs
 

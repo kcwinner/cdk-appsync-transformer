@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { normalize, join } from 'path';
+import { resolve, normalize, join } from 'path';
 import { ModelAuthTransformer, ModelAuthTransformerConfig } from 'graphql-auth-transformer';
 import { ModelConnectionTransformer } from 'graphql-connection-transformer';
 import { DynamoDBModelTransformer } from 'graphql-dynamodb-transformer';
@@ -63,6 +63,25 @@ export interface SchemaTransformerProps {
    * @default process.cwd()
    */
   readonly customVtlTransformerRootDirectory?: string;
+
+  /**
+   * The list of standard amplify transformers passed to to GraphQLTransform
+   * @default [DynamoDBModelTransformer, TtlTransformer, VersionedModelTransformer, FunctionTransformer,
+   *           KeyTransformer, ModelConnectionTransformer, ModelAuthTransformer, HttpTransformer, CustomVTLTransformer]
+   */
+  readonly amplifyTransformers?: ITransformer[];
+
+  /**
+   * The transformConfig argument to GraphQLTransform
+   * @default {}
+   */
+  readonly transformConfig?: TransformConfig;
+
+  /**
+   * The featureFlags argument to GraphQLTransform
+   * @default improvePluralization => true; default => false
+   */
+  readonly featureFlags?: FeatureFlagProvider;
 }
 
 export interface SchemaTransformerOutputs {
@@ -87,6 +106,9 @@ export class SchemaTransformer {
   resolvers: any
   authRolePolicy: Resource | undefined
   unauthRolePolicy: Resource | undefined
+  transformConfig: TransformConfig;
+  amplifyTransformers: ITransformer[];
+  featureFlags: FeatureFlagProvider;
 
   constructor(props: SchemaTransformerProps) {
     this.schemaPath = props.schemaPath ?? './schema.graphql';
@@ -127,35 +149,51 @@ export class SchemaTransformer {
         ],
       },
     };
+
+    this.transformConfig = props.transformConfig ?? (this.isSyncEnabled ? this.loadConfigSync() : {});
+    this.amplifyTransformers = props.amplifyTransformers ?? [new DynamoDBModelTransformer(),
+      new TtlTransformer(),
+      new VersionedModelTransformer(),
+      new FunctionTransformer(),
+      new KeyTransformer(),
+      new ModelConnectionTransformer(),
+      new ModelAuthTransformer(this.authTransformerConfig),
+      new HttpTransformer(),
+      new CustomVTLTransformer(this.customVtlTransformerRootDirectory)];
+    this.featureFlags = props.featureFlags ?? new TransformerFeatureFlagProvider();
+
   }
 
   public transform(preCdkTransformers: ITransformer[] = [], postCdkTransformers: ITransformer[] = []) {
-    const transformConfig = this.isSyncEnabled ? this.loadConfigSync() : {};
-
-    const provider = new TransformerFeatureFlagProvider();
 
     // Note: This is not exact as we are omitting the @searchable transformer as well as some others.
     const transformer = new GraphQLTransform({
-      transformConfig: transformConfig,
-      featureFlags: provider,
+      transformConfig: this.transformConfig,
+      featureFlags: this.featureFlags,
       transformers: [
-        new DynamoDBModelTransformer(),
-        new TtlTransformer(),
-        new VersionedModelTransformer(),
-        new FunctionTransformer(),
-        new KeyTransformer(),
-        new ModelConnectionTransformer(),
-        new ModelAuthTransformer(this.authTransformerConfig),
-        new HttpTransformer(),
-        new CustomVTLTransformer(this.customVtlTransformerRootDirectory),
+        ...this.amplifyTransformers,
         ...preCdkTransformers,
         new CdkTransformer(),
         ...postCdkTransformers,
       ],
     });
 
-    const schema = fs.readFileSync(this.schemaPath);
-    const cfdoc = transformer.transform(schema.toString());
+    const schemaExists = fs.existsSync(this.schemaPath);
+    if (!schemaExists) {
+      throw new Error(`expected schema at ${this.schemaPath} but it did not exist`);
+    }
+    const isDirectory = fs.statSync(this.schemaPath).isDirectory();
+    let schema = '';
+    if (isDirectory) {
+      schema = fs.readdirSync(this.schemaPath)
+        .map((file) => resolve(this.schemaPath, file))
+        .filter((filePath) => fs.statSync(filePath).isFile() && filePath.endsWith('.graphql'))
+        .reduce((cur, filePath) => `${cur}\n${fs.readFileSync(filePath).toString()}`, '');
+    } else {
+      schema = fs.readFileSync(this.schemaPath).toString();
+    }
+
+    const cfdoc = transformer.transform(schema);
 
     // TODO: Get Unauth Role and Auth Role policies for authorization stuff
     this.unauthRolePolicy = cfdoc.rootStack.Resources?.UnauthRolePolicy01 as Resource || undefined;

@@ -1,0 +1,7 @@
+type Run
+@model
+@key(fields: ["id"])
+{
+    id:             ID!
+    input: [VariableDeclaration!]!
+}

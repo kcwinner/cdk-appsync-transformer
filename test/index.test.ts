@@ -1,12 +1,14 @@
 import '@aws-cdk/assert/jest';
 import * as path from 'path';
-import { AuthorizationType, AuthorizationConfig, UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
+import { AuthorizationType, AuthorizationConfig, UserPoolDefaultAction, CfnResolver } from '@aws-cdk/aws-appsync';
 import { CfnIdentityPool, UserPool, UserPoolClient } from '@aws-cdk/aws-cognito';
 import { StreamViewType } from '@aws-cdk/aws-dynamodb';
 import { Role, WebIdentityPrincipal } from '@aws-cdk/aws-iam';
 import { Runtime, Code, Function } from '@aws-cdk/aws-lambda';
 import { App, Stack } from '@aws-cdk/core';
 
+import { DynamoDBModelTransformer } from 'graphql-dynamodb-transformer';
+import { KeyTransformer } from 'graphql-key-transformer';
 import { AppSyncTransformer } from '../src/index';
 import MappedTransformer from './mappedTransformer';
 import SingleFieldMapTransformer from './singleFieldMapTransformer';
@@ -1215,4 +1217,92 @@ test('Can Set Custom Directory', () => {
     xrayEnabled: false,
     customVtlTransformerRootDirectory: customDir,
   });
+});
+
+test('Can pass in a schema directory and override resolvers', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'custom-schema-dir');
+
+  const transformer = new AppSyncTransformer(stack, 'schema-directory', {
+    schemaPath: path.resolve(__dirname, 'schema-directory'),
+  });
+  expect(Object.keys(transformer.tableMap)).toContain('TestTable');
+  expect(Object.keys(transformer.tableMap)).toContain('RunTable');
+  expect(Object.keys(transformer.fieldResolvers)).toContain('getRun');
+  const cfnResolver = transformer.fieldResolvers.getRun?.[0]!
+    .node.defaultChild! as CfnResolver;
+  expect(cfnResolver).toBeTruthy();
+  cfnResolver.syncConfig = {
+    conflictDetection: 'VERSION',
+    conflictHandler: 'OPTIMISTIC_CONCURRENCY',
+  };
+});
+
+test('Can override amplifyTransformers', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'amplifyTransformers');
+
+  expect(() => new AppSyncTransformer(stack, 'amplifyTransformers-expectedThrow', {
+    schemaPath: path.resolve(__dirname, 'schema-directory'),
+    amplifyTransformers: [],
+  })).toThrow();
+  expect(() => new AppSyncTransformer(stack, 'amplifyTransformers-noThrow', {
+    schemaPath: path.resolve(__dirname, 'schema-directory'),
+    amplifyTransformers: [new DynamoDBModelTransformer(), new KeyTransformer()],
+  })).not.toThrow();
+});
+
+test('Can override transformConfig', () => {
+  const mockApp = new App();
+  const stack1 = new Stack(mockApp, 'transformConfig1');
+  const stack2 = new Stack(mockApp, 'transformConfig2');
+
+  const schema1 = new AppSyncTransformer(stack1, 'amplifyTransformers-v5', {
+    schemaPath: path.resolve(__dirname, 'schema-directory'),
+    transformConfig: {
+      Version: 5,
+    },
+  }).appsyncAPI.schema.definition;
+  const schema2 = new AppSyncTransformer(stack2, 'amplifyTransformers-v3', {
+    schemaPath: path.resolve(__dirname, 'schema-directory'),
+    transformConfig: {
+      Version: 3,
+    },
+  }).appsyncAPI.schema.definition;
+  expect(schema1).not.toMatch(schema2);
+});
+
+test('Can override featureFlags', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'featureFlags');
+  let foundFeatureFlags: Set<string> = new Set();
+
+  const withFeatureFlags = () => new AppSyncTransformer(stack, 'featureFlags-extractor', {
+    schemaPath: path.resolve(__dirname, 'schema-directory'),
+    featureFlags: {
+      getBoolean: (k) => {
+        foundFeatureFlags.add(k);
+        return false;
+      },
+      getString: (k) => {
+        foundFeatureFlags.add(k);
+        return '';
+      },
+      getNumber: (k) => {
+        foundFeatureFlags.add(k);
+        return 0;
+      },
+      getObject: (k) => {
+        foundFeatureFlags.add(k);
+        return {};
+      },
+    },
+  });
+  expect(withFeatureFlags).not.toThrow();
+  expect(Array.from(foundFeatureFlags.values()).sort()).toMatchInlineSnapshot(`
+Array [
+  "improvePluralization",
+  "skipOverrideMutationInputTypes",
+]
+`);
 });

@@ -1,0 +1,13 @@
+type Test
+@model
+@key(fields: ["id"])
+{
+    id:             ID!
+    name:           String!
+    input: [VariableDeclaration!]!
+}
+
+type VariableDeclaration {
+    variable: String!
+    value: String!
+}

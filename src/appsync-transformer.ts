@@ -11,6 +11,7 @@ import {
   Schema,
   DataSourceOptions,
   LambdaDataSource,
+  ResolverProps,
 } from '@aws-cdk/aws-appsync';
 
 import {
@@ -24,8 +25,7 @@ import {
 } from '@aws-cdk/aws-dynamodb';
 import { Effect, Grant, IGrantable, PolicyStatement } from '@aws-cdk/aws-iam';
 import { IFunction } from '@aws-cdk/aws-lambda';
-import { Construct, NestedStack, CfnOutput } from '@aws-cdk/core';
-
+import { Construct, NestedStack, CfnOutput, Stack } from '@aws-cdk/core';
 import {
   CdkTransformerResolver,
   CdkTransformerFunctionResolver,
@@ -42,7 +42,7 @@ import {
 
 export interface AppSyncTransformerProps {
   /**
-   * Relative path where schema.graphql exists
+   * Relative path to schema.graphql or a directory containing *.graphql schema files
    */
   readonly schemaPath: string;
 
@@ -123,6 +123,29 @@ export interface AppSyncTransformerProps {
    */
 
   readonly postCdkTransformers?: any[];
+
+
+  /**
+   * Optional. An override of the set of transformers passed into GraphQLTransform. Used for deep customization of amplify
+   * transformers, or for when amplify has made breaking changes to its schema but this package hasn't upgraded yet.
+   * @default undefined
+   */
+  readonly amplifyTransformers?: any[];
+
+  /**
+   * Optional. An override of the transformConfig argument to GraphQLTransform. Generally used to specify the
+   * schema Version parameter
+   * e.g { Version: 5 }
+   * @default undefined
+   */
+  readonly transformConfig?: any;
+
+  /**
+   * Optional. An override of the featureFlags argument to GraphQLTransform.
+   * e.g { getBoolean: (k) => k !== 'improvePluralisation' }
+  * @default undefined
+   */
+  readonly featureFlags?: any;
 }
 
 const defaultAuthorizationConfig: AuthorizationConfig = {
@@ -182,6 +205,10 @@ export class AppSyncTransformer extends Construct {
     [name: string]: CdkTransformerHttpResolver[];
   };
 
+  public readonly fieldResolvers: {
+    [name: string]: Resolver[];
+  };
+
   private props: AppSyncTransformerProps
   private isSyncEnabled: boolean;
   private syncTable: Table | undefined;
@@ -194,6 +221,7 @@ export class AppSyncTransformer extends Construct {
 
     this.props = props;
     this.tableMap = {};
+    this.fieldResolvers = {};
     this.isSyncEnabled = props.syncEnabled ? props.syncEnabled : false;
     this.pointInTimeRecovery = props.enableDynamoPointInTimeRecovery ?? false;
 
@@ -201,11 +229,14 @@ export class AppSyncTransformer extends Construct {
       schemaPath: props.schemaPath,
       syncEnabled: props.syncEnabled ?? false,
       customVtlTransformerRootDirectory: props.customVtlTransformerRootDirectory,
+      amplifyTransformers: props.amplifyTransformers,
+      transformConfig: props.transformConfig,
+      featureFlags: props.featureFlags,
     };
 
     // Combine the arrays so we only loop once
     // Test each transformer to see if it implements ITransformer
-    const allCustomTransformers = [...props.preCdkTransformers ?? [], ...props.postCdkTransformers ?? []];
+    const allCustomTransformers = [...props.amplifyTransformers ?? [], ...props.preCdkTransformers ?? [], ...props.postCdkTransformers ?? []];
     if (allCustomTransformers && allCustomTransformers.length > 0) {
       allCustomTransformers.forEach(transformer => {
         if (transformer && !this.implementsITransformer(transformer)) {
@@ -326,7 +357,7 @@ export class AppSyncTransformer extends Construct {
 
     Object.keys(noneResolvers).forEach((resolverKey) => {
       const resolver = resolvers[resolverKey];
-      new Resolver(
+      this.createResolver(
         this.nestedAppsyncStack,
         `${resolver.typeName}-${resolver.fieldName}-resolver`,
         {
@@ -398,7 +429,7 @@ export class AppSyncTransformer extends Construct {
       // Loop the basic resolvers
       tableData[tableKey].resolvers.forEach((resolverKey) => {
         const resolver = resolvers[resolverKey];
-        new Resolver(
+        this.createResolver(
           this.nestedAppsyncStack,
           `${resolver.typeName}-${resolver.fieldName}-resolver`,
           {
@@ -419,7 +450,7 @@ export class AppSyncTransformer extends Construct {
       // Loop the gsi resolvers
       tableData[tableKey].gsiResolvers.forEach((resolverKey) => {
         const resolver = resolvers.gsi[resolverKey];
-        new Resolver(
+        this.createResolver(
           this.nestedAppsyncStack,
           `${resolver.typeName}-${resolver.fieldName}-resolver`,
           {
@@ -557,7 +588,7 @@ export class AppSyncTransformer extends Construct {
       );
 
       httpResolvers.forEach((resolver: CdkTransformerHttpResolver) => {
-        new Resolver(
+        this.createResolver(
           this.nestedAppsyncStack,
           `${resolver.typeName}-${resolver.fieldName}-resolver`,
           {
@@ -625,7 +656,7 @@ export class AppSyncTransformer extends Construct {
     );
 
     for (const resolver of this.functionResolvers[functionName]) {
-      new Resolver(
+      this.createResolver(
         this.nestedAppsyncStack,
         `${resolver.typeName}-${resolver.fieldName}-resolver`,
         {
@@ -711,6 +742,28 @@ export class AppSyncTransformer extends Construct {
       actions: ['appsync:GraphQL'],
       resourceArns: this.privateResourceArns,
     });
+  }
+
+  /**
+   * This creates a resolver, and pushes it to fieldResolvers
+   * @returns resolver
+   * @param stack cdk.Stack
+   * @param id resource id
+   * @param props ResolverProps
+   */
+  private createResolver(stack: Stack, id: string, props: ResolverProps): Resolver {
+    const resolver = new Resolver(
+      stack,
+      id,
+      props,
+    );
+
+    const fieldName = props.fieldName;
+    if (!(fieldName in this.fieldResolvers)) {
+      this.fieldResolvers[fieldName] = [];
+    }
+    this.fieldResolvers[fieldName].push(resolver);
+    return resolver;
   }
 }
 
