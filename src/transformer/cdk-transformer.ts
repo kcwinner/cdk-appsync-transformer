@@ -53,6 +53,11 @@ export interface CdkTransformerFunctionResolver extends CdkTransformerResolver {
   readonly defaultResponseMappingTemplate: string;
 }
 
+export interface CdkTransformerFieldFunctionResolver extends CdkTransformerResolver {
+  readonly requestMappingTemplate: string;
+  readonly responseMappingTemplate: string;
+}
+
 export class CdkTransformer extends Transformer {
   tables: { [name: string]: CdkTransformerTable };
   noneDataSources: { [name: string]: CdkTransformerResolver };

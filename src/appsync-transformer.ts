@@ -31,7 +31,7 @@ import {
   CdkTransformerFunctionResolver,
   CdkTransformerHttpResolver,
   CdkTransformerTable,
-  SchemaTransformerOutputs,
+  SchemaTransformerOutputs, CdkTransformerFieldFunctionResolver,
 } from './transformer';
 import { Resource } from './transformer/resource';
 
@@ -209,6 +209,10 @@ export class AppSyncTransformer extends Construct {
     [name: string]: Resolver[];
   };
 
+  public readonly lambdaFieldResolvers: {
+    [name: string]: CdkTransformerFieldFunctionResolver;
+  };
+
   private props: AppSyncTransformerProps
   private isSyncEnabled: boolean;
   private syncTable: Table | undefined;
@@ -266,6 +270,7 @@ export class AppSyncTransformer extends Construct {
         }
       });
     }
+    this.lambdaFieldResolvers = resolvers.lambdaFieldResolvers ?? {};
 
     this.httpResolvers = this.outputs.httpResolvers ?? {};
 
@@ -656,6 +661,16 @@ export class AppSyncTransformer extends Construct {
     );
 
     for (const resolver of this.functionResolvers[functionName]) {
+      const maybeCustomResolver = this.lambdaFieldResolvers[`${resolver.typeName}${resolver.fieldName}`];
+
+      let requestMappingTemplate = MappingTemplate.fromString(resolver.defaultRequestMappingTemplate);
+      let responseMappingTemplate = MappingTemplate.fromString(resolver.defaultResponseMappingTemplate);
+
+      if (maybeCustomResolver) {
+        requestMappingTemplate = MappingTemplate.fromFile(maybeCustomResolver.requestMappingTemplate);
+        responseMappingTemplate = MappingTemplate.fromFile(maybeCustomResolver.responseMappingTemplate);
+      }
+
       this.createResolver(
         this.nestedAppsyncStack,
         `${resolver.typeName}-${resolver.fieldName}-resolver`,
@@ -664,12 +679,8 @@ export class AppSyncTransformer extends Construct {
           typeName: resolver.typeName,
           fieldName: resolver.fieldName,
           dataSource: functionDataSource,
-          requestMappingTemplate: MappingTemplate.fromString(
-            resolver.defaultRequestMappingTemplate,
-          ),
-          responseMappingTemplate: MappingTemplate.fromString(
-            resolver.defaultResponseMappingTemplate,
-          ), // This defaults to allow errors to return to the client instead of throwing
+          requestMappingTemplate,
+          responseMappingTemplate, // This defaults to allow errors to return to the client instead of throwing
         },
       );
     }

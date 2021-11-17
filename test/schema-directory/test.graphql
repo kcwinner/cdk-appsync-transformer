@@ -5,6 +5,7 @@ type Test
     id:             ID!
     name:           String!
     input: [VariableDeclaration!]!
+    delegate: String @function(name: "testFn")
 }
 
 type VariableDeclaration {

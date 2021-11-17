@@ -260,6 +260,21 @@ export class SchemaTransformer {
           } else if (templateType === 'res') {
             this.resolvers[compositeKey].responseMappingTemplate = filepath;
           }
+        } else if (this.isFunctionResolver(typeName, fieldName)) {
+          if (!this.resolvers.lambdaFieldResolvers) {
+            this.resolvers.lambdaFieldResolvers = {};
+          }
+          if (!this.resolvers.lambdaFieldResolvers[compositeKey]) {
+            this.resolvers.lambdaFieldResolvers[compositeKey] = {
+              typeName: typeName,
+              fieldName: fieldName,
+            };
+          }
+          if (templateType === 'req') {
+            this.resolvers.lambdaFieldResolvers[compositeKey].requestMappingTemplate = filepath;
+          } else if (templateType === 'res') {
+            this.resolvers.lambdaFieldResolvers[compositeKey].responseMappingTemplate = filepath;
+          }
         } else { // This is a GSI
           if (!this.resolvers.gsi) {
             this.resolvers.gsi = {};
@@ -371,6 +386,20 @@ export class SchemaTransformer {
     } catch (err) {
       return config;
     }
+  }
+
+  private isFunctionResolver(typeName: string, fieldName: string) {
+    if (!this.outputs.functionResolvers) {
+      return false;
+    }
+    for (const endpoint in this.outputs.functionResolvers) {
+      for (const resolver of this.outputs.functionResolvers[endpoint]) {
+        if (resolver.typeName === typeName && resolver.fieldName === fieldName) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }
 
