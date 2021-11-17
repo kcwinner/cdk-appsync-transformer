@@ -1,5 +1,7 @@
 import '@aws-cdk/assert/jest';
+import { EOL } from 'os';
 import * as path from 'path';
+import { join } from 'path';
 import { AuthorizationType, AuthorizationConfig, UserPoolDefaultAction, CfnResolver } from '@aws-cdk/aws-appsync';
 import { CfnIdentityPool, UserPool, UserPoolClient } from '@aws-cdk/aws-cognito';
 import { StreamViewType } from '@aws-cdk/aws-dynamodb';
@@ -12,6 +14,8 @@ import { KeyTransformer } from 'graphql-key-transformer';
 import { AppSyncTransformer } from '../src/index';
 import MappedTransformer from './mappedTransformer';
 import SingleFieldMapTransformer from './singleFieldMapTransformer';
+// eslint-disable-next-line
+const { FunctionTransformer } = require('graphql-function-transformer') as any;
 
 const testSchemaPath = path.join(__dirname, 'schema.graphql');
 const testCustomTransformerSchemaPath = path.join(__dirname, 'customTransformSchema.graphql');
@@ -1153,8 +1157,8 @@ test('Can override resolver', () => {
       typeName: 'Post',
       fieldName: 'comments',
       tableName: 'Comments',
-      requestMappingTemplate: 'appsync/resolvers/Post.comments.req',
-      responseMappingTemplate: 'appsync/resolvers/Post.comments.res',
+      requestMappingTemplate: join('appsync', 'resolvers', 'Post.comments.req'),
+      responseMappingTemplate: join('appsync', 'resolvers', 'Post.comments.res'),
     },
   });
 
@@ -1169,7 +1173,7 @@ test('Can override resolver', () => {
     FieldName: 'comments',
     TypeName: 'Post',
     Kind: 'UNIT',
-    RequestMappingTemplate: '{\n  "version": "2018-05-29"\n}',
+    RequestMappingTemplate: `{${EOL}  "version": "2018-05-29"${EOL}}`,
     ResponseMappingTemplate: '$util.toJson({})',
   });
 });
@@ -1190,8 +1194,8 @@ test('Custom VTL Transformer Creates Resolvers', () => {
     QuerylistThingCustom: {
       typeName: 'Query',
       fieldName: 'listThingCustom',
-      requestMappingTemplate: 'appsync/resolvers/Query.listThingCustom.req',
-      responseMappingTemplate: 'appsync/resolvers/Query.listThingCustom.res',
+      requestMappingTemplate: join('appsync', 'resolvers', 'Query.listThingCustom.req'),
+      responseMappingTemplate: join('appsync', 'resolvers', 'Query.listThingCustom.res'),
     },
   });
 
@@ -1200,8 +1204,34 @@ test('Custom VTL Transformer Creates Resolvers', () => {
     TypeName: 'Query',
     DataSourceName: 'NONE',
     Kind: 'UNIT',
-    RequestMappingTemplate: '{\n  "version": "2018-05-29"\n}',
+    RequestMappingTemplate: `{${EOL}  "version": "2018-05-29"${EOL}}`,
     ResponseMappingTemplate: '$util.toJson({})',
+  });
+});
+
+test('field reference lambda uses appsync generated resolver', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'field-ref-stack');
+
+  const appsyncTransformer = new AppSyncTransformer(stack, 'field-ref-transformer', {
+    schemaPath: path.resolve(__dirname, 'schema-directory'),
+  });
+
+  const testFunction = new Function(stack, 'test-function', {
+    runtime: Runtime.NODEJS_12_X,
+    code: Code.fromInline('export function handler() { }'),
+    handler: 'handler',
+  });
+
+  appsyncTransformer.addLambdaDataSourceAndResolvers('testFn', 'fn', testFunction);
+
+  expect(appsyncTransformer.nestedAppsyncStack).toHaveResourceLike('AWS::AppSync::Resolver', {
+    FieldName: 'delegate',
+    TypeName: 'Test',
+    DataSourceName: 'fn',
+    Kind: 'UNIT',
+    RequestMappingTemplate: '## [Start] Stash resolver specific context.. **\n$util.qr($ctx.stash.put(\"typeName\", \"Test\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"delegate\"))\n{}\n## [End] Stash resolver specific context.. **',
+    ResponseMappingTemplate: '$util.toJson($ctx.prev.result)',
   });
 });
 
@@ -1248,8 +1278,19 @@ test('Can override amplifyTransformers', () => {
   })).toThrow();
   expect(() => new AppSyncTransformer(stack, 'amplifyTransformers-noThrow', {
     schemaPath: path.resolve(__dirname, 'schema-directory'),
-    amplifyTransformers: [new DynamoDBModelTransformer(), new KeyTransformer()],
+    amplifyTransformers: [new DynamoDBModelTransformer(), new KeyTransformer(), new FunctionTransformer()],
   })).not.toThrow();
+});
+
+test('Lambda resources use provided schema', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'amplifyTransformers');
+
+  const transformer = new AppSyncTransformer(stack, 'amplifyTransformers-noThrow', {
+    schemaPath: path.resolve(__dirname, 'schema-directory'),
+    amplifyTransformers: [new DynamoDBModelTransformer(), new KeyTransformer(), new FunctionTransformer()],
+  });
+  expect(transformer);
 });
 
 test('Can override transformConfig', () => {
@@ -1280,19 +1321,19 @@ test('Can override featureFlags', () => {
   const withFeatureFlags = () => new AppSyncTransformer(stack, 'featureFlags-extractor', {
     schemaPath: path.resolve(__dirname, 'schema-directory'),
     featureFlags: {
-      getBoolean: (k) => {
+      getBoolean: (k: string) => {
         foundFeatureFlags.add(k);
         return false;
       },
-      getString: (k) => {
+      getString: (k: string) => {
         foundFeatureFlags.add(k);
         return '';
       },
-      getNumber: (k) => {
+      getNumber: (k: string) => {
         foundFeatureFlags.add(k);
         return 0;
       },
-      getObject: (k) => {
+      getObject: (k: string) => {
         foundFeatureFlags.add(k);
         return {};
       },

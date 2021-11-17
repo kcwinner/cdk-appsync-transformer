@@ -12,6 +12,7 @@ Name|Description
 Name|Description
 ----|-----------
 [AppSyncTransformerProps](#cdk-appsync-transformer-appsynctransformerprops)|*No description*
+[CdkTransformerFieldFunctionResolver](#cdk-appsync-transformer-cdktransformerfieldfunctionresolver)|*No description*
 [CdkTransformerFunctionResolver](#cdk-appsync-transformer-cdktransformerfunctionresolver)|*No description*
 [CdkTransformerGlobalSecondaryIndex](#cdk-appsync-transformer-cdktransformerglobalsecondaryindex)|*No description*
 [CdkTransformerHttpResolver](#cdk-appsync-transformer-cdktransformerhttpresolver)|*No description*
@@ -50,7 +51,8 @@ new AppSyncTransformer(scope: Construct, id: string, props: AppSyncTransformerPr
   * **apiName** (<code>string</code>)  String value representing the api name. __*Default*__: `${id}-api`
   * **authorizationConfig** (<code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code>)  Optional. __*Default*__: API_KEY authorization config
   * **customVtlTransformerRootDirectory** (<code>string</code>)  The root directory to use for finding custom resolvers. __*Default*__: process.cwd()
-  * **dynamoDbStreamConfig** (<code>Map<string, [StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)></code>)  A map of @model type names to stream view type e.g { Blog: StreamViewType.NEW_IMAGE }. __*Optional*__
+  * **dynamoDbStreamConfig** (<code>Map<string, [StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)></code>)  A map of @model type names to stream view type
+ e.g { Blog: StreamViewType.NEW_IMAGE }. __*Optional*__
   * **enableDynamoPointInTimeRecovery** (<code>boolean</code>)  Whether to enable dynamo Point In Time Recovery. __*Default*__: false
   * **featureFlags** (<code>any</code>)  Optional. __*Default*__: undefined
   * **fieldLogLevel** (<code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code>)  Optional. __*Default*__: FieldLogLevel.NONE
@@ -71,12 +73,15 @@ Name | Type | Description
 -----|------|-------------
 **appsyncAPI**🔹 | <code>[GraphqlApi](#aws-cdk-aws-appsync-graphqlapi)</code> | The cdk GraphqlApi construct.
 **fieldResolvers**🔹 | <code>Map<string, Array<[Resolver](#aws-cdk-aws-appsync-resolver)>></code> | <span></span>
-**functionResolvers**🔹 | <code>Map<string, Array<[CdkTransformerFunctionResolver](#cdk-appsync-transformer-cdktransformerfunctionresolver)>></code> | The Lambda Function resolvers designated by the function directive https://github.com/kcwinner/cdk-appsync-transformer#functions.
+**functionResolvers**🔹 | <code>Map<string, Array<[CdkTransformerFunctionResolver](#cdk-appsync-transformer-cdktransformerfunctionresolver)>></code> | The Lambda Function resolvers designated by the function directive
+ https://github.com/kcwinner/cdk-appsync-transformer#functions.
 **httpResolvers**🔹 | <code>Map<string, Array<[CdkTransformerHttpResolver](#cdk-appsync-transformer-cdktransformerhttpresolver)>></code> | <span></span>
+**lambdaFieldResolvers**🔹 | <code>Map<string, [CdkTransformerFieldFunctionResolver](#cdk-appsync-transformer-cdktransformerfieldfunctionresolver)></code> | <span></span>
 **nestedAppsyncStack**🔹 | <code>[NestedStack](#aws-cdk-core-nestedstack)</code> | The NestedStack that contains the AppSync resources.
 **outputs**🔹 | <code>[SchemaTransformerOutputs](#cdk-appsync-transformer-schematransformeroutputs)</code> | The outputs from the SchemaTransformer.
 **resolvers**🔹 | <code>Map<string, [CdkTransformerResolver](#cdk-appsync-transformer-cdktransformerresolver)></code> | The AppSync resolvers from the transformer minus any function resolvers.
-**tableMap**🔹 | <code>Map<string, [Table](#aws-cdk-aws-dynamodb-table)></code> | Map of cdk table keys to L2 Table e.g. { 'TaskTable': Table }.
+**tableMap**🔹 | <code>Map<string, [Table](#aws-cdk-aws-dynamodb-table)></code> | Map of cdk table keys to L2 Table
+ e.g. { 'TaskTable': Table }.
 **tableNameMap**🔹 | <code>Map<string, string></code> | Map of cdk table tokens to table names.
 
 ### Methods
@@ -91,7 +96,8 @@ addDynamoDBStream(props: DynamoDBStreamProps): string
 ```
 
 * **props** (<code>[DynamoDBStreamProps](#cdk-appsync-transformer-dynamodbstreamprops)</code>)  *No description*
-  * **modelTypeName** (<code>string</code>)  The @model type name from the graph schema e.g. Blog. 
+  * **modelTypeName** (<code>string</code>)  The @model type name from the graph schema
+ e.g. Blog. 
   * **streamViewType** (<code>[StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)</code>)  *No description* 
 
 __Returns__:
@@ -99,7 +105,8 @@ __Returns__:
 
 #### addLambdaDataSourceAndResolvers(functionName, id, lambdaFunction, options?)🔹 <a id="cdk-appsync-transformer-appsynctransformer-addlambdadatasourceandresolvers"></a>
 
-Adds the function as a lambdaDataSource to the AppSync api Adds all of the functions resolvers to the AppSync api.
+Adds the function as a lambdaDataSource to the AppSync api
+ Adds all of the functions resolvers to the AppSync api.
 
 ```ts
 addLambdaDataSourceAndResolvers(functionName: string, id: string, lambdaFunction: IFunction, options?: DataSourceOptions): LambdaDataSource
@@ -117,7 +124,8 @@ __Returns__:
 
 #### grantPrivate(grantee)🔹 <a id="cdk-appsync-transformer-appsynctransformer-grantprivate"></a>
 
-Adds an IAM policy statement granting access to the private fields of the AppSync API.
+Adds an IAM policy statement granting access to the private fields of
+ the AppSync API.
 
 Policy is based off of the @auth transformer
 https://docs.amplify.aws/cli/graphql-transformer/auth
@@ -133,7 +141,8 @@ __Returns__:
 
 #### grantPublic(grantee)🔹 <a id="cdk-appsync-transformer-appsynctransformer-grantpublic"></a>
 
-Adds an IAM policy statement granting access to the public fields of the AppSync API.
+Adds an IAM policy statement granting access to the public fields of
+ the AppSync API.
 
 Policy is based off of the @auth transformer
 https://docs.amplify.aws/cli/graphql-transformer/auth
@@ -157,7 +166,8 @@ overrideResolver(props: OverrideResolverProps): void
 
 * **props** (<code>[OverrideResolverProps](#cdk-appsync-transformer-overrideresolverprops)</code>)  *No description*
   * **fieldName** (<code>string</code>)  The fieldname to override e.g. listThings, createStuff. 
-  * **typeName** (<code>string</code>)  Example: Query, Mutation, Subscription For a GSI this might be Post, Comment, etc. 
+  * **typeName** (<code>string</code>)  Example: Query, Mutation, Subscription
+ For a GSI this might be Post, Comment, etc. 
   * **requestMappingTemplateFile** (<code>string</code>)  The full path to the request mapping template file. __*Optional*__
   * **responseMappingTemplateFile** (<code>string</code>)  The full path to the resposne mapping template file. __*Optional*__
 
@@ -180,7 +190,8 @@ Name | Type | Description
 **apiName**?🔹 | <code>string</code> | String value representing the api name.<br/>__*Default*__: `${id}-api`
 **authorizationConfig**?🔹 | <code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code> | Optional.<br/>__*Default*__: API_KEY authorization config
 **customVtlTransformerRootDirectory**?🔹 | <code>string</code> | The root directory to use for finding custom resolvers.<br/>__*Default*__: process.cwd()
-**dynamoDbStreamConfig**?🔹 | <code>Map<string, [StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)></code> | A map of @model type names to stream view type e.g { Blog: StreamViewType.NEW_IMAGE }.<br/>__*Optional*__
+**dynamoDbStreamConfig**?🔹 | <code>Map<string, [StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)></code> | A map of @model type names to stream view type
+ e.g { Blog: StreamViewType.NEW_IMAGE }.<br/>__*Optional*__
 **enableDynamoPointInTimeRecovery**?🔹 | <code>boolean</code> | Whether to enable dynamo Point In Time Recovery.<br/>__*Default*__: false
 **featureFlags**?🔹 | <code>any</code> | Optional.<br/>__*Default*__: undefined
 **fieldLogLevel**?🔹 | <code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code> | Optional.<br/>__*Default*__: FieldLogLevel.NONE
@@ -191,6 +202,22 @@ Name | Type | Description
 **tableNames**?🔹 | <code>Map<string, string></code> | A map of names to specify the generated dynamo table names instead of auto generated names.<br/>__*Default*__: undefined
 **transformConfig**?🔹 | <code>any</code> | Optional.<br/>__*Default*__: undefined
 **xrayEnabled**?🔹 | <code>boolean</code> | Determines whether xray should be enabled on the AppSync API.<br/>__*Default*__: false
+
+
+
+## struct CdkTransformerFieldFunctionResolver 🔹 <a id="cdk-appsync-transformer-cdktransformerfieldfunctionresolver"></a>
+
+
+
+
+
+
+Name | Type | Description 
+-----|------|-------------
+**fieldName**🔹 | <code>string</code> | <span></span>
+**requestMappingTemplate**🔹 | <code>string</code> | <span></span>
+**responseMappingTemplate**🔹 | <code>string</code> | <span></span>
+**typeName**🔹 | <code>string</code> | <span></span>
 
 
 
@@ -329,7 +356,8 @@ Name | Type | Description
 
 Name | Type | Description 
 -----|------|-------------
-**modelTypeName**🔹 | <code>string</code> | The @model type name from the graph schema e.g. Blog.
+**modelTypeName**🔹 | <code>string</code> | The @model type name from the graph schema
+ e.g. Blog.
 **streamViewType**🔹 | <code>[StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)</code> | <span></span>
 
 
@@ -344,7 +372,8 @@ Name | Type | Description
 Name | Type | Description 
 -----|------|-------------
 **fieldName**🔹 | <code>string</code> | The fieldname to override e.g. listThings, createStuff.
-**typeName**🔹 | <code>string</code> | Example: Query, Mutation, Subscription For a GSI this might be Post, Comment, etc.
+**typeName**🔹 | <code>string</code> | Example: Query, Mutation, Subscription
+ For a GSI this might be Post, Comment, etc.
 **requestMappingTemplateFile**?🔹 | <code>string</code> | The full path to the request mapping template file.<br/>__*Optional*__
 **responseMappingTemplateFile**?🔹 | <code>string</code> | The full path to the resposne mapping template file.<br/>__*Optional*__
 

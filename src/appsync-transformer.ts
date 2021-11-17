@@ -11,7 +11,7 @@ import {
   Schema,
   DataSourceOptions,
   LambdaDataSource,
-  ResolverProps,
+  ResolverProps, AppsyncFunction, NoneDataSource,
 } from '@aws-cdk/aws-appsync';
 
 import {
@@ -31,7 +31,7 @@ import {
   CdkTransformerFunctionResolver,
   CdkTransformerHttpResolver,
   CdkTransformerTable,
-  SchemaTransformerOutputs,
+  SchemaTransformerOutputs, CdkTransformerFieldFunctionResolver,
 } from './transformer';
 import { Resource } from './transformer/resource';
 
@@ -209,12 +209,17 @@ export class AppSyncTransformer extends Construct {
     [name: string]: Resolver[];
   };
 
+  public readonly lambdaFieldResolvers: {
+    [name: string]: CdkTransformerFieldFunctionResolver;
+  };
+
   private props: AppSyncTransformerProps
   private isSyncEnabled: boolean;
   private syncTable: Table | undefined;
   private pointInTimeRecovery: boolean;
   private readonly publicResourceArns: string[];
   private readonly privateResourceArns: string[];
+  private noneDataSource: NoneDataSource | undefined;
 
   constructor(scope: Construct, id: string, props: AppSyncTransformerProps) {
     super(scope, id);
@@ -266,6 +271,7 @@ export class AppSyncTransformer extends Construct {
         }
       });
     }
+    this.lambdaFieldResolvers = resolvers.lambdaFieldResolvers ?? {};
 
     this.httpResolvers = this.outputs.httpResolvers ?? {};
 
@@ -353,7 +359,7 @@ export class AppSyncTransformer extends Construct {
     noneResolvers: { [name: string]: CdkTransformerResolver },
     resolvers: any,
   ) {
-    const noneDataSource = this.appsyncAPI.addNoneDataSource('NONE');
+    this.noneDataSource = this.noneDataSource ?? this.appsyncAPI.addNoneDataSource('NONE');
 
     Object.keys(noneResolvers).forEach((resolverKey) => {
       const resolver = resolvers[resolverKey];
@@ -364,7 +370,7 @@ export class AppSyncTransformer extends Construct {
           api: this.appsyncAPI,
           typeName: resolver.typeName,
           fieldName: resolver.fieldName,
-          dataSource: noneDataSource,
+          dataSource: this.noneDataSource,
           requestMappingTemplate: MappingTemplate.fromFile(
             resolver.requestMappingTemplate,
           ),
@@ -649,6 +655,8 @@ export class AppSyncTransformer extends Construct {
     lambdaFunction: IFunction,
     options?: DataSourceOptions,
   ): LambdaDataSource {
+    this.noneDataSource = this.noneDataSource ?? this.appsyncAPI.addNoneDataSource('NONE');
+
     const functionDataSource = this.appsyncAPI.addLambdaDataSource(
       id,
       lambdaFunction,
@@ -656,22 +664,63 @@ export class AppSyncTransformer extends Construct {
     );
 
     for (const resolver of this.functionResolvers[functionName]) {
-      this.createResolver(
-        this.nestedAppsyncStack,
-        `${resolver.typeName}-${resolver.fieldName}-resolver`,
-        {
+      const maybeCustomResolver = this.lambdaFieldResolvers[`${resolver.typeName}${resolver.fieldName}`];
+
+      const requestMappingTemplate = MappingTemplate.fromString(resolver.defaultRequestMappingTemplate);
+      const responseMappingTemplate = MappingTemplate.fromString(resolver.defaultResponseMappingTemplate);
+
+      let pipelineFunction;
+      if (maybeCustomResolver) {
+        pipelineFunction = new AppsyncFunction(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-pipeline-resolver`, {
           api: this.appsyncAPI,
-          typeName: resolver.typeName,
-          fieldName: resolver.fieldName,
+          name: `${resolver.typeName}_${resolver.fieldName}_pipeline_resolver`,
           dataSource: functionDataSource,
-          requestMappingTemplate: MappingTemplate.fromString(
-            resolver.defaultRequestMappingTemplate,
-          ),
-          responseMappingTemplate: MappingTemplate.fromString(
-            resolver.defaultResponseMappingTemplate,
-          ), // This defaults to allow errors to return to the client instead of throwing
-        },
-      );
+          requestMappingTemplate: MappingTemplate.fromString(`
+## [Start] Invoke AWS Lambda data source: ${resolver.typeName}_${resolver.fieldName}_pipeline_resolver. **
+{
+  "version": "2018-05-29",
+  "operation": "Invoke",
+  "payload": {
+      "typeName": "$ctx.stash.get("typeName")",
+      "fieldName": "$ctx.stash.get("fieldName")",
+      "arguments": $util.toJson($ctx.arguments),
+      "identity": $util.toJson($ctx.identity),
+      "source": $util.toJson($ctx.source),
+      "request": $util.toJson($ctx.request),
+      "prev": $util.toJson($ctx.prev)
+  }
+}
+## [End] Invoke AWS Lambda data source: ${resolver.typeName}_${resolver.fieldName}_pipeline_resolver. **`),
+          responseMappingTemplate,
+        });
+
+        this.createResolver(
+          this.nestedAppsyncStack,
+          `${resolver.typeName}-${resolver.fieldName}-resolver`,
+          {
+            api: this.appsyncAPI,
+            typeName: resolver.typeName,
+            fieldName: resolver.fieldName,
+            pipelineConfig: [pipelineFunction],
+            requestMappingTemplate: MappingTemplate.fromFile(maybeCustomResolver.requestMappingTemplate),
+            responseMappingTemplate: MappingTemplate.fromFile(maybeCustomResolver.responseMappingTemplate),
+          },
+        );
+      } else {
+
+        this.createResolver(
+          this.nestedAppsyncStack,
+          `${resolver.typeName}-${resolver.fieldName}-resolver`,
+          {
+            api: this.appsyncAPI,
+            typeName: resolver.typeName,
+            fieldName: resolver.fieldName,
+            dataSource: functionDataSource,
+            requestMappingTemplate,
+            responseMappingTemplate, // This defaults to allow errors to return to the client instead of throwing
+          },
+        );
+      }
     }
 
     return functionDataSource;
