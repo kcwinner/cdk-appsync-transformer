@@ -1212,25 +1212,43 @@ test('Custom VTL Transformer Creates Resolvers', () => {
 
 test('field reference lambda uses appsync generated resolver', () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'field-ref-stack');
+  const stackA = new Stack(mockApp, 'field-ref-stack');
+  const stackB = new Stack(mockApp, 'field-ref-stack-off');
 
-  const appsyncTransformer = new AppSyncTransformer(stack, 'field-ref-transformer', {
+  const appsyncTransformerWithoutPipeline = new AppSyncTransformer(stackA, 'field-ref-transformer-off', {
     schemaPath: path.resolve(__dirname, 'schema-directory'),
   });
+  const appsyncTransformer = new AppSyncTransformer(stackB, 'field-ref-transformer', {
+    schemaPath: path.resolve(__dirname, 'schema-directory'),
+    pipelineFieldLambdas: true,
+  });
 
-  const testFunction = new Function(stack, 'test-function', {
+  const testFunctionA = new Function(stackA, 'test-function-a', {
+    runtime: Runtime.NODEJS_12_X,
+    code: Code.fromInline('export function handler() { }'),
+    handler: 'handler',
+  });
+  const testFunctionB = new Function(stackB, 'test-function-b', {
     runtime: Runtime.NODEJS_12_X,
     code: Code.fromInline('export function handler() { }'),
     handler: 'handler',
   });
 
-  appsyncTransformer.addLambdaDataSourceAndResolvers('testFn', 'fn', testFunction);
+  appsyncTransformerWithoutPipeline.addLambdaDataSourceAndResolvers('testFn', 'fn', testFunctionA);
+  appsyncTransformer.addLambdaDataSourceAndResolvers('testFn', 'fn', testFunctionB);
 
-  expect(appsyncTransformer.nestedAppsyncStack).toHaveResourceLike('AWS::AppSync::Resolver', {
+  expect(appsyncTransformerWithoutPipeline.nestedAppsyncStack).not.toHaveResourceLike('AWS::AppSync::Resolver', {
     FieldName: 'delegate',
     TypeName: 'Test',
     DataSourceName: 'fn',
     Kind: 'UNIT',
+    RequestMappingTemplate: '## [Start] Stash resolver specific context.. **\n$util.qr($ctx.stash.put(\"typeName\", \"Test\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"delegate\"))\n{}\n## [End] Stash resolver specific context.. **',
+    ResponseMappingTemplate: '$util.toJson($ctx.prev.result)',
+  });
+  expect(appsyncTransformer.nestedAppsyncStack).toHaveResourceLike('AWS::AppSync::Resolver', {
+    FieldName: 'delegate',
+    TypeName: 'Test',
+    Kind: 'PIPELINE',
     RequestMappingTemplate: '## [Start] Stash resolver specific context.. **\n$util.qr($ctx.stash.put(\"typeName\", \"Test\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"delegate\"))\n{}\n## [End] Stash resolver specific context.. **',
     ResponseMappingTemplate: '$util.toJson($ctx.prev.result)',
   });

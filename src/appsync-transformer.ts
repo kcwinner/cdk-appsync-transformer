@@ -83,6 +83,13 @@ export interface AppSyncTransformerProps {
   readonly xrayEnabled?: boolean;
 
   /**
+   * Determines whether to use pipeline lambdas to add {typeName, fieldName} attributes into events from
+   * amplify @function directives as applied to fields.
+   * @default false
+   */
+  readonly pipelineFieldLambdas?: boolean;
+
+  /**
    * A map of names to specify the generated dynamo table names instead of auto generated names
    * @default undefined
    */
@@ -215,6 +222,7 @@ export class AppSyncTransformer extends Construct {
 
   private props: AppSyncTransformerProps
   private isSyncEnabled: boolean;
+  private arePipelineLambdasEnabled: boolean;
   private syncTable: Table | undefined;
   private pointInTimeRecovery: boolean;
   private readonly publicResourceArns: string[];
@@ -228,6 +236,7 @@ export class AppSyncTransformer extends Construct {
     this.tableMap = {};
     this.fieldResolvers = {};
     this.isSyncEnabled = props.syncEnabled ? props.syncEnabled : false;
+    this.arePipelineLambdasEnabled = props.pipelineFieldLambdas ?? false;
     this.pointInTimeRecovery = props.enableDynamoPointInTimeRecovery ?? false;
 
     const transformerConfiguration: SchemaTransformerProps = {
@@ -669,9 +678,8 @@ export class AppSyncTransformer extends Construct {
       const requestMappingTemplate = MappingTemplate.fromString(resolver.defaultRequestMappingTemplate);
       const responseMappingTemplate = MappingTemplate.fromString(resolver.defaultResponseMappingTemplate);
 
-      let pipelineFunction;
-      if (maybeCustomResolver) {
-        pipelineFunction = new AppsyncFunction(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-pipeline-resolver`, {
+      if (maybeCustomResolver && this.arePipelineLambdasEnabled) {
+        const pipelineFunction = new AppsyncFunction(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-pipeline-resolver`, {
           api: this.appsyncAPI,
           name: `${resolver.typeName}_${resolver.fieldName}_pipeline_resolver`,
           dataSource: functionDataSource,
