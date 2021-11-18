@@ -11,7 +11,8 @@ import {
   Schema,
   DataSourceOptions,
   LambdaDataSource,
-  ResolverProps, AppsyncFunction, NoneDataSource,
+  ResolverProps,
+  AppsyncFunction,
 } from '@aws-cdk/aws-appsync';
 
 import {
@@ -227,7 +228,6 @@ export class AppSyncTransformer extends Construct {
   private pointInTimeRecovery: boolean;
   private readonly publicResourceArns: string[];
   private readonly privateResourceArns: string[];
-  private noneDataSource: NoneDataSource | undefined;
 
   constructor(scope: Construct, id: string, props: AppSyncTransformerProps) {
     super(scope, id);
@@ -368,7 +368,7 @@ export class AppSyncTransformer extends Construct {
     noneResolvers: { [name: string]: CdkTransformerResolver },
     resolvers: any,
   ) {
-    this.noneDataSource = this.noneDataSource ?? this.appsyncAPI.addNoneDataSource('NONE');
+    const noneDataSource = this.appsyncAPI.addNoneDataSource('NONE');
 
     Object.keys(noneResolvers).forEach((resolverKey) => {
       const resolver = resolvers[resolverKey];
@@ -379,7 +379,7 @@ export class AppSyncTransformer extends Construct {
           api: this.appsyncAPI,
           typeName: resolver.typeName,
           fieldName: resolver.fieldName,
-          dataSource: this.noneDataSource,
+          dataSource: noneDataSource,
           requestMappingTemplate: MappingTemplate.fromFile(
             resolver.requestMappingTemplate,
           ),
@@ -664,8 +664,6 @@ export class AppSyncTransformer extends Construct {
     lambdaFunction: IFunction,
     options?: DataSourceOptions,
   ): LambdaDataSource {
-    this.noneDataSource = this.noneDataSource ?? this.appsyncAPI.addNoneDataSource('NONE');
-
     const functionDataSource = this.appsyncAPI.addLambdaDataSource(
       id,
       lambdaFunction,
