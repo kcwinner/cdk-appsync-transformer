@@ -184,6 +184,7 @@ Name | Type | Description
 **syncEnabled**?🔹 | <code>boolean</code> | Whether to enable Amplify DataStore and Sync Tables.<br/>__*Default*__: false
 **tableNames**?🔹 | <code>Map<string, string></code> | A map of names to specify the generated dynamo table names instead of auto generated names.<br/>__*Default*__: undefined
 **xrayEnabled**?🔹 | <code>boolean</code> | Determines whether xray should be enabled on the AppSync API.<br/>__*Default*__: false
+**outputPath**?🔹 | <code>string</code> | Optional.<br/>Path where transformed schema and resolvers will be placed.<br/>__*Default*__: `appsync`
 
 
 
@@ -359,6 +360,3 @@ Name | Type | Description
 **noneResolvers**?🔹 | <code>Map<string, [CdkTransformerResolver](#cdk-appsync-transformer-cdktransformerresolver)></code> | __*Optional*__
 **queries**?🔹 | <code>Map<string, string></code> | __*Optional*__
 **subscriptions**?🔹 | <code>Map<string, [CdkTransformerResolver](#cdk-appsync-transformer-cdktransformerresolver)></code> | __*Optional*__
-
-
-

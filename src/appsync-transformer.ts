@@ -123,6 +123,12 @@ export interface AppSyncTransformerProps {
    */
 
   readonly postCdkTransformers?: any[];
+
+  /**
+   * Optional. Path where transformed schema and resolvers will be placed
+   *  @default appsync
+   */
+  readonly outputPath?: string
 }
 
 const defaultAuthorizationConfig: AuthorizationConfig = {
@@ -201,6 +207,7 @@ export class AppSyncTransformer extends Construct {
       schemaPath: props.schemaPath,
       syncEnabled: props.syncEnabled ?? false,
       customVtlTransformerRootDirectory: props.customVtlTransformerRootDirectory,
+      outputPath: props.outputPath ?? './appsync'
     };
 
     // Combine the arrays so we only loop once
