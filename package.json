@@ -20,6 +20,7 @@
     "post-compile": "npx projen post-compile",
     "pre-compile": "npx projen pre-compile",
     "release": "npx projen release",
+    "release:feat/cdk-v2-upgrade": "npx projen release:feat/cdk-v2-upgrade",
     "test": "npx projen test",
     "test:update": "npx projen test:update",
     "test:watch": "npx projen test:watch",

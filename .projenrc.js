@@ -21,11 +21,11 @@ const project = new awscdk.AwsCdkConstructLibrary({
   // Until we merge v2 into main
   majorVersion: 1,
   releaseBranches: {
-    "feat/cdk-v2-upgrade": {
+    'feat/cdk-v2-upgrade': {
       majorVersion: 2,
-      npmDistTag: "next",
-      prerelease: "alpha",
-    }
+      npmDistTag: 'next',
+      prerelease: 'alpha',
+    },
   },
 
   codeCov: true,
