@@ -41,6 +41,7 @@ junit.xml
 /dist/changelog.md
 /dist/version.txt
 !/.github/workflows/release.yml
+!/.github/workflows/release-feat/cdk-v2-upgrade.yml
 !/.github/dependabot.yml
 !/.github/pull_request_template.md
 !/test/
