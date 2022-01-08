@@ -1,4 +1,4 @@
-import { MappingTemplate } from '@aws-cdk/aws-appsync';
+import { MappingTemplate } from '@aws-cdk/aws-appsync-alpha';
 import { Transformer, TransformerContext, getFieldArguments } from 'graphql-transformer-core';
 
 const graphqlTypeStatements = ['Query', 'Mutation', 'Subscription'];

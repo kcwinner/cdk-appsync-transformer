@@ -1,11 +1,11 @@
 import '@aws-cdk/assert/jest';
 import * as path from 'path';
-import { AuthorizationType, AuthorizationConfig, UserPoolDefaultAction } from '@aws-cdk/aws-appsync';
-import { CfnIdentityPool, UserPool, UserPoolClient } from '@aws-cdk/aws-cognito';
-import { StreamViewType } from '@aws-cdk/aws-dynamodb';
-import { Role, WebIdentityPrincipal } from '@aws-cdk/aws-iam';
-import { Runtime, Code, Function } from '@aws-cdk/aws-lambda';
-import { App, Stack } from '@aws-cdk/core';
+import { AuthorizationType, AuthorizationConfig, UserPoolDefaultAction } from '@aws-cdk/aws-appsync-alpha';
+import { CfnIdentityPool, UserPool, UserPoolClient } from 'aws-cdk-lib/aws-cognito';
+import { StreamViewType } from 'aws-cdk-lib/aws-dynamodb';
+import { Role, WebIdentityPrincipal } from 'aws-cdk-lib/aws-iam';
+import { Runtime, Code, Function } from 'aws-cdk-lib/aws-lambda';
+import { App, Stack } from 'aws-cdk-lib/core';
 
 import { AppSyncTransformer } from '../src/index';
 import MappedTransformer from './mappedTransformer';

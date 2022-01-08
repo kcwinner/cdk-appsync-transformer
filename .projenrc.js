@@ -1,5 +1,7 @@
 const { awscdk, javascript } = require('projen');
 
+const alphaCdkPackages = [ '@aws-cdk/aws-appsync-alpha' ];
+
 const project = new awscdk.AwsCdkConstructLibrary({
   authorAddress: 'kcswinner@gmail.com',
   authorName: 'Ken Winner',
@@ -69,23 +71,9 @@ const project = new awscdk.AwsCdkConstructLibrary({
   },
 
   // Dependency information
-  cdkVersion: '1.138.0',
-  cdkDependenciesAsDeps: false,
-  cdkDependencies: [
-    '@aws-cdk/aws-appsync',
-    '@aws-cdk/aws-cognito',
-    '@aws-cdk/aws-dynamodb',
-    '@aws-cdk/aws-iam',
-    '@aws-cdk/aws-lambda',
-    '@aws-cdk/core',
-  ],
+  cdkVersion: '2.4.0',
   devDeps: [
-    '@aws-cdk/aws-appsync',
-    '@aws-cdk/aws-cognito',
-    '@aws-cdk/aws-dynamodb',
-    '@aws-cdk/aws-iam',
-    '@aws-cdk/aws-lambda',
-    '@aws-cdk/core',
+    ...alphaCdkPackages,
     '@types/deep-diff',
     '@types/jest',
     '@typescript-eslint/eslint-plugin',
@@ -94,6 +82,9 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'jest',
     'ts-jest',
     'cloudform-types@^4.2.0',
+  ],
+  peerDeps: [
+    ...alphaCdkPackages,
   ],
   bundledDeps: [
     'graphql@^14.5.8',
@@ -111,9 +102,6 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'graphql-versioned-transformer',
   ],
 });
-
-// const unbumpTask = project.tasks.tryFind('unbump');
-// unbumpTask.exec('git checkout package-lock.json');
 
 project.eslint.overrides.push({
   files: [

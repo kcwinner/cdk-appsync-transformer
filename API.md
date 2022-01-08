@@ -30,8 +30,8 @@ Name|Description
 
 AppSyncTransformer Construct.
 
-__Implements__: [IConstruct](#constructs-iconstruct), [IConstruct](#aws-cdk-core-iconstruct), [IConstruct](#constructs-iconstruct), [IDependable](#aws-cdk-core-idependable)
-__Extends__: [Construct](#aws-cdk-core-construct)
+__Implements__: [IConstruct](#constructs-iconstruct), [IDependable](#constructs-idependable)
+__Extends__: [Construct](#constructs-construct)
 
 ### Initializer
 
@@ -42,16 +42,16 @@ __Extends__: [Construct](#aws-cdk-core-construct)
 new AppSyncTransformer(scope: Construct, id: string, props: AppSyncTransformerProps)
 ```
 
-* **scope** (<code>[Construct](#aws-cdk-core-construct)</code>)  *No description*
+* **scope** (<code>[Construct](#constructs-construct)</code>)  *No description*
 * **id** (<code>string</code>)  *No description*
 * **props** (<code>[AppSyncTransformerProps](#cdk-appsync-transformer-appsynctransformerprops)</code>)  *No description*
   * **schemaPath** (<code>string</code>)  Relative path where schema.graphql exists. 
   * **apiName** (<code>string</code>)  String value representing the api name. __*Default*__: `${id}-api`
-  * **authorizationConfig** (<code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code>)  Optional. __*Default*__: API_KEY authorization config
+  * **authorizationConfig** (<code>[AuthorizationConfig](#aws-cdk-aws-appsync-alpha-authorizationconfig)</code>)  Optional. __*Default*__: API_KEY authorization config
   * **customVtlTransformerRootDirectory** (<code>string</code>)  The root directory to use for finding custom resolvers. __*Default*__: process.cwd()
-  * **dynamoDbStreamConfig** (<code>Map<string, [StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)></code>)  A map of @model type names to stream view type e.g { Blog: StreamViewType.NEW_IMAGE }. __*Optional*__
+  * **dynamoDbStreamConfig** (<code>Map<string, [aws_dynamodb.StreamViewType](#aws-cdk-lib-aws-dynamodb-streamviewtype)></code>)  A map of @model type names to stream view type e.g { Blog: StreamViewType.NEW_IMAGE }. __*Optional*__
   * **enableDynamoPointInTimeRecovery** (<code>boolean</code>)  Whether to enable dynamo Point In Time Recovery. __*Default*__: false
-  * **fieldLogLevel** (<code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code>)  Optional. __*Default*__: FieldLogLevel.NONE
+  * **fieldLogLevel** (<code>[FieldLogLevel](#aws-cdk-aws-appsync-alpha-fieldloglevel)</code>)  Optional. __*Default*__: FieldLogLevel.NONE
   * **nestedStackName** (<code>string</code>)  Specify a custom nested stack name. __*Default*__: "appsync-nested-stack"
   * **outputPath** (<code>string</code>)  Path where generated resolvers are output. __*Default*__: "./appsync"
   * **postCdkTransformers** (<code>Array<any></code>)  Optional. __*Default*__: undefined
@@ -67,13 +67,13 @@ new AppSyncTransformer(scope: Construct, id: string, props: AppSyncTransformerPr
 
 Name | Type | Description 
 -----|------|-------------
-**appsyncAPI**🔹 | <code>[GraphqlApi](#aws-cdk-aws-appsync-graphqlapi)</code> | The cdk GraphqlApi construct.
+**appsyncAPI**🔹 | <code>[GraphqlApi](#aws-cdk-aws-appsync-alpha-graphqlapi)</code> | The cdk GraphqlApi construct.
 **functionResolvers**🔹 | <code>Map<string, Array<[CdkTransformerFunctionResolver](#cdk-appsync-transformer-cdktransformerfunctionresolver)>></code> | The Lambda Function resolvers designated by the function directive https://github.com/kcwinner/cdk-appsync-transformer#functions.
 **httpResolvers**🔹 | <code>Map<string, Array<[CdkTransformerHttpResolver](#cdk-appsync-transformer-cdktransformerhttpresolver)>></code> | <span></span>
-**nestedAppsyncStack**🔹 | <code>[NestedStack](#aws-cdk-core-nestedstack)</code> | The NestedStack that contains the AppSync resources.
+**nestedAppsyncStack**🔹 | <code>[NestedStack](#aws-cdk-lib-nestedstack)</code> | The NestedStack that contains the AppSync resources.
 **outputs**🔹 | <code>[SchemaTransformerOutputs](#cdk-appsync-transformer-schematransformeroutputs)</code> | The outputs from the SchemaTransformer.
 **resolvers**🔹 | <code>Map<string, [CdkTransformerResolver](#cdk-appsync-transformer-cdktransformerresolver)></code> | The AppSync resolvers from the transformer minus any function resolvers.
-**tableMap**🔹 | <code>Map<string, [Table](#aws-cdk-aws-dynamodb-table)></code> | Map of cdk table keys to L2 Table e.g. { 'TaskTable': Table }.
+**tableMap**🔹 | <code>Map<string, [aws_dynamodb.Table](#aws-cdk-lib-aws-dynamodb-table)></code> | Map of cdk table keys to L2 Table e.g. { 'TaskTable': Table }.
 **tableNameMap**🔹 | <code>Map<string, string></code> | Map of cdk table tokens to table names.
 
 ### Methods
@@ -89,7 +89,7 @@ addDynamoDBStream(props: DynamoDBStreamProps): string
 
 * **props** (<code>[DynamoDBStreamProps](#cdk-appsync-transformer-dynamodbstreamprops)</code>)  *No description*
   * **modelTypeName** (<code>string</code>)  The @model type name from the graph schema e.g. Blog. 
-  * **streamViewType** (<code>[StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)</code>)  *No description* 
+  * **streamViewType** (<code>[aws_dynamodb.StreamViewType](#aws-cdk-lib-aws-dynamodb-streamviewtype)</code>)  *No description* 
 
 __Returns__:
 * <code>string</code>
@@ -104,13 +104,13 @@ addLambdaDataSourceAndResolvers(functionName: string, id: string, lambdaFunction
 
 * **functionName** (<code>string</code>)  The function name specified in the.
 * **id** (<code>string</code>)  The id to give.
-* **lambdaFunction** (<code>[IFunction](#aws-cdk-aws-lambda-ifunction)</code>)  The lambda function to attach.
-* **options** (<code>[DataSourceOptions](#aws-cdk-aws-appsync-datasourceoptions)</code>)  *No description*
+* **lambdaFunction** (<code>[aws_lambda.IFunction](#aws-cdk-lib-aws-lambda-ifunction)</code>)  The lambda function to attach.
+* **options** (<code>[DataSourceOptions](#aws-cdk-aws-appsync-alpha-datasourceoptions)</code>)  *No description*
   * **description** (<code>string</code>)  The description of the data source. __*Default*__: No description
   * **name** (<code>string</code>)  The name of the data source, overrides the id given by cdk. __*Default*__: generated by cdk given the id
 
 __Returns__:
-* <code>[LambdaDataSource](#aws-cdk-aws-appsync-lambdadatasource)</code>
+* <code>[LambdaDataSource](#aws-cdk-aws-appsync-alpha-lambdadatasource)</code>
 
 #### grantPrivate(grantee)🔹 <a id="cdk-appsync-transformer-appsynctransformer-grantprivate"></a>
 
@@ -123,10 +123,10 @@ https://docs.amplify.aws/cli/graphql-transformer/auth
 grantPrivate(grantee: IGrantable): Grant
 ```
 
-* **grantee** (<code>[IGrantable](#aws-cdk-aws-iam-igrantable)</code>)  *No description*
+* **grantee** (<code>[aws_iam.IGrantable](#aws-cdk-lib-aws-iam-igrantable)</code>)  *No description*
 
 __Returns__:
-* <code>[Grant](#aws-cdk-aws-iam-grant)</code>
+* <code>[aws_iam.Grant](#aws-cdk-lib-aws-iam-grant)</code>
 
 #### grantPublic(grantee)🔹 <a id="cdk-appsync-transformer-appsynctransformer-grantpublic"></a>
 
@@ -139,10 +139,10 @@ https://docs.amplify.aws/cli/graphql-transformer/auth
 grantPublic(grantee: IGrantable): Grant
 ```
 
-* **grantee** (<code>[IGrantable](#aws-cdk-aws-iam-igrantable)</code>)  The principal to grant access to.
+* **grantee** (<code>[aws_iam.IGrantable](#aws-cdk-lib-aws-iam-igrantable)</code>)  The principal to grant access to.
 
 __Returns__:
-* <code>[Grant](#aws-cdk-aws-iam-grant)</code>
+* <code>[aws_iam.Grant](#aws-cdk-lib-aws-iam-grant)</code>
 
 #### overrideResolver(props)🔹 <a id="cdk-appsync-transformer-appsynctransformer-overrideresolver"></a>
 
@@ -174,11 +174,11 @@ Name | Type | Description
 -----|------|-------------
 **schemaPath**🔹 | <code>string</code> | Relative path where schema.graphql exists.
 **apiName**?🔹 | <code>string</code> | String value representing the api name.<br/>__*Default*__: `${id}-api`
-**authorizationConfig**?🔹 | <code>[AuthorizationConfig](#aws-cdk-aws-appsync-authorizationconfig)</code> | Optional.<br/>__*Default*__: API_KEY authorization config
+**authorizationConfig**?🔹 | <code>[AuthorizationConfig](#aws-cdk-aws-appsync-alpha-authorizationconfig)</code> | Optional.<br/>__*Default*__: API_KEY authorization config
 **customVtlTransformerRootDirectory**?🔹 | <code>string</code> | The root directory to use for finding custom resolvers.<br/>__*Default*__: process.cwd()
-**dynamoDbStreamConfig**?🔹 | <code>Map<string, [StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)></code> | A map of @model type names to stream view type e.g { Blog: StreamViewType.NEW_IMAGE }.<br/>__*Optional*__
+**dynamoDbStreamConfig**?🔹 | <code>Map<string, [aws_dynamodb.StreamViewType](#aws-cdk-lib-aws-dynamodb-streamviewtype)></code> | A map of @model type names to stream view type e.g { Blog: StreamViewType.NEW_IMAGE }.<br/>__*Optional*__
 **enableDynamoPointInTimeRecovery**?🔹 | <code>boolean</code> | Whether to enable dynamo Point In Time Recovery.<br/>__*Default*__: false
-**fieldLogLevel**?🔹 | <code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code> | Optional.<br/>__*Default*__: FieldLogLevel.NONE
+**fieldLogLevel**?🔹 | <code>[FieldLogLevel](#aws-cdk-aws-appsync-alpha-fieldloglevel)</code> | Optional.<br/>__*Default*__: FieldLogLevel.NONE
 **nestedStackName**?🔹 | <code>string</code> | Specify a custom nested stack name.<br/>__*Default*__: "appsync-nested-stack"
 **outputPath**?🔹 | <code>string</code> | Path where generated resolvers are output.<br/>__*Default*__: "./appsync"
 **postCdkTransformers**?🔹 | <code>Array<any></code> | Optional.<br/>__*Default*__: undefined
@@ -325,7 +325,7 @@ Name | Type | Description
 Name | Type | Description 
 -----|------|-------------
 **modelTypeName**🔹 | <code>string</code> | The @model type name from the graph schema e.g. Blog.
-**streamViewType**🔹 | <code>[StreamViewType](#aws-cdk-aws-dynamodb-streamviewtype)</code> | <span></span>
+**streamViewType**🔹 | <code>[aws_dynamodb.StreamViewType](#aws-cdk-lib-aws-dynamodb-streamviewtype)</code> | <span></span>
 
 
 
