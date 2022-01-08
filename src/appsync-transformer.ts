@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import {
   GraphqlApi,
   AuthorizationType,
@@ -274,7 +275,7 @@ export class AppSyncTransformer extends Construct {
           ? props.fieldLogLevel
           : FieldLogLevel.NONE,
       },
-      schema: Schema.fromAsset('./appsync/schema.graphql'),
+      schema: Schema.fromAsset(path.join(transformer.outputPath, 'schema.graphql')),
       xrayEnabled: props.xrayEnabled ?? false,
     });
 
