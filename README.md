@@ -405,7 +405,7 @@ I've written some helpers to generate code similarly to how AWS Amplify generate
 
 I will _attempt_ to align the major and minor version of this package with [AWS CDK], but always check the release descriptions for compatibility.
 
-I currently support [![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/kcwinner/cdk-appsync-transformer/@aws-cdk/core)](https://github.com/aws/aws-cdk)
+I currently support [![GitHub package.json dependency version (prod)](https://img.shields.io/github/package-json/dependency-version/kcwinner/cdk-appsync-transformer/aws-cdk-lib)](https://github.com/aws/aws-cdk)
 
 ## Contributing
 
