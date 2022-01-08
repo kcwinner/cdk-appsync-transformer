@@ -6,7 +6,7 @@
     ".github/pull_request_template.md",
     ".github/workflows/build.yml",
     ".github/workflows/pull-request-lint.yml",
-    ".github/workflows/release-feat/cdk-v2-upgrade.yml",
+    ".github/workflows/release-cdk-v2.yml",
     ".github/workflows/release.yml",
     ".github/workflows/stale.yml",
     ".gitignore",

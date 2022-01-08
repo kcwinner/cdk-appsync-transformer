@@ -25,6 +25,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
       majorVersion: 2,
       npmDistTag: 'next',
       prerelease: 'alpha',
+      workflowName: 'release-cdk-v2',
     },
   },
 
