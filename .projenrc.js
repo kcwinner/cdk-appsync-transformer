@@ -44,9 +44,11 @@ const project = new awscdk.AwsCdkConstructLibrary({
   // Ignore our generated appsync files
   npmignore: [
     'appsync/*',
+    'customtest/*',
   ],
   gitignore: [
     'appsync/*',
+    'customtest/*',
   ],
 
   // Jsii packaging

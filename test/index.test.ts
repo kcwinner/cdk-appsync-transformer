@@ -1216,3 +1216,33 @@ test('Can Set Custom Directory', () => {
     customVtlTransformerRootDirectory: customDir,
   });
 });
+
+test('Can set custom output path', () => {
+  const mockApp = new App();
+  const stack = new Stack(mockApp, 'custom-vtl-stack');
+
+  const appsyncTransformer = new AppSyncTransformer(stack, 'custom-vtl-transformer', {
+    schemaPath: customVtlTestSchemaPath,
+    outputPath: './customtest/appsync',
+    authorizationConfig: apiKeyAuthorizationConfig,
+    xrayEnabled: false,
+  });
+
+  expect(appsyncTransformer.resolvers).toMatchObject({
+    QuerylistThingCustom: {
+      typeName: 'Query',
+      fieldName: 'listThingCustom',
+      requestMappingTemplate: 'customtest/appsync/resolvers/Query.listThingCustom.req',
+      responseMappingTemplate: 'customtest/appsync/resolvers/Query.listThingCustom.res',
+    },
+  });
+
+  expect(appsyncTransformer.nestedAppsyncStack).toHaveResourceLike('AWS::AppSync::Resolver', {
+    FieldName: 'listThingCustom',
+    TypeName: 'Query',
+    DataSourceName: 'NONE',
+    Kind: 'UNIT',
+    RequestMappingTemplate: '{\n  "version": "2018-05-29"\n}',
+    ResponseMappingTemplate: '$util.toJson({})',
+  });
+});

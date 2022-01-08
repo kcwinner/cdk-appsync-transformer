@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import {
   GraphqlApi,
   AuthorizationType,
@@ -45,6 +46,12 @@ export interface AppSyncTransformerProps {
    * Relative path where schema.graphql exists
    */
   readonly schemaPath: string;
+
+  /**
+   * Path where generated resolvers are output
+   * @default "./appsync"
+   */
+  readonly outputPath?: string;
 
   /**
    * Optional. {@link AuthorizationConfig} type defining authorization for AppSync GraphqlApi. Defaults to API_KEY
@@ -199,6 +206,7 @@ export class AppSyncTransformer extends Construct {
 
     const transformerConfiguration: SchemaTransformerProps = {
       schemaPath: props.schemaPath,
+      outputPath: props.outputPath,
       syncEnabled: props.syncEnabled ?? false,
       customVtlTransformerRootDirectory: props.customVtlTransformerRootDirectory,
     };
@@ -267,7 +275,7 @@ export class AppSyncTransformer extends Construct {
           ? props.fieldLogLevel
           : FieldLogLevel.NONE,
       },
-      schema: Schema.fromAsset('./appsync/schema.graphql'),
+      schema: Schema.fromAsset(path.join(transformer.outputPath, 'schema.graphql')),
       xrayEnabled: props.xrayEnabled ?? false,
     });
 
