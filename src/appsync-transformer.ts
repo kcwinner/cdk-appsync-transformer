@@ -182,7 +182,7 @@ export class AppSyncTransformer extends Construct {
     [name: string]: CdkTransformerHttpResolver[];
   };
 
-  private props: AppSyncTransformerProps
+  private props: AppSyncTransformerProps;
   private isSyncEnabled: boolean;
   private syncTable: Table | undefined;
   private pointInTimeRecovery: boolean;

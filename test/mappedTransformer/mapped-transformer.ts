@@ -78,6 +78,6 @@ export class MappedTransformer extends Transformer {
     const directives = field.directives;
     const httpDirective = directives?.filter(dir => dir.name.value === 'http');
     if (!httpDirective) throw new InvalidDirectiveError('@mapped directive must be used alongside @http directive');
-  }
+  };
 }
 

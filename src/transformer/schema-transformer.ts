@@ -76,17 +76,17 @@ export interface SchemaTransformerOutputs {
 }
 
 export class SchemaTransformer {
-  public readonly schemaPath: string
-  public readonly outputPath: string
-  public readonly isSyncEnabled: boolean
+  public readonly schemaPath: string;
+  public readonly outputPath: string;
+  public readonly isSyncEnabled: boolean;
   public readonly customVtlTransformerRootDirectory: string;
 
-  private readonly authTransformerConfig: ModelAuthTransformerConfig
+  private readonly authTransformerConfig: ModelAuthTransformerConfig;
 
-  outputs: SchemaTransformerOutputs
-  resolvers: any
-  authRolePolicy: Resource | undefined
-  unauthRolePolicy: Resource | undefined
+  outputs: SchemaTransformerOutputs;
+  resolvers: any;
+  authRolePolicy: Resource | undefined;
+  unauthRolePolicy: Resource | undefined;
 
   constructor(props: SchemaTransformerProps) {
     this.schemaPath = props.schemaPath ?? './schema.graphql';
