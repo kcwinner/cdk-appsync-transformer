@@ -119,7 +119,7 @@ export class CdkTransformer extends Transformer {
       const subscriptionFields = getFieldArguments(subscription);
       ctx.setOutput('subscriptions', subscriptionFields);
     }
-  }
+  };
 
   private buildResources(ctx: TransformerContext): void {
     const templateResources = ctx.template.Resources;
