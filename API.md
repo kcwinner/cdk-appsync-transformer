@@ -53,6 +53,7 @@ new AppSyncTransformer(scope: Construct, id: string, props: AppSyncTransformerPr
   * **enableDynamoPointInTimeRecovery** (<code>boolean</code>)  Whether to enable dynamo Point In Time Recovery. __*Default*__: false
   * **fieldLogLevel** (<code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code>)  Optional. __*Default*__: FieldLogLevel.NONE
   * **nestedStackName** (<code>string</code>)  Specify a custom nested stack name. __*Default*__: "appsync-nested-stack"
+  * **outputPath** (<code>string</code>)  Path where generated resolvers are output. __*Default*__: "./appsync"
   * **postCdkTransformers** (<code>Array<any></code>)  Optional. __*Default*__: undefined
   * **preCdkTransformers** (<code>Array<any></code>)  Optional. __*Default*__: undefined
   * **syncEnabled** (<code>boolean</code>)  Whether to enable Amplify DataStore and Sync Tables. __*Default*__: false
@@ -179,6 +180,7 @@ Name | Type | Description
 **enableDynamoPointInTimeRecovery**?🔹 | <code>boolean</code> | Whether to enable dynamo Point In Time Recovery.<br/>__*Default*__: false
 **fieldLogLevel**?🔹 | <code>[FieldLogLevel](#aws-cdk-aws-appsync-fieldloglevel)</code> | Optional.<br/>__*Default*__: FieldLogLevel.NONE
 **nestedStackName**?🔹 | <code>string</code> | Specify a custom nested stack name.<br/>__*Default*__: "appsync-nested-stack"
+**outputPath**?🔹 | <code>string</code> | Path where generated resolvers are output.<br/>__*Default*__: "./appsync"
 **postCdkTransformers**?🔹 | <code>Array<any></code> | Optional.<br/>__*Default*__: undefined
 **preCdkTransformers**?🔹 | <code>Array<any></code> | Optional.<br/>__*Default*__: undefined
 **syncEnabled**?🔹 | <code>boolean</code> | Whether to enable Amplify DataStore and Sync Tables.<br/>__*Default*__: false

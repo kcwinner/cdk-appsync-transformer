@@ -47,6 +47,12 @@ export interface AppSyncTransformerProps {
   readonly schemaPath: string;
 
   /**
+   * Path where generated resolvers are output
+   * @default "./appsync"
+   */
+  readonly outputPath?: string;
+
+  /**
    * Optional. {@link AuthorizationConfig} type defining authorization for AppSync GraphqlApi. Defaults to API_KEY
    * @default API_KEY authorization config
    */
@@ -199,6 +205,7 @@ export class AppSyncTransformer extends Construct {
 
     const transformerConfiguration: SchemaTransformerProps = {
       schemaPath: props.schemaPath,
+      outputPath: props.outputPath,
       syncEnabled: props.syncEnabled ?? false,
       customVtlTransformerRootDirectory: props.customVtlTransformerRootDirectory,
     };

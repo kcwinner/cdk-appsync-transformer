@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { normalize, join } from 'path';
+import * as path from 'path';
 import { ModelAuthTransformer, ModelAuthTransformerConfig } from 'graphql-auth-transformer';
 import { ModelConnectionTransformer } from 'graphql-connection-transformer';
 import { DynamoDBModelTransformer } from 'graphql-dynamodb-transformer';
@@ -176,7 +176,7 @@ export class SchemaTransformer {
    */
   public getResolvers() {
     const statements = ['Query', 'Mutation'];
-    const resolversDirPath = normalize('./appsync/resolvers');
+    const resolversDirPath = path.normalize(path.join(this.outputPath, 'resolvers'));
     if (fs.existsSync(resolversDirPath)) {
       const files = fs.readdirSync(resolversDirPath);
       files.forEach(file => {
@@ -194,7 +194,7 @@ export class SchemaTransformer {
           if (!this.outputs.noneResolvers || !this.outputs.noneResolvers[compositeKey]) compositeKey = fieldName;
         }
 
-        let filepath = normalize(`${resolversDirPath}/${file}`);
+        let filepath = path.normalize(path.join(resolversDirPath, file));
 
         if (statements.indexOf(typeName) >= 0 || (this.outputs.noneResolvers && this.outputs.noneResolvers[compositeKey])) {
           if (!this.resolvers[compositeKey]) {
@@ -270,7 +270,7 @@ export class SchemaTransformer {
      */
   private writeSchema(schema: any) {
     if (!fs.existsSync(this.outputPath)) {
-      fs.mkdirSync(this.outputPath);
+      fs.mkdirSync(this.outputPath, { recursive: true });
     }
 
     fs.writeFileSync(`${this.outputPath}/schema.graphql`, schema);
@@ -282,10 +282,10 @@ export class SchemaTransformer {
      */
   private writeResolversToFile(resolvers: any) {
     if (!fs.existsSync(this.outputPath)) {
-      fs.mkdirSync(this.outputPath);
+      fs.mkdirSync(this.outputPath, { recursive: true });
     }
 
-    const resolverFolderPath = normalize(this.outputPath + '/resolvers');
+    const resolverFolderPath = path.normalize(path.join(this.outputPath, 'resolvers'));
     if (fs.existsSync(resolverFolderPath)) {
       const files = fs.readdirSync(resolverFolderPath);
       files.forEach(file => fs.unlinkSync(resolverFolderPath + '/' + file));
@@ -293,13 +293,13 @@ export class SchemaTransformer {
     }
 
     if (!fs.existsSync(resolverFolderPath)) {
-      fs.mkdirSync(resolverFolderPath);
+      fs.mkdirSync(resolverFolderPath, { recursive: true });
     }
 
     Object.keys(resolvers).forEach((key: any) => {
       const resolver = resolvers[key];
       const fileName = key.replace('.vtl', '');
-      const resolverFilePath = normalize(`${resolverFolderPath}/${fileName}`);
+      const resolverFilePath = path.normalize(path.join(resolverFolderPath, fileName));
       fs.writeFileSync(resolverFilePath, resolver);
     });
   }
@@ -319,10 +319,10 @@ export class SchemaTransformer {
       },
     };
 
-    const configDir = join(__dirname, '..', '..', projectDir);
+    const configDir = path.join(__dirname, '..', '..', projectDir);
 
     try {
-      const configPath = join(configDir, TRANSFORM_CONFIG_FILE_NAME);
+      const configPath = path.join(configDir, TRANSFORM_CONFIG_FILE_NAME);
       const configExists = fs.existsSync(configPath);
       if (configExists) {
         const configStr = fs.readFileSync(configPath);
