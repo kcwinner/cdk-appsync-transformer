@@ -12,6 +12,7 @@ import {
   LambdaDataSource,
 } from '@aws-cdk/aws-appsync-alpha';
 
+import { NestedStack, CfnOutput } from 'aws-cdk-lib';
 import { CfnDataSource, CfnResolver } from 'aws-cdk-lib/aws-appsync';
 
 import {
@@ -25,7 +26,6 @@ import {
 } from 'aws-cdk-lib/aws-dynamodb';
 import { Effect, Grant, IGrantable, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { IFunction } from 'aws-cdk-lib/aws-lambda';
-import { NestedStack, CfnOutput } from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
 
 import {

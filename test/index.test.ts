@@ -1,11 +1,11 @@
-import '@aws-cdk/assert/jest';
 import * as path from 'path';
 import { AuthorizationType, AuthorizationConfig, UserPoolDefaultAction } from '@aws-cdk/aws-appsync-alpha';
+import { App, Stack } from 'aws-cdk-lib';
+import { Template } from 'aws-cdk-lib/assertions';
 import { CfnIdentityPool, UserPool, UserPoolClient } from 'aws-cdk-lib/aws-cognito';
 import { StreamViewType } from 'aws-cdk-lib/aws-dynamodb';
 import { Role, WebIdentityPrincipal } from 'aws-cdk-lib/aws-iam';
 import { Runtime, Code, Function } from 'aws-cdk-lib/aws-lambda';
-import { App, Stack } from 'aws-cdk-lib/core';
 
 import { AppSyncTransformer } from '../src/index';
 import MappedTransformer from './mappedTransformer';
@@ -36,8 +36,11 @@ test('GraphQL API W/ Defaults Created', () => {
     xrayEnabled: false,
   });
 
-  expect(stack).toHaveResource('AWS::CloudFormation::Stack');
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::GraphQLApi', {
+  const template = Template.fromStack(stack);
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
+  template.hasResource('AWS::CloudFormation::Stack', {});
+  nestedTemplate.hasResourceProperties('AWS::AppSync::GraphQLApi', {
     AuthenticationType: 'API_KEY',
     XrayEnabled: false,
   });
@@ -55,8 +58,11 @@ test('GraphQL API W/ Sync Created', () => {
     xrayEnabled: true,
   });
 
-  expect(stack).toHaveResource('AWS::CloudFormation::Stack');
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::GraphQLApi', {
+  const template = Template.fromStack(stack);
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
+  template.hasResource('AWS::CloudFormation::Stack', {});
+  nestedTemplate.hasResourceProperties('AWS::AppSync::GraphQLApi', {
     AuthenticationType: 'API_KEY',
     Name: 'sync-api',
     XrayEnabled: true,
@@ -87,8 +93,11 @@ test('GraphQL API W/ User Pool Auth Created', () => {
     },
   });
 
-  expect(stack).toHaveResource('AWS::CloudFormation::Stack');
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::GraphQLApi', {
+  const template = Template.fromStack(stack);
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
+  template.hasResource('AWS::CloudFormation::Stack', {});
+  nestedTemplate.hasResourceProperties('AWS::AppSync::GraphQLApi', {
     AuthenticationType: 'AMAZON_COGNITO_USER_POOLS',
     Name: 'user-pool-auth-api',
   });
@@ -122,8 +131,10 @@ test('Model Tables Created and PITR', () => {
   const tableData = appSyncTransformer.outputs.cdkTables;
   if (!tableData) throw new Error('Expected table data');
 
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
   for (const [tableName] of Object.entries(tableData)) {
-    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::DataSource', {
+    nestedTemplate.hasResourceProperties('AWS::AppSync::DataSource', {
       Name: tableName,
       Type: 'AMAZON_DYNAMODB',
     });
@@ -133,7 +144,7 @@ test('Model Tables Created and PITR', () => {
   const threadTable = appSyncTransformer.nestedAppsyncStack.node.findChild('ThreadTable');
   expect(threadTable).toBeTruthy();
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+  nestedTemplate.hasResourceProperties('AWS::DynamoDB::Table', {
     KeySchema: [
       { AttributeName: 'forumName', KeyType: 'HASH' },
       { AttributeName: 'subject', KeyType: 'RANGE' },
@@ -162,7 +173,7 @@ test('Model Tables Created and PITR', () => {
   const productTable = appSyncTransformer.nestedAppsyncStack.node.findChild('ProductTable');
   expect(productTable).toBeTruthy();
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+  nestedTemplate.hasResourceProperties('AWS::DynamoDB::Table', {
     KeySchema: [
       { AttributeName: 'id', KeyType: 'HASH' },
     ],
@@ -190,7 +201,7 @@ test('Model Tables Created and PITR', () => {
   const orderTable = appSyncTransformer.nestedAppsyncStack.node.findChild('OrderTable');
   expect(orderTable).toBeTruthy();
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+  nestedTemplate.hasResourceProperties('AWS::DynamoDB::Table', {
     KeySchema: [
       { AttributeName: 'id', KeyType: 'HASH' },
       { AttributeName: 'productID', KeyType: 'RANGE' },
@@ -229,13 +240,15 @@ test('HTTP Resolvers Match', () => {
     },
   });
 
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
   expect(appSyncTransformer.httpResolvers).toBeTruthy();
 
   const endpointResolvers = appSyncTransformer.httpResolvers[testHttpEndpoint];
   expect(endpointResolvers.length).toEqual(2);
 
   for (const resolver of endpointResolvers) {
-    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::Resolver', {
+    nestedTemplate.hasResourceProperties('AWS::AppSync::Resolver', {
       FieldName: resolver.fieldName,
       TypeName: resolver.typeName,
     });
@@ -276,7 +289,7 @@ test('Function Resolvers Match', () => {
 
 test('addLambdaDataSourceAndResolvers', () => {
   const mockApp = new App();
-  const stack = new Stack(mockApp, 'user-pool-auth-stack');
+  const stack = new Stack(mockApp, 'lambda-resolvers-test-stack');
 
   const userPool = new UserPool(stack, 'test-userpool');
   const userPoolClient = new UserPoolClient(stack, 'test-userpool-client', {
@@ -299,7 +312,7 @@ test('addLambdaDataSourceAndResolvers', () => {
   });
 
   // We don't really need this to work
-  const testFunction = new Function(stack, 'test-function', {
+  const testFunction = new Function(stack, functionDirectiveTestFunctionName, {
     runtime: Runtime.NODEJS_12_X,
     code: Code.fromInline('export function handler() { }'),
     handler: 'handler',
@@ -311,14 +324,16 @@ test('addLambdaDataSourceAndResolvers', () => {
     testFunction,
   );
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::DataSource', {
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
+  nestedTemplate.hasResourceProperties('AWS::AppSync::DataSource', {
     Name: testFunctionDataSource.name,
     Type: 'AWS_LAMBDA',
   });
 
   const testFunctionResolvers = appSyncTransformer.functionResolvers[functionDirectiveTestFunctionName];
   for (const resolver of testFunctionResolvers) {
-    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::Resolver', {
+    nestedTemplate.hasResourceProperties('AWS::AppSync::Resolver', {
       FieldName: resolver.fieldName,
       TypeName: resolver.typeName,
     });
@@ -343,13 +358,15 @@ test('Custom Pre Transform', () => {
     ],
   });
 
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
   expect(appSyncTransformer.httpResolvers).toBeTruthy();
 
   const endpointResolvers = appSyncTransformer.httpResolvers[testHttpEndpoint];
   expect(endpointResolvers.length).toEqual(1);
 
   for (const resolver of endpointResolvers) {
-    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::Resolver', {
+    nestedTemplate.hasResourceProperties('AWS::AppSync::Resolver', {
       FieldName: resolver.fieldName,
       TypeName: resolver.typeName,
     });
@@ -377,13 +394,15 @@ test('Custom Post Transform', () => {
     ],
   });
 
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
   expect(appSyncTransformer.httpResolvers).toBeTruthy();
 
   const endpointResolvers = appSyncTransformer.httpResolvers[testHttpEndpoint];
   expect(endpointResolvers.length).toEqual(1);
 
   for (const resolver of endpointResolvers) {
-    expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::AppSync::Resolver', {
+    nestedTemplate.hasResourceProperties('AWS::AppSync::Resolver', {
       FieldName: resolver.fieldName,
       TypeName: resolver.typeName,
     });
@@ -439,6 +458,8 @@ test('DynamoDB Stream Config Property', () => {
     },
   });
 
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
   const tableData = appSyncTransformer.outputs.cdkTables;
   if (!tableData) throw new Error('Expected table data');
 
@@ -446,7 +467,7 @@ test('DynamoDB Stream Config Property', () => {
   const orderTable = appSyncTransformer.tableMap.OrderTable;
   expect(orderTable.tableStreamArn).toBeTruthy();
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+  nestedTemplate.hasResourceProperties('AWS::DynamoDB::Table', {
     StreamSpecification: {
       StreamViewType: StreamViewType.NEW_IMAGE,
     },
@@ -487,12 +508,13 @@ test('DynamoDB Stream Enabled Convenience Method', () => {
 
   expect(streamArn).toBeTruthy();
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
+  nestedTemplate.hasResourceProperties('AWS::DynamoDB::Table', {
     StreamSpecification: {
       StreamViewType: StreamViewType.NEW_IMAGE,
     },
   });
-
 });
 
 test('Grant Access To Public/Private Fields', () => {
@@ -527,7 +549,31 @@ test('Grant Access To Public/Private Fields', () => {
   });
 
   appSyncTransformer.grantPrivate(testPrivateFunction);
-  expect(stack).toHaveResourceLike('AWS::IAM::Policy', {
+
+  const identityPool = new CfnIdentityPool(stack, 'test-identity-pool', {
+    identityPoolName: 'test-identity-pool',
+    cognitoIdentityProviders: [
+      {
+        clientId: userPoolClient.userPoolClientId,
+        providerName: `cognito-idp.${stack.region}.amazonaws.com/${userPool.userPoolId}`,
+      },
+    ],
+    allowUnauthenticatedIdentities: true,
+  });
+
+  const testPublicRole = new Role(stack, 'public-role', {
+    assumedBy: new WebIdentityPrincipal('cognito-identity.amazonaws.com')
+      .withConditions({
+        'StringEquals': { 'cognito-identity.amazonaws.com:aud': `${identityPool.ref}` },
+        'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': 'unauthenticated' },
+      }),
+  });
+
+  appSyncTransformer.grantPublic(testPublicRole);
+
+  const template = Template.fromStack(stack);
+
+  template.hasResourceProperties('AWS::IAM::Policy', {
     PolicyDocument: {
       Statement: [
         {
@@ -891,27 +937,7 @@ test('Grant Access To Public/Private Fields', () => {
     ],
   });
 
-  const identityPool = new CfnIdentityPool(stack, 'test-identity-pool', {
-    identityPoolName: 'test-identity-pool',
-    cognitoIdentityProviders: [
-      {
-        clientId: userPoolClient.userPoolClientId,
-        providerName: `cognito-idp.${stack.region}.amazonaws.com/${userPool.userPoolId}`,
-      },
-    ],
-    allowUnauthenticatedIdentities: true,
-  });
-
-  const testPublicRole = new Role(stack, 'public-role', {
-    assumedBy: new WebIdentityPrincipal('cognito-identity.amazonaws.com')
-      .withConditions({
-        'StringEquals': { 'cognito-identity.amazonaws.com:aud': `${identityPool.ref}` },
-        'ForAnyValue:StringLike': { 'cognito-identity.amazonaws.com:amr': 'unauthenticated' },
-      }),
-  });
-
-  appSyncTransformer.grantPublic(testPublicRole);
-  expect(stack).toHaveResourceLike('AWS::IAM::Policy', {
+  template.hasResourceProperties('AWS::IAM::Policy', {
     PolicyDocument: {
       Statement: [
         {
@@ -923,13 +949,9 @@ test('Grant Access To Public/Private Fields', () => {
                 '',
                 [
                   'arn:aws:appsync:',
-                  {
-                    Ref: 'AWS::Region',
-                  },
+                  { Ref: 'AWS::Region' },
                   ':',
-                  {
-                    Ref: 'AWS::AccountId',
-                  },
+                  { Ref: 'AWS::AccountId' },
                   ':apis/',
                   {
                     'Fn::GetAtt': [
@@ -946,13 +968,9 @@ test('Grant Access To Public/Private Fields', () => {
                 '',
                 [
                   'arn:aws:appsync:',
-                  {
-                    Ref: 'AWS::Region',
-                  },
+                  { Ref: 'AWS::Region' },
                   ':',
-                  {
-                    Ref: 'AWS::AccountId',
-                  },
+                  { Ref: 'AWS::AccountId' },
                   ':apis/',
                   {
                     'Fn::GetAtt': [
@@ -1108,6 +1126,8 @@ test('Custom Table Names Are Applied', () => {
     },
   });
 
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
   const tableData = appSyncTransformer.outputs.cdkTables;
   if (!tableData) throw new Error('Expected table data');
 
@@ -1115,7 +1135,7 @@ test('Custom Table Names Are Applied', () => {
   const customerTable = appSyncTransformer.nestedAppsyncStack.node.findChild('CustomerTable');
   expect(customerTable).toBeTruthy();
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+  nestedTemplate.hasResourceProperties('AWS::DynamoDB::Table', {
     TableName: customerTableName,
     KeySchema: [
       { AttributeName: 'id', KeyType: 'HASH' },
@@ -1126,7 +1146,7 @@ test('Custom Table Names Are Applied', () => {
   const orderTable = appSyncTransformer.nestedAppsyncStack.node.findChild('OrderTable');
   expect(orderTable).toBeTruthy();
 
-  expect(appSyncTransformer.nestedAppsyncStack).toHaveResource('AWS::DynamoDB::Table', {
+  nestedTemplate.hasResourceProperties('AWS::DynamoDB::Table', {
     TableName: orderTableName,
     KeySchema: [
       { AttributeName: 'id', KeyType: 'HASH' },
@@ -1139,14 +1159,14 @@ test('Can override resolver', () => {
   const mockApp = new App();
   const stack = new Stack(mockApp, 'override-resolver-stack');
 
-  const appsyncTransformer = new AppSyncTransformer(stack, 'override-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, 'override-transformer', {
     schemaPath: testSchemaPath,
     authorizationConfig: apiKeyAuthorizationConfig,
     xrayEnabled: false,
   });
 
-  expect(appsyncTransformer.resolvers.gsi).toMatchObject({
-    ...appsyncTransformer.resolvers.gsi,
+  expect(appSyncTransformer.resolvers.gsi).toMatchObject({
+    ...appSyncTransformer.resolvers.gsi,
     Postcomments: {
       typeName: 'Post',
       fieldName: 'comments',
@@ -1156,14 +1176,16 @@ test('Can override resolver', () => {
     },
   });
 
-  appsyncTransformer.overrideResolver({
+  appSyncTransformer.overrideResolver({
     typeName: 'Post',
     fieldName: 'comments',
     requestMappingTemplateFile: path.join(process.cwd(), 'test', 'custom-resolvers', 'Test', 'request.vtl'),
     responseMappingTemplateFile: path.join(process.cwd(), 'test', 'custom-resolvers', 'Test', 'response.vtl'),
   });
 
-  expect(appsyncTransformer.nestedAppsyncStack).toHaveResourceLike('AWS::AppSync::Resolver', {
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
+  nestedTemplate.hasResourceProperties('AWS::AppSync::Resolver', {
     FieldName: 'comments',
     TypeName: 'Post',
     Kind: 'UNIT',
@@ -1178,13 +1200,15 @@ test('Custom VTL Transformer Creates Resolvers', () => {
   const mockApp = new App();
   const stack = new Stack(mockApp, 'custom-vtl-stack');
 
-  const appsyncTransformer = new AppSyncTransformer(stack, 'custom-vtl-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, 'custom-vtl-transformer', {
     schemaPath: customVtlTestSchemaPath,
     authorizationConfig: apiKeyAuthorizationConfig,
     xrayEnabled: false,
   });
 
-  expect(appsyncTransformer.resolvers).toMatchObject({
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
+  expect(appSyncTransformer.resolvers).toMatchObject({
     QuerylistThingCustom: {
       typeName: 'Query',
       fieldName: 'listThingCustom',
@@ -1193,7 +1217,7 @@ test('Custom VTL Transformer Creates Resolvers', () => {
     },
   });
 
-  expect(appsyncTransformer.nestedAppsyncStack).toHaveResourceLike('AWS::AppSync::Resolver', {
+  nestedTemplate.hasResourceProperties('AWS::AppSync::Resolver', {
     FieldName: 'listThingCustom',
     TypeName: 'Query',
     DataSourceName: 'NONE',
@@ -1221,14 +1245,16 @@ test('Can set custom output path', () => {
   const mockApp = new App();
   const stack = new Stack(mockApp, 'custom-vtl-stack');
 
-  const appsyncTransformer = new AppSyncTransformer(stack, 'custom-vtl-transformer', {
+  const appSyncTransformer = new AppSyncTransformer(stack, 'custom-vtl-transformer', {
     schemaPath: customVtlTestSchemaPath,
     outputPath: './customtest/appsync',
     authorizationConfig: apiKeyAuthorizationConfig,
     xrayEnabled: false,
   });
 
-  expect(appsyncTransformer.resolvers).toMatchObject({
+  const nestedTemplate = Template.fromStack(appSyncTransformer.nestedAppsyncStack);
+
+  expect(appSyncTransformer.resolvers).toMatchObject({
     QuerylistThingCustom: {
       typeName: 'Query',
       fieldName: 'listThingCustom',
@@ -1237,7 +1263,7 @@ test('Can set custom output path', () => {
     },
   });
 
-  expect(appsyncTransformer.nestedAppsyncStack).toHaveResourceLike('AWS::AppSync::Resolver', {
+  nestedTemplate.hasResourceProperties('AWS::AppSync::Resolver', {
     FieldName: 'listThingCustom',
     TypeName: 'Query',
     DataSourceName: 'NONE',

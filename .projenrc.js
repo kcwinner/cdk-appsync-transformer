@@ -1,6 +1,6 @@
 const { awscdk, javascript } = require('projen');
 
-const alphaCdkPackages = [ '@aws-cdk/aws-appsync-alpha' ];
+const alphaCdkPackages = ['@aws-cdk/aws-appsync-alpha'];
 
 const project = new awscdk.AwsCdkConstructLibrary({
   authorAddress: 'kcswinner@gmail.com',
