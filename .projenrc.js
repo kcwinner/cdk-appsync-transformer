@@ -18,6 +18,16 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'amplify',
   ],
 
+  // Until we merge v2 into main
+  majorVersion: 1,
+  releaseBranches: {
+    'feat/cdk-v2-upgrade': {
+      majorVersion: 2,
+      npmDistTag: 'next',
+      prerelease: 'alpha',
+    },
+  },
+
   codeCov: true,
   githubOptions: {
     mergify: false,
