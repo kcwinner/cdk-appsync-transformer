@@ -8,7 +8,6 @@ const project = new awscdk.AwsCdkConstructLibrary({
   stability: 'experimental',
   catalog: {
     twitter: 'KenWin0x539',
-    announce: true,
   },
   license: 'Apache-2.0',
   defaultReleaseBranch: 'main',
