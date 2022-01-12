@@ -12,6 +12,8 @@ import {
   Schema,
   DataSourceOptions,
   LambdaDataSource,
+  AppsyncFunction,
+  NoneDataSource,
 } from '@aws-cdk/aws-appsync';
 
 import {
@@ -25,7 +27,7 @@ import {
 } from '@aws-cdk/aws-dynamodb';
 import { Effect, Grant, IGrantable, PolicyStatement } from '@aws-cdk/aws-iam';
 import { IFunction } from '@aws-cdk/aws-lambda';
-import { Construct, NestedStack, CfnOutput } from '@aws-cdk/core';
+import { Construct, NestedStack, CfnOutput, Annotations } from '@aws-cdk/core';
 
 import {
   CdkTransformerResolver,
@@ -33,6 +35,7 @@ import {
   CdkTransformerHttpResolver,
   CdkTransformerTable,
   SchemaTransformerOutputs,
+  DataSourceType,
 } from './transformer';
 import { Resource } from './transformer/resource';
 
@@ -177,6 +180,8 @@ export class AppSyncTransformer extends Construct {
    */
   public readonly resolvers: { [name: string]: CdkTransformerResolver };
 
+  public readonly modelResolvers: { [name: string]: CdkTransformerResolver };
+
   /**
    * The Lambda Function resolvers designated by the function directive
    * https://github.com/kcwinner/cdk-appsync-transformer#functions
@@ -195,6 +200,7 @@ export class AppSyncTransformer extends Construct {
   private pointInTimeRecovery: boolean;
   private readonly publicResourceArns: string[];
   private readonly privateResourceArns: string[];
+  private readonly noneDataSource: NoneDataSource;
 
   constructor(scope: Construct, id: string, props: AppSyncTransformerProps) {
     super(scope, id);
@@ -227,12 +233,11 @@ export class AppSyncTransformer extends Construct {
     const resolvers = transformer.getResolvers();
 
     this.functionResolvers = this.outputs.functionResolvers ?? {};
+    this.modelResolvers = this.outputs.modelResolvers ?? {};
 
     // Remove any function resolvers from the total list of resolvers
     // Otherwise it will add them twice
-    for (const [_, functionResolvers] of Object.entries(
-      this.functionResolvers,
-    )) {
+    for (const [_, functionResolvers] of Object.entries(this.functionResolvers)) {
       functionResolvers.forEach((resolver) => {
         switch (resolver.typeName) {
           case 'Query':
@@ -279,6 +284,8 @@ export class AppSyncTransformer extends Construct {
       xrayEnabled: props.xrayEnabled ?? false,
     });
 
+    this.noneDataSource = this.appsyncAPI.addNoneDataSource('NONE');
+
     let tableData = this.outputs.cdkTables ?? {};
 
     // Check to see if sync is enabled
@@ -289,12 +296,12 @@ export class AppSyncTransformer extends Construct {
     }
 
     this.tableNameMap = this.createTablesAndResolvers(tableData, resolvers, props.tableNames);
-    if (this.outputs.noneResolvers) {
-      this.createNoneDataSourceAndResolvers(
-        this.outputs.noneResolvers,
-        resolvers,
-      );
-    }
+
+    this.createNoneDataSourceResolvers(
+      this.outputs.noneResolvers ?? {},
+      resolvers,
+    );
+
     this.createHttpResolvers();
 
     this.publicResourceArns = this.getResourcesFromGeneratedRolePolicy(transformer.unauthRolePolicy);
@@ -326,11 +333,11 @@ export class AppSyncTransformer extends Construct {
    * @param noneResolvers The resolvers that belong to the none data source
    * @param resolvers The resolver map minus function resolvers
    */
-  private createNoneDataSourceAndResolvers(
+  private createNoneDataSourceResolvers(
     noneResolvers: { [name: string]: CdkTransformerResolver },
     resolvers: any,
   ) {
-    const noneDataSource = this.appsyncAPI.addNoneDataSource('NONE');
+    // const noneDataSource = this.appsyncAPI.addNoneDataSource('NONE');
 
     Object.keys(noneResolvers).forEach((resolverKey) => {
       const resolver = resolvers[resolverKey];
@@ -341,7 +348,7 @@ export class AppSyncTransformer extends Construct {
           api: this.appsyncAPI,
           typeName: resolver.typeName,
           fieldName: resolver.fieldName,
-          dataSource: noneDataSource,
+          dataSource: this.noneDataSource,
           requestMappingTemplate: MappingTemplate.fromFile(
             resolver.requestMappingTemplate,
           ),
@@ -375,7 +382,6 @@ export class AppSyncTransformer extends Construct {
       const dataSource = this.appsyncAPI.addDynamoDbDataSource(tableKey, table);
 
       // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-appsync-datasource-deltasyncconfig.html
-
       if (this.isSyncEnabled && this.syncTable) {
         //@ts-ignore - ds is the base CfnDataSource and the db config needs to be versioned - see CfnDataSource
         dataSource.ds.dynamoDbConfig.versioned = true;
@@ -399,13 +405,32 @@ export class AppSyncTransformer extends Construct {
         );
       }
 
-      const dynamoDbConfig = dataSource.ds
-        .dynamoDbConfig as CfnDataSource.DynamoDBConfigProperty;
+      const dynamoDbConfig = dataSource.ds.dynamoDbConfig as CfnDataSource.DynamoDBConfigProperty;
       tableNameMap[tableKey] = dynamoDbConfig.tableName;
 
-      // Loop the basic resolvers
-      tableData[tableKey].resolvers.forEach((resolverKey) => {
-        const resolver = resolvers[resolverKey];
+      // Loop the model resolvers
+      const modelResolvers = tableData[tableKey].resolvers;
+      modelResolvers.forEach((resolverKey) => {
+        const resolver = this.modelResolvers[resolverKey];
+        if (!resolver) {
+          Annotations.of(this).addError(`Model resolver for "${resolverKey}" was not found`);
+          return;
+        }
+
+        const pipelineConfig = resolver.pipelineConfig.map(cfg => {
+          return new AppsyncFunction(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-${cfg.name}-config`, {
+            api: this.appsyncAPI,
+            name: cfg.name,
+            dataSource: cfg.dataSourceType === DataSourceType.AmazonDynamoDB ? dataSource : this.noneDataSource,
+            requestMappingTemplate: cfg.requestMappingTemplateFileName
+              ? MappingTemplate.fromString(cfg.requestMappingTemplateFileName)
+              : MappingTemplate.fromString(cfg.requestMappingTemplate!),
+            responseMappingTemplate: cfg.responseMappingTemplateFileName
+              ? MappingTemplate.fromString(cfg.responseMappingTemplateFileName)
+              : MappingTemplate.fromString(cfg.responseMappingTemplate!),
+          });
+        });
+
         new Resolver(
           this.nestedAppsyncStack,
           `${resolver.typeName}-${resolver.fieldName}-resolver`,
@@ -413,14 +438,12 @@ export class AppSyncTransformer extends Construct {
             api: this.appsyncAPI,
             typeName: resolver.typeName,
             fieldName: resolver.fieldName,
-            dataSource: dataSource,
-            requestMappingTemplate: MappingTemplate.fromFile(
-              resolver.requestMappingTemplate,
-            ),
-            responseMappingTemplate: MappingTemplate.fromFile(
+            pipelineConfig,
+            requestMappingTemplate: MappingTemplate.fromString("FIX ME"),
+            responseMappingTemplate: MappingTemplate.fromString(
               resolver.responseMappingTemplate,
             ),
-          },
+          }
         );
       });
 
@@ -565,6 +588,16 @@ export class AppSyncTransformer extends Construct {
       );
 
       httpResolvers.forEach((resolver: CdkTransformerHttpResolver) => {
+        const pipelineConfig = resolver.pipelineConfig.map(cfg => {
+          return new AppsyncFunction(this.nestedAppsyncStack, `${resolver.typeName}-${resolver.fieldName}-${cfg.name}-config`, {
+            api: this.appsyncAPI,
+            name: cfg.name,
+            dataSource: httpDataSource,
+            requestMappingTemplate: MappingTemplate.fromString(""), // TODO: Fix this,
+            responseMappingTemplate: MappingTemplate.fromString(""), // TODO: fix this
+          })
+        });
+
         new Resolver(
           this.nestedAppsyncStack,
           `${resolver.typeName}-${resolver.fieldName}-resolver`,
@@ -572,14 +605,9 @@ export class AppSyncTransformer extends Construct {
             api: this.appsyncAPI,
             typeName: resolver.typeName,
             fieldName: resolver.fieldName,
-            dataSource: httpDataSource,
-            requestMappingTemplate: MappingTemplate.fromString(
-              resolver.defaultRequestMappingTemplate,
-            ),
-            responseMappingTemplate: MappingTemplate.fromString(
-              resolver.defaultResponseMappingTemplate,
-            ),
-          },
+            pipelineConfig: pipelineConfig,
+            // TODO: Resolvers from file?
+          }
         );
       });
     }
@@ -642,10 +670,10 @@ export class AppSyncTransformer extends Construct {
           fieldName: resolver.fieldName,
           dataSource: functionDataSource,
           requestMappingTemplate: MappingTemplate.fromString(
-            resolver.defaultRequestMappingTemplate,
+            resolver.defaultRequestMappingTemplate ?? '', // TODO: Fix this
           ),
           responseMappingTemplate: MappingTemplate.fromString(
-            resolver.defaultResponseMappingTemplate,
+            resolver.defaultResponseMappingTemplate ?? '', // TODO: Fix this
           ), // This defaults to allow errors to return to the client instead of throwing
         },
       );

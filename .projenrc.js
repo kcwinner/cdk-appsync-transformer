@@ -96,19 +96,36 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'cloudform-types@^4.2.0',
   ],
   bundledDeps: [
+    // Amplify packages rely on this pinned version
     'graphql@^14.5.8',
-    'graphql-auth-transformer',
-    'graphql-connection-transformer',
-    'graphql-dynamodb-transformer',
-    'graphql-function-transformer',
-    'graphql-http-transformer',
-    'graphql-key-transformer',
-    'graphql-mapping-template',
-    'graphql-relational-schema-transformer',
+
+    // New Amplify libraries
+    '@aws-amplify/graphql-auth-transformer',
+    '@aws-amplify/graphql-default-value-transformer',
+    '@aws-amplify/graphql-function-transformer',
+    '@aws-amplify/graphql-http-transformer',
+    '@aws-amplify/graphql-index-transformer',
+    '@aws-amplify/graphql-model-transformer',
+    '@aws-amplify/graphql-relational-transformer',
+    '@aws-amplify/graphql-transformer-core',
+    '@aws-amplify/graphql-transformer-interfaces',
+
+    // Still needed
     'graphql-transformer-common',
-    'graphql-transformer-core',
+    'graphql-mapping-template',
+
     'graphql-ttl-transformer', // Community transformer
-    'graphql-versioned-transformer',
+
+    // 'graphql-auth-transformer',
+    // 'graphql-connection-transformer',
+    // 'graphql-dynamodb-transformer',
+    // 'graphql-function-transformer',
+    // 'graphql-http-transformer',
+    // 'graphql-index-transformer',
+    // 'graphql-key-transformer',
+    // 'graphql-relational-schema-transformer',
+    // 'graphql-transformer-core',
+    // 'graphql-versioned-transformer',
   ],
 });
 

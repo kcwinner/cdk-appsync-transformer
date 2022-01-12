@@ -1,21 +1,15 @@
+
 import * as fs from 'fs';
 import * as path from 'path';
-import { ModelAuthTransformer, ModelAuthTransformerConfig } from 'graphql-auth-transformer';
-import { ModelConnectionTransformer } from 'graphql-connection-transformer';
-import { DynamoDBModelTransformer } from 'graphql-dynamodb-transformer';
-import { HttpTransformer } from 'graphql-http-transformer';
-import { KeyTransformer } from 'graphql-key-transformer';
-import {
-  GraphQLTransform,
-  TransformConfig,
-  TRANSFORM_CURRENT_VERSION,
-  TRANSFORM_CONFIG_FILE_NAME,
-  ConflictHandlerType,
-  ITransformer,
-  FeatureFlagProvider,
-} from 'graphql-transformer-core';
-import TtlTransformer from 'graphql-ttl-transformer';
-import { VersionedModelTransformer } from 'graphql-versioned-transformer';
+import { AuthTransformer } from '@aws-amplify/graphql-auth-transformer';
+import { DefaultValueTransformer } from '@aws-amplify/graphql-default-value-transformer';
+import { FunctionTransformer } from '@aws-amplify/graphql-function-transformer';
+import { HttpTransformer } from '@aws-amplify/graphql-http-transformer';
+import { IndexTransformer, PrimaryKeyTransformer } from '@aws-amplify/graphql-index-transformer';
+import { ModelTransformer } from '@aws-amplify/graphql-model-transformer';
+import { BelongsToTransformer, HasManyTransformer, HasOneTransformer } from '@aws-amplify/graphql-relational-transformer';
+import { GraphQLTransform, TransformConfig } from '@aws-amplify/graphql-transformer-core';
+import { AppSyncAuthConfiguration, FeatureFlagProvider } from '@aws-amplify/graphql-transformer-interfaces';
 
 import {
   CdkTransformer,
@@ -24,14 +18,11 @@ import {
   CdkTransformerFunctionResolver,
   CdkTransformerHttpResolver,
 } from './cdk-transformer';
-import { CustomVTLTransformer } from './custom-vtl-transformer';
+
+// import { CustomVTLTransformer } from './custom-vtl-transformer';
 
 // Rebuilt this from cloudform-types because it has type errors
 import { Resource } from './resource';
-
-// Import this way because FunctionTransformer.d.ts types were throwing an eror. And we didn't write this package so hope for the best :P
-// eslint-disable-next-line
-const { FunctionTransformer } = require('graphql-function-transformer');
 
 export interface SchemaTransformerProps {
   /**
@@ -68,6 +59,7 @@ export interface SchemaTransformerProps {
 export interface SchemaTransformerOutputs {
   readonly cdkTables?: { [name: string]: CdkTransformerTable };
   readonly noneResolvers?: { [name: string]: CdkTransformerResolver };
+  readonly modelResolvers?: { [name: string]: CdkTransformerResolver };
   readonly functionResolvers?: { [name: string]: CdkTransformerFunctionResolver[] };
   readonly httpResolvers?: { [name: string]: CdkTransformerHttpResolver[] };
   readonly queries?: { [name: string]: string };
@@ -81,7 +73,7 @@ export class SchemaTransformer {
   public readonly isSyncEnabled: boolean;
   public readonly customVtlTransformerRootDirectory: string;
 
-  private readonly authTransformerConfig: ModelAuthTransformerConfig;
+  private readonly authConfig: AppSyncAuthConfiguration;
 
   outputs: SchemaTransformerOutputs;
   resolvers: any;
@@ -98,38 +90,36 @@ export class SchemaTransformer {
     this.resolvers = {};
 
     // TODO: Make this better?
-    this.authTransformerConfig = {
-      authConfig: {
-        defaultAuthentication: {
-          authenticationType: 'AMAZON_COGNITO_USER_POOLS',
-          userPoolConfig: {
-            userPoolId: '12345xyz',
+    this.authConfig = {
+      defaultAuthentication: {
+        authenticationType: 'AMAZON_COGNITO_USER_POOLS',
+        userPoolConfig: {
+          userPoolId: '12345xyz',
+        },
+      },
+      additionalAuthenticationProviders: [
+        {
+          authenticationType: 'API_KEY',
+          apiKeyConfig: {
+            description: 'Testing',
+            apiKeyExpirationDays: 100,
           },
         },
-        additionalAuthenticationProviders: [
-          {
-            authenticationType: 'API_KEY',
-            apiKeyConfig: {
-              description: 'Testing',
-              apiKeyExpirationDays: 100,
-            },
+        {
+          authenticationType: 'AWS_IAM',
+        },
+        {
+          authenticationType: 'OPENID_CONNECT',
+          openIDConnectConfig: {
+            name: 'OIDC',
+            issuerUrl: 'https://cognito-idp.us-east-1.amazonaws.com/us-east-1_XXX',
           },
-          {
-            authenticationType: 'AWS_IAM',
-          },
-          {
-            authenticationType: 'OPENID_CONNECT',
-            openIDConnectConfig: {
-              name: 'OIDC',
-              issuerUrl: 'https://cognito-idp.us-east-1.amazonaws.com/us-east-1_XXX',
-            },
-          },
-        ],
-      },
+        },
+      ],
     };
   }
 
-  public transform(preCdkTransformers: ITransformer[] = [], postCdkTransformers: ITransformer[] = []) {
+  public transform(preCdkTransformers: any[] = [], postCdkTransformers: any[] = []) {
     const transformConfig = this.isSyncEnabled ? this.loadConfigSync() : {};
 
     const provider = new TransformerFeatureFlagProvider();
@@ -137,35 +127,49 @@ export class SchemaTransformer {
     // Note: This is not exact as we are omitting the @searchable transformer as well as some others.
     const transformer = new GraphQLTransform({
       transformConfig: transformConfig,
+      authConfig: this.authConfig,
       featureFlags: provider,
       transformers: [
-        new DynamoDBModelTransformer(),
-        new TtlTransformer(),
-        new VersionedModelTransformer(),
+        new ModelTransformer(),
+
+        new AuthTransformer(),
+
+        new PrimaryKeyTransformer(),
+        new IndexTransformer(),
+        new BelongsToTransformer(),
+        new HasManyTransformer(),
+        new HasOneTransformer(),
+        // new ManyToManyTransformer(),
+
+        new DefaultValueTransformer(),
+
         new FunctionTransformer(),
-        new KeyTransformer(),
-        new ModelConnectionTransformer(),
-        new ModelAuthTransformer(this.authTransformerConfig),
         new HttpTransformer(),
-        new CustomVTLTransformer(this.customVtlTransformerRootDirectory),
+
+        // new TtlTransformer(), // Not updated to latest way
+
+        // new CustomVTLTransformer(this.customVtlTransformerRootDirectory),
+
         ...preCdkTransformers,
-        new CdkTransformer(),
         ...postCdkTransformers,
       ],
     });
 
     const schema = fs.readFileSync(this.schemaPath);
-    const cfdoc = transformer.transform(schema.toString());
+    const deploymentResources = transformer.transform(schema.toString());
+
+    const cdkTransformer = new CdkTransformer();
+    this.outputs = cdkTransformer.transform(deploymentResources);
 
     // TODO: Get Unauth Role and Auth Role policies for authorization stuff
-    this.unauthRolePolicy = cfdoc.rootStack.Resources?.UnauthRolePolicy01 as Resource || undefined;
-    this.authRolePolicy = cfdoc.rootStack.Resources?.AuthRolePolicy01 as Resource || undefined;
+    this.unauthRolePolicy = deploymentResources.rootStack.Resources?.UnauthRolePolicy01 as Resource || undefined;
+    this.authRolePolicy = deploymentResources.rootStack.Resources?.AuthRolePolicy01 as Resource || undefined;
 
-    this.writeSchema(cfdoc.schema);
-    this.writeResolversToFile(cfdoc.resolvers);
+    this.writeSchema(deploymentResources.schema);
+    this.writeResolversToFile(deploymentResources.resolvers);
 
     // Outputs shouldn't be null but default to empty map
-    this.outputs = cfdoc.rootStack.Outputs ?? {};
+    // this.outputs = deploymentResources.rootStack.Outputs ?? {};
 
     return this.outputs;
   }
@@ -305,35 +309,50 @@ export class SchemaTransformer {
   }
 
   /**
-     * @returns {@link TransformConfig}
-    */
+   *
+   * @param projectDir
+   * @returns {@link TransformConfig}
+   */
+  // @ts-ignore
   private loadConfigSync(projectDir: string = 'resources'): TransformConfig {
     // Initialize the config always with the latest version, other members are optional for now.
     let config: TransformConfig = {
-      Version: TRANSFORM_CURRENT_VERSION,
-      ResolverConfig: {
-        project: {
-          ConflictHandler: ConflictHandlerType.OPTIMISTIC,
-          ConflictDetection: 'VERSION',
-        },
-      },
+      // Version: TRANSFORM_CURRENT_VERSION,
+      // ResolverConfig: {
+      //   project: {
+      //     ConflictHandler: ConflictHandlerType.OPTIMISTIC,
+      //     ConflictDetection: 'VERSION',
+      //   },
+      // },
     };
 
-    const configDir = path.join(__dirname, '..', '..', projectDir);
+    // const configDir = path.join(__dirname, '..', '..', projectDir);
 
-    try {
-      const configPath = path.join(configDir, TRANSFORM_CONFIG_FILE_NAME);
-      const configExists = fs.existsSync(configPath);
-      if (configExists) {
-        const configStr = fs.readFileSync(configPath);
-        config = JSON.parse(configStr.toString());
-      }
+    // try {
+    //   const configPath = path.join(configDir, TRANSFORM_CONFIG_FILE_NAME);
+    //   const configExists = fs.existsSync(configPath);
+    //   if (configExists) {
+    //     const configStr = fs.readFileSync(configPath);
+    //     config = JSON.parse(configStr.toString());
+    //   }
 
-      return config as TransformConfig;
-    } catch (err) {
-      return config;
-    }
+    //   return config as TransformConfig;
+    // } catch (err) {
+    return config;
+    // }
   }
+
+  // private transformResources(resources: DeploymentResources) {
+  //   Object.keys(resources.stacks).forEach((stackName) => {
+  //     const template = resources.stacks[stackName];
+  //     const templateResources = template.Resources ?? {};
+  //     for (const resourceName of Object.keys(templateResources)) {
+  //       const resource = templateResources[resourceName];
+  //       console.log("## Name:", resourceName);
+  //       console.log(resource);
+  //     }
+  //   });
+  // }
 }
 
 

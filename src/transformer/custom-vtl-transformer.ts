@@ -1,5 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { TransformerPluginBase } from '@aws-amplify/graphql-transformer-core';
+import {
+  TransformerBeforeStepContextProvider,
+  TransformerSchemaVisitStepContextProvider,
+} from '@aws-amplify/graphql-transformer-interfaces';
 import { Fn, AppSync, IntrinsicFunction } from 'cloudform-types';
 import Resolver from 'cloudform-types/types/appSync/resolver';
 import {
@@ -14,7 +19,6 @@ import {
   ResolverResourceIDs,
   ResourceConstants,
 } from 'graphql-transformer-common';
-import { Transformer, gql, TransformerContext } from 'graphql-transformer-core';
 
 const CUSTOM_DIRECTIVE_STACK_NAME = 'CustomDirectiveStack';
 
@@ -49,21 +53,20 @@ function noneDataSource() {
   });
 }
 
-export class CustomVTLTransformer extends Transformer {
+const directiveDefinition = /* GraphQL */ `
+  directive @custom(request: String, response: String) on FIELD_DEFINITION
+`;
+
+export class CustomVTLTransformer extends TransformerPluginBase {
   readonly rootDirectory: string;
 
   constructor(rootDirectory: string) {
-    super(
-      'CustomVTLTransformer',
-      gql`
-          directive @custom(request: String, response: String) on FIELD_DEFINITION
-        `,
-    );
+    super('CustomVTLTransformer', directiveDefinition);
 
     this.rootDirectory = rootDirectory;
   }
 
-  public before = (acc: TransformerContext): void => {
+  public before = (acc: TransformerBeforeStepContextProvider): void => {
     const directiveList: DirectiveNode[] = [];
 
     // gather all the http directives
@@ -88,15 +91,15 @@ export class CustomVTLTransformer extends Transformer {
     parent: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
     field: FieldDefinitionNode,
     directive: DirectiveNode,
-    acc: TransformerContext,
+    ctx: TransformerSchemaVisitStepContextProvider,
   ): void => {
     const parentTypeName = parent.name.value;
     const fieldName = field.name.value;
 
     // add none ds if that does not exist
-    const noneDS = acc.getResource(ResourceConstants.RESOURCES.NoneDataSource);
+    const noneDS = ctx.getResource(ResourceConstants.RESOURCES.NoneDataSource);
     if (!noneDS) {
-      acc.setResource(ResourceConstants.RESOURCES.NoneDataSource, noneDataSource());
+      ctx.setResource(ResourceConstants.RESOURCES.NoneDataSource, noneDataSource());
     }
 
     acc.mapResourceToStack(

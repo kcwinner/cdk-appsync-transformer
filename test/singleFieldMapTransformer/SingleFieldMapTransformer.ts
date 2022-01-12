@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { Fn, AppSync } from 'cloudform-types';
 import Resolver from 'cloudform-types/types/appSync/resolver';
 import { Kind, FieldDefinitionNode } from 'graphql';
