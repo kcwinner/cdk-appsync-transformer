@@ -1,53 +1,39 @@
-type Customer 
-    @model
-    @auth(rules: [
-        { allow: groups, groups: ["Admins"] },
-        { allow: private, provider: iam, operations: [read, update] }
-    ]) {
-        id: ID!
-        firstName: String!
-        lastName: String!
-        active: Boolean!
-        address: String!
+type Customer @model @auth(rules: [{ allow: groups, groups: ["Admins"] }, { allow: private, provider: iam, operations: [read, update] }]) {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  active: Boolean!
+  address: String!
 }
 
-type Product
-  @model
-  @auth(rules: [
-      { allow: groups, groups: ["Admins"] },
-      { allow: public, provider: iam, operations: [read] }
-  ]) {
-      id: ID! @primaryKey
-      name: String! @index(name: "productsByName", sortKeyFields: ["added"], queryField: "productsByName")
-      description: String!
-      price: String!
-      active: Boolean!
-      added: AWSDateTime!
-      orders: [Order] @hasMany
+type Product @model @auth(rules: [{ allow: groups, groups: ["Admins"] }, { allow: public, provider: iam, operations: [read] }]) {
+  id: ID! @primaryKey
+  name: String! @index(name: "productsByName", sortKeyFields: ["added"], queryField: "productsByName")
+  description: String!
+  price: String!
+  active: Boolean!
+  added: AWSDateTime!
+  orders: [Order] @hasMany
 }
 
 # TODO: handle the subscription case when auth is not added - it doesn't create a subscription resolver
 type Order @model {
   id: ID! @primaryKey(sortKeyFields: ["productID"])
-  productID: ID! 
+  productID: ID!
   total: String!
   ordered: AWSDateTime!
-  expirationUnixTime: AWSTimestamp! 
+  expirationUnixTime: AWSTimestamp!
 }
 
 type Thread @model {
-  forumName: String! 
-    @primaryKey(sortKeyFields: ["subject"]) 
-    @index(name: "byLatestPost", sortKeyFields: ["latestPostAt"])
+  forumName: String! @primaryKey(sortKeyFields: ["subject"]) @index(name: "byLatestPost", sortKeyFields: ["latestPostAt"])
 
-  subject:  String!
+  subject: String!
   latestPostAt: AWSDateTime!
   replies: Int!
 }
 
-type Blog @model
-  @auth(rules: [{ allow: owner, provider: oidc, identityClaim: "sub" }])
-{
+type Blog @model @auth(rules: [{ allow: owner, provider: oidc, identityClaim: "sub" }]) {
   id: ID!
   name: String!
   posts: [Post] @hasMany
@@ -67,36 +53,33 @@ type Comment @model {
 }
 
 # Demonstrate the function resolvers
-type User @model(queries: null, mutations: null, subscriptions: null)
-    @auth(rules: [
-        { allow: groups, groups: ["Admins"] },
-        { allow: owner, ownerField: "sub" },
-        { allow: private, provider: iam, operations: [create, update] }
-    ]) {
-    id: ID!
-    enabled: Boolean!
-    status: String!
-    email: String!
-    name: String!
-    email_verified: String
-    phone_number: String
-    phone_number_verified: String
+type User
+  @model(queries: null, mutations: null, subscriptions: null)
+  @auth(rules: [{ allow: groups, groups: ["Admins"] }, { allow: owner, ownerField: "sub" }, { allow: private, provider: iam, operations: [create, update] }]) {
+  id: ID!
+  enabled: Boolean!
+  status: String!
+  email: String!
+  name: String!
+  email_verified: String
+  phone_number: String
+  phone_number_verified: String
 }
 
 type UserConnection {
-    items: [User]
+  items: [User]
 }
 
 input CreateUserInput {
-    email: String!
-    name: String!
+  email: String!
+  name: String!
 }
 
 input UpdateUserInput {
-    id: ID!
-    email: String
-    name: String
-    number: String
+  id: ID!
+  email: String
+  name: String
+  number: String
 }
 
 # https://jsonplaceholder.typicode.com/

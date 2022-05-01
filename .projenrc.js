@@ -88,6 +88,10 @@ const project = new awscdk.AwsCdkConstructLibrary({
     "graphql-transformer-common",
     "graphql-ttl-transformer", // Community transformer
   ],
+
+  eslintOptions: {
+    prettier: true,
+  },
 });
 
 project.eslint.overrides.push({

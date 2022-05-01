@@ -13,9 +13,10 @@ import {
   DataSourceOptions,
   LambdaDataSource,
   NoneDataSource,
+  DynamoDbDataSource,
 } from "@aws-cdk/aws-appsync-alpha";
 
-import { NestedStack, CfnOutput } from "aws-cdk-lib";
+import { NestedStack, CfnOutput, Annotations, Stack } from "aws-cdk-lib";
 import { CfnDataSource, CfnResolver } from "aws-cdk-lib/aws-appsync";
 
 import { CfnTable, Table, AttributeType, ProjectionType, BillingMode, StreamViewType, TableProps } from "aws-cdk-lib/aws-dynamodb";
@@ -172,10 +173,11 @@ export class AppSyncTransformer extends Construct {
     [name: string]: CdkTransformerHttpResolver[];
   };
 
-  private props: AppSyncTransformerProps;
+  private readonly props: AppSyncTransformerProps;
   private isSyncEnabled: boolean;
   private syncTable: Table | undefined;
   private pointInTimeRecovery: boolean;
+  private readonly resolverDirectory: string;
   private readonly publicResourceArns: string[];
   private readonly privateResourceArns: string[];
   private readonly noneDataSource: NoneDataSource;
@@ -186,6 +188,7 @@ export class AppSyncTransformer extends Construct {
     this.props = props;
 
     // Initialize our maps
+    this.nestedStacks = {};
     this.tableMap = {};
     this.tableNameMap = {};
     this.modelResolvers = {};
@@ -215,6 +218,7 @@ export class AppSyncTransformer extends Construct {
 
     const transformer = new SchemaTransformer(transformerConfiguration);
     this.cdkTransformerStacks = transformer.transform(props.preCdkTransformers, props.postCdkTransformers);
+    this.resolverDirectory = path.join(transformer.outputPath, "resolvers");
 
     this.resolvers = transformer.getResolvers();
 
@@ -228,6 +232,8 @@ export class AppSyncTransformer extends Construct {
       schema: Schema.fromAsset(path.join(transformer.outputPath, "schema.graphql")),
       xrayEnabled: props.xrayEnabled ?? false,
     });
+
+    this.noneDataSource = this.appsyncAPI.addNoneDataSource("NONE");
 
     //  this.outputs.cdkTables ?? {};
     let tableData: { [name: string]: CdkTransformerTable } = {};
@@ -245,12 +251,10 @@ export class AppSyncTransformer extends Construct {
       delete tableData.DataStore; // We don't want to create this again below so remove it from the tableData map
     }
 
-    this.nestedStacks = Object.entries(this.cdkTransformerStacks).map(([name, stack]) => this.createNestedStack(name, stack));
-    this.noneDataSource = this.appsyncAPI.addNoneDataSource("NONE");
-
-    this.createNoneDataSourceResolvers(this.outputs.noneResolvers ?? {}, this.resolvers);
-
-    this.createHttpResolvers();
+    Object.entries(this.cdkTransformerStacks).forEach(([name, stack]) => {
+      const nested = this.createNestedStack(name, stack);
+      this.nestedStacks[name] = nested;
+    });
 
     this.publicResourceArns = this.getResourcesFromGeneratedRolePolicy(transformer.unauthRolePolicy);
     this.privateResourceArns = this.getResourcesFromGeneratedRolePolicy(transformer.authRolePolicy);
@@ -275,8 +279,6 @@ export class AppSyncTransformer extends Construct {
   }
 
   private createNestedStack(name: string, stack: CdkTransformerStack) {
-    console.log({ name, stack });
-
     const nestedStack = new NestedStack(this, name);
 
     this.modelResolvers = {
@@ -322,11 +324,17 @@ export class AppSyncTransformer extends Construct {
       });
     }
 
-    const tableNames = this.createTablesAndResolvers(nestedStack, stack.tables, this.resolvers, this.props.tableNames);
+    const noneDataSource = this.createNoneDataSourceResolvers(nestedStack, stack.noneDataSources, this.resolvers);
+
+    const tableNames = this.createTablesAndResolvers(nestedStack, stack.tables, this.resolvers, this.props.tableNames, noneDataSource);
     this.tableNameMap = {
       ...this.tableNameMap,
       ...tableNames,
     };
+
+    this.createHttpResolvers(nestedStack);
+
+    return nestedStack;
   }
 
   /**
@@ -335,7 +343,9 @@ export class AppSyncTransformer extends Construct {
    * @param resolvers The resolver map minus function resolvers
    */
   private createNoneDataSourceResolvers(scope: NestedStack, noneResolvers: { [name: string]: CdkTransformerResolver }, resolvers: any) {
-    // const noneDataSource = this.appsyncAPI.addNoneDataSource('NONE');
+    const noneDataSource = new NoneDataSource(scope, "NONE", {
+      api: this.appsyncAPI,
+    });
 
     Object.keys(noneResolvers).forEach((resolverKey) => {
       const resolver = resolvers[resolverKey];
@@ -348,6 +358,8 @@ export class AppSyncTransformer extends Construct {
         responseMappingTemplate: MappingTemplate.fromFile(resolver.responseMappingTemplate),
       });
     });
+
+    return noneDataSource;
   }
 
   /**
@@ -363,6 +375,7 @@ export class AppSyncTransformer extends Construct {
     tables: { [name: string]: CdkTransformerTable },
     resolvers: any,
     tableNames: Record<string, string> = {},
+    noneDataSource: NoneDataSource,
   ): { [name: string]: string } {
     const tableNameMap: any = {};
 
@@ -371,7 +384,13 @@ export class AppSyncTransformer extends Construct {
       const table = this.createTable(scope, tables[tableKey], tableName);
       this.tableMap[tableKey] = table;
 
-      const dataSource = this.appsyncAPI.addDynamoDbDataSource(tableKey, table);
+      // TODO: which way is better? DS at main stack or nested?
+      // const dataSource = this.appsyncAPI.addDynamoDbDataSource(tableKey, table);
+      const dataSource = new DynamoDbDataSource(scope, `${tableKey}DataSource`, {
+        api: this.appsyncAPI,
+        table,
+        description: `Datasource for ${tableKey}`,
+      });
 
       // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-appsync-datasource-deltasyncconfig.html
       if (this.isSyncEnabled && this.syncTable) {
@@ -411,16 +430,15 @@ export class AppSyncTransformer extends Construct {
         }
 
         const pipelineConfig = resolver.pipelineConfig.map((cfg) => {
-          console.log("## Config:", cfg);
           return new AppsyncFunction(scope, `${resolver.typeName}-${resolver.fieldName}-${cfg.name}-config`, {
             api: this.appsyncAPI,
             name: cfg.name,
-            dataSource: cfg.dataSourceType === DataSourceType.AmazonDynamoDB ? dataSource : this.noneDataSource,
+            dataSource: cfg.dataSourceType === DataSourceType.AMAZON_DYNAMO_DB ? dataSource : noneDataSource,
             requestMappingTemplate: cfg.requestMappingTemplateFileName
-              ? MappingTemplate.fromString(cfg.requestMappingTemplateFileName)
+              ? MappingTemplate.fromFile(path.join(this.resolverDirectory, cfg.requestMappingTemplateFileName))
               : MappingTemplate.fromString(cfg.requestMappingTemplate!),
             responseMappingTemplate: cfg.responseMappingTemplateFileName
-              ? MappingTemplate.fromString(cfg.responseMappingTemplateFileName)
+              ? MappingTemplate.fromFile(path.join(this.resolverDirectory, cfg.responseMappingTemplateFileName))
               : MappingTemplate.fromString(cfg.responseMappingTemplate!),
           });
         });
@@ -430,12 +448,13 @@ export class AppSyncTransformer extends Construct {
           typeName: resolver.typeName,
           fieldName: resolver.fieldName,
           pipelineConfig,
-          requestMappingTemplate: MappingTemplate.fromString("FIX ME"),
+          requestMappingTemplate: MappingTemplate.fromString(resolver.requestMappingTemplate),
           responseMappingTemplate: MappingTemplate.fromString(resolver.responseMappingTemplate),
         });
       });
 
       // Loop the gsi resolvers
+      // TODO - fix these
       tables[tableKey].gsiResolvers.forEach((resolverKey) => {
         const resolver = resolvers.gsi[resolverKey];
         new Resolver(scope, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
@@ -564,8 +583,12 @@ export class AppSyncTransformer extends Construct {
             api: this.appsyncAPI,
             name: cfg.name,
             dataSource: httpDataSource,
-            requestMappingTemplate: MappingTemplate.fromString(""), // TODO: Fix this,
-            responseMappingTemplate: MappingTemplate.fromString(""), // TODO: fix this
+            requestMappingTemplate: cfg.requestMappingTemplateFileName
+              ? MappingTemplate.fromFile(path.join(this.resolverDirectory, cfg.requestMappingTemplateFileName))
+              : MappingTemplate.fromString(cfg.requestMappingTemplate!),
+            responseMappingTemplate: cfg.responseMappingTemplateFileName
+              ? MappingTemplate.fromFile(path.join(this.resolverDirectory, cfg.responseMappingTemplateFileName))
+              : MappingTemplate.fromString(cfg.responseMappingTemplate!),
           });
         });
 
@@ -574,7 +597,6 @@ export class AppSyncTransformer extends Construct {
           typeName: resolver.typeName,
           fieldName: resolver.fieldName,
           pipelineConfig: pipelineConfig,
-          // TODO: Resolvers from file?
         });
       });
     }
@@ -588,7 +610,7 @@ export class AppSyncTransformer extends Construct {
   private getResourcesFromGeneratedRolePolicy(policy?: Resource): string[] {
     if (!policy?.Properties?.PolicyDocument?.Statement) return [];
 
-    const { region, account } = this;
+    const { region, account } = Stack.of(this);
 
     const resolvedResources: string[] = [];
     for (const statement of policy.Properties.PolicyDocument.Statement) {
@@ -615,11 +637,17 @@ export class AppSyncTransformer extends Construct {
    * @param lambdaFunction The lambda function to attach
    * @param options
    */
-  public addLambdaDataSourceAndResolvers(scope: NestedStack, functionName: string, id: string, lambdaFunction: IFunction, options?: DataSourceOptions): LambdaDataSource {
-    const functionDataSource = this.appsyncAPI.addLambdaDataSource(id, lambdaFunction, options);
+  public addLambdaDataSourceAndResolvers(functionName: string, id: string, lambdaFunction: IFunction, options?: DataSourceOptions): LambdaDataSource {
+    const functionStack = this.nestedStacks.FunctionDirectiveStack;
+
+    const functionDataSource = new LambdaDataSource(functionStack, id, {
+      api: this.appsyncAPI,
+      lambdaFunction,
+      ...options,
+    });
 
     for (const resolver of this.functionResolvers[functionName]) {
-      new Resolver(scope, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
+      new Resolver(functionStack, `${resolver.typeName}-${resolver.fieldName}-resolver`, {
         api: this.appsyncAPI,
         typeName: resolver.typeName,
         fieldName: resolver.fieldName,

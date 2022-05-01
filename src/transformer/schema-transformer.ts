@@ -11,13 +11,13 @@ import { BelongsToTransformer, HasManyTransformer, HasOneTransformer } from "@aw
 import { GraphQLTransform, TransformConfig } from "@aws-amplify/graphql-transformer-core";
 import { AppSyncAuthConfiguration, FeatureFlagProvider } from "@aws-amplify/graphql-transformer-interfaces";
 
+import { CdkTransformerStack } from ".";
 import { CdkTransformer } from "./cdk-transformer";
 
 // import { CustomVTLTransformer } from './custom-vtl-transformer';
 
 // Rebuilt this from cloudform-types because it has type errors
 import { Resource } from "./resource";
-import { CdkTransformerStack } from ".";
 
 export interface SchemaTransformerProps {
   /**
@@ -240,7 +240,7 @@ export class SchemaTransformer {
    */
 
   private isHttpResolver(typeName: string, fieldName: string) {
-    const httpStack = this.stacks["HttpStack"];
+    const httpStack = this.stacks.HttpStack;
     if (!httpStack) return false;
 
     for (const endpoint in httpStack.httpResolvers) {

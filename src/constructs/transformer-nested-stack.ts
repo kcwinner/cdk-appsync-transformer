@@ -22,10 +22,10 @@ import { Effect, Grant, IGrantable, PolicyStatement } from "aws-cdk-lib/aws-iam"
 import { IFunction } from "aws-cdk-lib/aws-lambda";
 import { Construct } from "constructs";
 
-import { CdkTransformerStack, CdkTransformerResolver, CdkTransformerFunctionResolver, CdkTransformerHttpResolver, CdkTransformerTable } from "./transformer";
-import { Resource } from "./transformer/resource";
+import { CdkTransformerStack, CdkTransformerResolver, CdkTransformerFunctionResolver, CdkTransformerHttpResolver, CdkTransformerTable } from "../transformer";
+import { Resource } from "../transformer/resource";
 
-import { SchemaTransformer, SchemaTransformerProps } from "./transformer/schema-transformer";
+import { SchemaTransformer, SchemaTransformerProps } from "../transformer/schema-transformer";
 
 export interface AppSyncTransformerProps {
   /**

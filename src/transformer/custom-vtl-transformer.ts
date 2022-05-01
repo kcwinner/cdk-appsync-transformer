@@ -2,18 +2,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { Fn, AppSync, IntrinsicFunction } from "cloudform-types";
 import Resolver from "cloudform-types/types/appSync/resolver";
-import {
-  FieldDefinitionNode,
-  DirectiveNode,
-  ObjectTypeDefinitionNode,
-  InterfaceTypeDefinitionNode,
-  Kind,
-} from "graphql";
-import {
-  getDirectiveArgument,
-  ResolverResourceIDs,
-  ResourceConstants,
-} from "graphql-transformer-common";
+import { FieldDefinitionNode, DirectiveNode, ObjectTypeDefinitionNode, InterfaceTypeDefinitionNode, Kind } from "graphql";
+import { getDirectiveArgument, ResolverResourceIDs, ResourceConstants } from "graphql-transformer-common";
 import { Transformer, gql, TransformerContext } from "graphql-transformer-core";
 
 const CUSTOM_DIRECTIVE_STACK_NAME = "CustomDirectiveStack";
@@ -24,13 +14,7 @@ const CUSTOM_DIRECTIVE_STACK_NAME = "CustomDirectiveStack";
  * @param field The connection field name.
  */
 /*eslint-disable @typescript-eslint/no-explicit-any */
-function makeResolver(
-  type: string,
-  field: string,
-  request: string,
-  response: string,
-  datasourceName: string | IntrinsicFunction = "NONE"
-): Resolver {
+function makeResolver(type: string, field: string, request: string, response: string, datasourceName: string | IntrinsicFunction = "NONE"): Resolver {
   return new Resolver({
     ApiId: Fn.GetAtt(ResourceConstants.RESOURCES.GraphQLAPILogicalID, "ApiId"),
     DataSourceName: datasourceName,
@@ -57,7 +41,7 @@ export class CustomVTLTransformer extends Transformer {
       "CustomVTLTransformer",
       gql`
         directive @custom(request: String, response: String) on FIELD_DEFINITION
-      `
+      `,
     );
 
     this.rootDirectory = rootDirectory;
@@ -71,9 +55,7 @@ export class CustomVTLTransformer extends Transformer {
       if (def.kind === Kind.OBJECT_TYPE_DEFINITION && def.fields) {
         for (const field of def.fields) {
           if (field.directives) {
-            const customDirective = field.directives.find(
-              (dir: { name: { value: string } }) => dir.name.value === "custom"
-            );
+            const customDirective = field.directives.find((dir: { name: { value: string } }) => dir.name.value === "custom");
             if (customDirective) {
               directiveList.push(customDirective);
             }
@@ -84,28 +66,17 @@ export class CustomVTLTransformer extends Transformer {
   };
 
   /*eslint-disable @typescript-eslint/no-explicit-any */
-  public field = (
-    parent: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode,
-    field: FieldDefinitionNode,
-    directive: DirectiveNode,
-    acc: TransformerContext
-  ): void => {
+  public field = (parent: ObjectTypeDefinitionNode | InterfaceTypeDefinitionNode, field: FieldDefinitionNode, directive: DirectiveNode, acc: TransformerContext): void => {
     const parentTypeName = parent.name.value;
     const fieldName = field.name.value;
 
     // add none ds if that does not exist
     const noneDS = acc.getResource(ResourceConstants.RESOURCES.NoneDataSource);
     if (!noneDS) {
-      acc.setResource(
-        ResourceConstants.RESOURCES.NoneDataSource,
-        noneDataSource()
-      );
+      acc.setResource(ResourceConstants.RESOURCES.NoneDataSource, noneDataSource());
     }
 
-    acc.mapResourceToStack(
-      CUSTOM_DIRECTIVE_STACK_NAME,
-      ResolverResourceIDs.ResolverResourceID(parentTypeName, fieldName)
-    );
+    acc.mapResourceToStack(CUSTOM_DIRECTIVE_STACK_NAME, ResolverResourceIDs.ResolverResourceID(parentTypeName, fieldName));
 
     const requestFile = getDirectiveArgument(directive, "request");
     const responseFile = getDirectiveArgument(directive, "response");
@@ -113,39 +84,22 @@ export class CustomVTLTransformer extends Transformer {
     let datasourceName: IntrinsicFunction | string = "NONE";
 
     if (!requestFile) {
-      throw new Error(
-        `The @custom directive on Type: ${parent.name.value} Field: ${field.name.value} is missing the request argument.`
-      );
+      throw new Error(`The @custom directive on Type: ${parent.name.value} Field: ${field.name.value} is missing the request argument.`);
     }
 
     if (!responseFile) {
-      throw new Error(
-        `The @custom directive on Type: ${parent.name.value} Field: ${field.name.value} is missing the response argument.`
-      );
+      throw new Error(`The @custom directive on Type: ${parent.name.value} Field: ${field.name.value} is missing the response argument.`);
     }
 
     let request, response;
     try {
-      request = fs
-        .readFileSync(path.join(this.rootDirectory, requestFile))
-        .toString();
-      response = fs
-        .readFileSync(path.join(this.rootDirectory, responseFile))
-        .toString();
+      request = fs.readFileSync(path.join(this.rootDirectory, requestFile)).toString();
+      response = fs.readFileSync(path.join(this.rootDirectory, responseFile)).toString();
     } catch (err) {
       throw new Error(`Couldn't load VTL files. ${(err as Error).message}`);
     }
-    const fieldMappingResolver = makeResolver(
-      parentTypeName,
-      fieldName,
-      request,
-      response,
-      datasourceName
-    );
-    acc.setResource(
-      ResolverResourceIDs.ResolverResourceID(parentTypeName, fieldName),
-      fieldMappingResolver
-    );
+    const fieldMappingResolver = makeResolver(parentTypeName, fieldName, request, response, datasourceName);
+    acc.setResource(ResolverResourceIDs.ResolverResourceID(parentTypeName, fieldName), fieldMappingResolver);
     const templateResources = acc.template.Resources;
     if (!templateResources) return;
   };

@@ -38,19 +38,21 @@ export interface CdkTransformerTable {
 }
 
 export enum DataSourceType {
-  AmazonDynamoDB = "AMAZON_DYNAMODB",
-  AwsLambda = "AWS_LAMBDA",
-  Http = "HTTP",
-  None = "NONE",
+  AMAZON_DYNAMO_DB = "AMAZON_DYNAMODB",
+  AWS_LAMBDA = "AWS_LAMBDA",
+  HTTP = "HTTP",
+  NONE = "NONE",
 }
 
-export interface CdkTransformerAppSyncFunctionConfiguration {
+export interface IDataSourceHttpConfig {
+  endpoint: string;
+}
+
+export interface ICdkTransformerAppSyncFunctionConfiguration {
   name: string;
   dataSourceType: DataSourceType;
   dataSourceTable?: string;
-  dataSourceHttpConfig?: {
-    endpoint: string;
-  };
+  dataSourceHttpConfig?: IDataSourceHttpConfig;
   requestMappingTemplate?: string;
   requestMappingTemplateFileName?: string;
   responseMappingTemplate?: string;
@@ -60,7 +62,7 @@ export interface CdkTransformerAppSyncFunctionConfiguration {
 export interface CdkTransformerResolver {
   readonly typeName: string;
   readonly fieldName: string;
-  readonly pipelineConfig: CdkTransformerAppSyncFunctionConfiguration[];
+  readonly pipelineConfig: ICdkTransformerAppSyncFunctionConfiguration[];
   readonly requestMappingTemplate: string;
   readonly responseMappingTemplate: string;
 }
@@ -77,13 +79,13 @@ export interface CdkTransformerFunctionResolver extends CdkTransformerResolver {
 }
 
 export interface CdkTransformerStack {
-  tables: { [name: string]: CdkTransformerTable };
-  noneDataSources: { [name: string]: CdkTransformerResolver };
-  modelResolvers: { [name: string]: CdkTransformerResolver };
-  functionResolvers: { [name: string]: CdkTransformerFunctionResolver[] };
-  httpResolvers: { [name: string]: CdkTransformerHttpResolver[] };
-  resolverTableMap: { [name: string]: string };
-  gsiResolverTableMap: { [name: string]: string };
+  readonly tables: { [name: string]: CdkTransformerTable };
+  readonly noneDataSources: { [name: string]: CdkTransformerResolver };
+  readonly modelResolvers: { [name: string]: CdkTransformerResolver };
+  readonly functionResolvers: { [name: string]: CdkTransformerFunctionResolver[] };
+  readonly httpResolvers: { [name: string]: CdkTransformerHttpResolver[] };
+  readonly resolverTableMap: { [name: string]: string }; // TODO: is this needed?
+  readonly gsiResolverTableMap: { [name: string]: string }; // TODO: is this needed?
 }
 
 export class CdkTransformer {
@@ -118,24 +120,6 @@ export class CdkTransformer {
     });
 
     return this.stacks;
-
-    // const query = ctx.getQuery();
-    // if (query) {
-    //   const queryFields = getFieldArguments(query);
-    //   ctx.setOutput('queries', queryFields);
-    // }
-
-    // const mutation = ctx.getMutation();
-    // if (mutation) {
-    //   const mutationFields = getFieldArguments(mutation);
-    //   ctx.setOutput('mutations', mutationFields);
-    // }
-
-    // const subscription = ctx.getSubscription();
-    // if (subscription) {
-    //   const subscriptionFields = getFieldArguments(subscription);
-    //   ctx.setOutput('subscriptions', subscriptionFields);
-    // }
   };
 
   private buildResources(deploymentResources: DeploymentResources): void {
@@ -190,16 +174,16 @@ export class CdkTransformer {
               }
               const functionConfiguration = templateResources[id];
 
-              let dataSourceType = DataSourceType.None;
+              let dataSourceType = DataSourceType.NONE;
 
               const dataSourceNameRef = functionConfiguration.Properties.DataSourceName;
               const dataSourceName = dataSourceNameRef.Ref ?? dataSourceNameRef["Fn::GetAtt"][0];
               const dataSource = templateResources[dataSourceName];
 
-              let otherProps: Partial<CdkTransformerAppSyncFunctionConfiguration> = {};
+              let otherProps: Partial<ICdkTransformerAppSyncFunctionConfiguration> = {};
 
               if (!dataSource) {
-                dataSourceType = DataSourceType.None;
+                dataSourceType = DataSourceType.NONE;
               } else {
                 dataSourceType = dataSource.Properties.Type as DataSourceType;
                 switch (dataSourceType) {
