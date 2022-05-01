@@ -4,10 +4,10 @@
  */
 
 export declare enum DataType {
-  String = 'String',
-  Number = 'Number',
-  ListOfNumbers = 'List<Number>',
-  CommaDelimitedList = 'CommaDelimitedList'
+  String = "String",
+  Number = "Number",
+  ListOfNumbers = "List<Number>",
+  CommaDelimitedList = "CommaDelimitedList",
 }
 export declare class IntrinsicFunction {
   private name;
@@ -22,10 +22,11 @@ export declare class ConditionIntrinsicFunction extends IntrinsicFunction {
 }
 export declare type Value<T> = T | IntrinsicFunction;
 export declare type List<T> = T[] | IntrinsicFunction;
-export declare type Condition = ConditionIntrinsicFunction | {
-  Condition: Value<string>;
-};
-
+export declare type Condition =
+  | ConditionIntrinsicFunction
+  | {
+      Condition: Value<string>;
+    };
 
 export interface CreationPolicy {
   AutoScalingCreationPolicy?: {
@@ -38,9 +39,9 @@ export interface CreationPolicy {
 }
 
 export declare enum DeletionPolicy {
-  Delete = 'Delete',
-  Retain = 'Retain',
-  Snapshot = 'Snapshot'
+  Delete = "Delete",
+  Retain = "Retain",
+  Snapshot = "Snapshot",
 }
 
 export interface UpdatePolicy {

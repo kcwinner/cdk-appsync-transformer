@@ -1,7 +1,7 @@
-import { MappingTemplate } from '@aws-cdk/aws-appsync-alpha';
-import { Transformer, TransformerContext, getFieldArguments } from 'graphql-transformer-core';
+import { DeploymentResources } from "@aws-amplify/graphql-transformer-core";
+import Template from "@aws-amplify/graphql-transformer-core/lib/transformation/types";
 
-const graphqlTypeStatements = ['Query', 'Mutation', 'Subscription'];
+const graphqlTypeStatements = ["Query", "Mutation", "Subscription"];
 
 export interface CdkTransformerTableKey {
   readonly name: string;
@@ -37,165 +37,248 @@ export interface CdkTransformerTable {
   readonly gsiResolvers: string[];
 }
 
+export enum DataSourceType {
+  AmazonDynamoDB = "AMAZON_DYNAMODB",
+  AwsLambda = "AWS_LAMBDA",
+  Http = "HTTP",
+  None = "NONE",
+}
+
+export interface CdkTransformerAppSyncFunctionConfiguration {
+  name: string;
+  dataSourceType: DataSourceType;
+  dataSourceTable?: string;
+  dataSourceHttpConfig?: {
+    endpoint: string;
+  };
+  requestMappingTemplate?: string;
+  requestMappingTemplateFileName?: string;
+  responseMappingTemplate?: string;
+  responseMappingTemplateFileName?: string;
+}
+
 export interface CdkTransformerResolver {
   readonly typeName: string;
   readonly fieldName: string;
+  readonly pipelineConfig: CdkTransformerAppSyncFunctionConfiguration[];
+  readonly requestMappingTemplate: string;
+  readonly responseMappingTemplate: string;
 }
 
 export interface CdkTransformerHttpResolver extends CdkTransformerResolver {
-  readonly httpConfig: any;
-  readonly defaultRequestMappingTemplate: string;
-  readonly defaultResponseMappingTemplate: string;
+  // readonly httpConfig?: any;
+  readonly defaultRequestMappingTemplate?: string;
+  readonly defaultResponseMappingTemplate?: string;
 }
 
 export interface CdkTransformerFunctionResolver extends CdkTransformerResolver {
-  readonly defaultRequestMappingTemplate: string;
-  readonly defaultResponseMappingTemplate: string;
+  readonly defaultRequestMappingTemplate?: string;
+  readonly defaultResponseMappingTemplate?: string;
 }
 
-export class CdkTransformer extends Transformer {
+export interface CdkTransformerStack {
   tables: { [name: string]: CdkTransformerTable };
   noneDataSources: { [name: string]: CdkTransformerResolver };
+  modelResolvers: { [name: string]: CdkTransformerResolver };
   functionResolvers: { [name: string]: CdkTransformerFunctionResolver[] };
   httpResolvers: { [name: string]: CdkTransformerHttpResolver[] };
   resolverTableMap: { [name: string]: string };
   gsiResolverTableMap: { [name: string]: string };
+}
+
+export class CdkTransformer {
+  stacks: {
+    [name: string]: CdkTransformerStack;
+  };
 
   constructor() {
-    super(
-      'CdkTransformer',
-      'directive @nullable on FIELD_DEFINITION', // this is unused
-    );
-
-    this.tables = {};
-    this.noneDataSources = {};
-    this.functionResolvers = {};
-    this.httpResolvers = {};
-    this.resolverTableMap = {};
-    this.gsiResolverTableMap = {};
+    this.stacks = {};
   }
 
-  public after = (ctx: TransformerContext): void => {
-    this.buildResources(ctx);
+  public transform = (deploymentResources: DeploymentResources) => {
+    this.buildResources(deploymentResources);
 
-    // TODO: Improve this iteration
-    Object.keys(this.tables).forEach(tableName => {
-      let table = this.tables[tableName];
-      Object.keys(this.resolverTableMap).forEach(resolverName => {
-        if (this.resolverTableMap[resolverName] === tableName) table.resolvers.push(resolverName);
-      });
+    Object.entries(this.stacks).forEach(([_stackName, stack]) => {
+      // TODO: Improve this iteration
+      Object.keys(stack.tables).forEach((tableName) => {
+        let table = stack.tables[tableName];
 
-      Object.keys(this.gsiResolverTableMap).forEach(resolverName => {
-        if (this.gsiResolverTableMap[resolverName] === tableName) table.gsiResolvers.push(resolverName);
+        Object.keys(stack.modelResolvers).forEach((resolverName) => {
+          const tableNames = stack.modelResolvers[resolverName].pipelineConfig.map((cfg) => {
+            return cfg.dataSourceTable;
+          });
+
+          if (tableNames.includes(tableName)) table.resolvers.push(resolverName);
+        });
+
+        Object.keys(stack.gsiResolverTableMap).forEach((resolverName) => {
+          if (stack.gsiResolverTableMap[resolverName] === tableName) table.gsiResolvers.push(resolverName);
+        });
       });
     });
 
-    // @ts-ignore - we are overloading the use of outputs here...
-    ctx.setOutput('cdkTables', this.tables);
+    return this.stacks;
 
-    // @ts-ignore - we are overloading the use of outputs here...
-    ctx.setOutput('noneResolvers', this.noneDataSources);
+    // const query = ctx.getQuery();
+    // if (query) {
+    //   const queryFields = getFieldArguments(query);
+    //   ctx.setOutput('queries', queryFields);
+    // }
 
-    // @ts-ignore - we are overloading the use of outputs here...
-    ctx.setOutput('functionResolvers', this.functionResolvers);
+    // const mutation = ctx.getMutation();
+    // if (mutation) {
+    //   const mutationFields = getFieldArguments(mutation);
+    //   ctx.setOutput('mutations', mutationFields);
+    // }
 
-    // @ts-ignore - we are overloading the use of outputs here...
-    ctx.setOutput('httpResolvers', this.httpResolvers);
-
-    const query = ctx.getQuery();
-    if (query) {
-      const queryFields = getFieldArguments(query);
-      ctx.setOutput('queries', queryFields);
-    }
-
-    const mutation = ctx.getMutation();
-    if (mutation) {
-      const mutationFields = getFieldArguments(mutation);
-      ctx.setOutput('mutations', mutationFields);
-    }
-
-    const subscription = ctx.getSubscription();
-    if (subscription) {
-      const subscriptionFields = getFieldArguments(subscription);
-      ctx.setOutput('subscriptions', subscriptionFields);
-    }
+    // const subscription = ctx.getSubscription();
+    // if (subscription) {
+    //   const subscriptionFields = getFieldArguments(subscription);
+    //   ctx.setOutput('subscriptions', subscriptionFields);
+    // }
   };
 
-  private buildResources(ctx: TransformerContext): void {
-    const templateResources = ctx.template.Resources;
-    if (!templateResources) return;
+  private buildResources(deploymentResources: DeploymentResources): void {
+    for (const [stackName, template] of Object.entries(deploymentResources.stacks)) {
+      this.stacks[stackName] = {
+        tables: {},
+        noneDataSources: {},
+        modelResolvers: {},
+        functionResolvers: {},
+        httpResolvers: {},
+        resolverTableMap: {},
+        gsiResolverTableMap: {},
+      };
 
-    for (const [resourceName, resource] of Object.entries(templateResources)) {
-      if (resource.Type === 'AWS::DynamoDB::Table') {
-        this.buildTablesFromResource(resourceName, ctx);
-      } else if (resource.Type === 'AWS::AppSync::Resolver') {
-        if (resource.Properties?.DataSourceName === 'NONE') {
-          this.noneDataSources[`${resource.Properties.TypeName}${resource.Properties.FieldName}`] = {
-            typeName: resource.Properties.TypeName,
-            fieldName: resource.Properties.FieldName,
-          };
-        } else if (resource.Properties?.Kind === 'PIPELINE') {
-          // Inspired by:
-          // https://github.com/aws-amplify/amplify-cli/blob/master/packages/graphql-function-transformer/src/__tests__/FunctionTransformer.test.ts#L20
-          const dependsOn = resource.DependsOn as string ?? '';
-          const functionConfiguration = templateResources[dependsOn];
-          const functionDependsOn = functionConfiguration.DependsOn as string ?? '';
-          const functionDataSource = templateResources[functionDependsOn];
-          const functionArn = functionDataSource.Properties?.LambdaConfig?.LambdaFunctionArn?.payload[1].payload[0];
-          const functionName = functionArn.split(':').slice(-1)[0];
+      const templateResources = template.Resources;
+      if (!templateResources) continue;
 
-          const fieldName = resource.Properties.FieldName;
-          const typeName = resource.Properties.TypeName;
+      for (const [resourceName, resource] of Object.entries(templateResources)) {
+        if (resourceName === "PostBlogDataResolverFn") {
+          console.log("!!!!!!!! FOUND !!!!!!!!");
+          console.log(resource);
+          console.log("!!!!!!!! FOUND !!!!!!!!");
+        }
 
-          if (!this.functionResolvers[functionName]) this.functionResolvers[functionName] = [];
+        if (resource.Type === "AWS::DynamoDB::Table") {
+          const { table, tableName } = this.buildTableFromResource(resourceName, template);
+          this.stacks[stackName].tables[tableName] = table;
+        } else if (resource.Type === "AWS::AppSync::Resolver") {
+          if (resource.Properties?.Kind === "PIPELINE") {
+            const pipelineConfig = resource.Properties.PipelineConfig;
+            const pipelineFunctions = pipelineConfig.Functions;
 
-          this.functionResolvers[functionName].push({
-            typeName: typeName,
-            fieldName: fieldName,
-            defaultRequestMappingTemplate: MappingTemplate.lambdaRequest().renderTemplate(),
-            defaultResponseMappingTemplate: functionConfiguration.Properties?.ResponseMappingTemplate, // This should handle error messages
-          });
-        } else { // Should be a table/model resolver -> Maybe not true when we add in @searchable, etc
-          const dataSourceName = resource.Properties?.DataSourceName?.payload[0];
-          const dataSource = templateResources[dataSourceName];
-          const dataSourceType = dataSource.Properties?.Type;
+            const outResolver: CdkTransformerResolver = {
+              fieldName: resource.Properties.FieldName,
+              typeName: resource.Properties.TypeName,
+              pipelineConfig: [],
+              requestMappingTemplate: resource.Properties.RequestMappingTemplate, // TODO: Fix these because they are wrong
+              responseMappingTemplate: resource.Properties.ResponseMappingTemplate,
+            };
 
-          let typeName = resource.Properties?.TypeName;
-          let fieldName = resource.Properties?.FieldName;
+            let hasDynamo = false;
+            let httpEndpoint;
+            let hasLambda = false;
+            let functionName = "";
 
-          switch (dataSourceType) {
-            case 'AMAZON_DYNAMODB':
-              let tableName = dataSourceName.replace('DataSource', 'Table');
-              if (graphqlTypeStatements.indexOf(typeName) >= 0) {
-                this.resolverTableMap[fieldName] = tableName;
-              } else { // this is a GSI
-                this.gsiResolverTableMap[`${typeName}${fieldName}`] = tableName;
+            for (const pipelineFunction of pipelineFunctions) {
+              const id = pipelineFunction["Fn::GetAtt"] ? pipelineFunction["Fn::GetAtt"][0] : undefined;
+              if (!id) {
+                // this is a ref pipelineFunction["Ref"]
+                // TODO: find the ref stack?
+                continue;
               }
-              break;
-            case 'HTTP':
-              const httpConfig = dataSource.Properties?.HttpConfig;
-              const endpoint = httpConfig.Endpoint;
+              const functionConfiguration = templateResources[id];
 
-              if (!this.httpResolvers[endpoint]) this.httpResolvers[endpoint] = [];
-              this.httpResolvers[endpoint].push({
-                typeName,
-                fieldName,
-                httpConfig,
-                defaultRequestMappingTemplate: resource.Properties?.RequestMappingTemplate,
-                defaultResponseMappingTemplate: resource.Properties?.ResponseMappingTemplate,
+              let dataSourceType = DataSourceType.None;
+
+              const dataSourceNameRef = functionConfiguration.Properties.DataSourceName;
+              const dataSourceName = dataSourceNameRef.Ref ?? dataSourceNameRef["Fn::GetAtt"][0];
+              const dataSource = templateResources[dataSourceName];
+
+              let otherProps: Partial<CdkTransformerAppSyncFunctionConfiguration> = {};
+
+              if (!dataSource) {
+                dataSourceType = DataSourceType.None;
+              } else {
+                dataSourceType = dataSource.Properties.Type as DataSourceType;
+                switch (dataSourceType) {
+                  case "AMAZON_DYNAMODB":
+                    otherProps.dataSourceTable = dataSource.Properties.Name;
+                    hasDynamo = true;
+                    break;
+                  case "HTTP":
+                    otherProps.dataSourceHttpConfig = {
+                      endpoint: dataSource.Properties.HttpConfig.Endpoint,
+                    };
+                    httpEndpoint = dataSource.Properties.HttpConfig.Endpoint;
+                    break;
+                  case "AWS_LAMBDA":
+                    hasLambda = true;
+                    const subFn = dataSource.Properties.LambdaConfig.LambdaFunctionArn["Fn::If"][2]["Fn::Sub"];
+                    functionName = subFn.split(":").slice(-1)[0];
+                    break;
+                  default:
+                    throw new Error(`Unsupported Data Source Type: ${dataSourceType}`);
+                }
+              }
+
+              if (functionConfiguration.Properties.RequestMappingTemplateS3Location) {
+                const filename = sliceMappingTemplateS3Location(functionConfiguration.Properties.RequestMappingTemplateS3Location);
+                otherProps.requestMappingTemplateFileName = filename.replace(".vtl", "");
+              } else {
+                otherProps.requestMappingTemplate = functionConfiguration.Properties.RequestMappingTemplate;
+              }
+
+              if (functionConfiguration.Properties.ResponseMappingTemplateS3Location) {
+                const filename = sliceMappingTemplateS3Location(functionConfiguration.Properties.ResponseMappingTemplateS3Location);
+                otherProps.responseMappingTemplateFileName = filename.replace(".vtl", "");
+              } else {
+                otherProps.responseMappingTemplate = functionConfiguration.Properties.ResponseMappingTemplate;
+              }
+
+              outResolver.pipelineConfig.push({
+                name: functionConfiguration.Properties.Name,
+                dataSourceType,
+                ...otherProps,
               });
-              break;
-            default:
-              throw new Error(`Unsupported Data Source Type: ${dataSourceType}`);
+            }
+
+            const stack = this.stacks[stackName];
+
+            if (hasDynamo) {
+              if (graphqlTypeStatements.indexOf(outResolver.typeName) >= 0) {
+                stack.modelResolvers[outResolver.fieldName] = outResolver;
+              } else {
+                // this is a gsi
+                throw new Error("Unsupported GSI Type?");
+              }
+            } else if (httpEndpoint) {
+              if (!stack.httpResolvers[httpEndpoint]) stack.httpResolvers[httpEndpoint] = [];
+              stack.httpResolvers[httpEndpoint].push(outResolver);
+            } else if (hasLambda) {
+              if (!stack.functionResolvers[functionName]) stack.functionResolvers[functionName] = [];
+              stack.functionResolvers[functionName].push(outResolver);
+            } else {
+              // TODO: Figure these GSIs out
+              // console.log('-- NONE Resolver --');
+              // if (stackName === 'ConnectionStack') {
+              //   console.log(JSON.stringify(outResolver, undefined, 2));
+              // }
+              // // This was the old code
+              // stack.gsiResolverTableMap[`${typeName}${fieldName}`] = tableName;
+              // stack.pipelineResolvers[`${outResolver.typeName}${outResolver.fieldName}`] = outResolver;
+            }
+          } else {
+            throw new Error("Invalid resolver type. All resolvers should be pipelines.");
           }
         }
       }
     }
   }
 
-  private buildTablesFromResource(resourceName: string, ctx: TransformerContext): void {
-    const tableResource = ctx.template.Resources ? ctx.template.Resources[resourceName] : undefined;
-
+  private buildTableFromResource(resourceName: string, template: Template) {
+    const tableResource = template.Resources ? template.Resources[resourceName] : undefined;
     const attributeDefinitions = tableResource?.Properties?.AttributeDefinitions;
     const keySchema = tableResource?.Properties?.KeySchema;
 
@@ -209,8 +292,10 @@ export class CdkTransformer extends Transformer {
       };
     }
 
-    let table: CdkTransformerTable = {
-      tableName: resourceName,
+    const tableName = resourceName.substring(0, resourceName.indexOf("Table")) + "Table";
+
+    const table: CdkTransformerTable = {
+      tableName,
       partitionKey: keys.partitionKey,
       sortKey: keys.sortKey,
       ttl: ttl,
@@ -249,7 +334,7 @@ export class CdkTransformer extends Transformer {
       });
     }
 
-    this.tables[resourceName] = table;
+    return { tableName, table };
   }
 
   private parseKeySchema(keySchema: any, attributeDefinitions: any) {
@@ -262,12 +347,12 @@ export class CdkTransformer extends Transformer {
 
       const attribute = attributeDefinitions.find((attr: any) => attr.AttributeName === attributeName);
 
-      if (keyType === 'HASH') {
+      if (keyType === "HASH") {
         partitionKey = {
           name: attribute.AttributeName,
           type: attribute.AttributeType,
         };
-      } else if (keyType === 'RANGE') {
+      } else if (keyType === "RANGE") {
         sortKey = {
           name: attribute.AttributeName,
           type: attribute.AttributeType,
@@ -277,4 +362,11 @@ export class CdkTransformer extends Transformer {
 
     return { partitionKey, sortKey };
   }
+}
+
+function sliceMappingTemplateS3Location(locationProperty: any) {
+  const joinFn = locationProperty["Fn::Join"];
+  const values = joinFn[1];
+  const key = values.slice(-1)[0];
+  return key.split("/").slice(-1)[0];
 }

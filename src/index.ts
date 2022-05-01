@@ -7,7 +7,6 @@ export {
   CdkTransformerTable,
   CdkTransformerTableKey,
   CdkTransformerTableTtl,
-  SchemaTransformerOutputs,
-} from './transformer';
+} from "./transformer";
 
-export * from './appsync-transformer';
+export * from "./appsync-transformer";

@@ -12,41 +12,37 @@ type Customer
 }
 
 type Product
-    @model
-    @auth(rules: [
-        { allow: groups, groups: ["Admins"] },
-        { allow: public, provider: iam, operations: [read] }
-    ])
-    @key(name: "productsByName", fields: ["name", "added"], queryField: "productsByName") {
-        id: ID!
-        name: String!
-        description: String!
-        price: String!
-        active: Boolean!
-        added: AWSDateTime!
-        orders: [Order] @connection
+  @model
+  @auth(rules: [
+      { allow: groups, groups: ["Admins"] },
+      { allow: public, provider: iam, operations: [read] }
+  ]) {
+      id: ID! @primaryKey
+      name: String! @index(name: "productsByName", sortKeyFields: ["added"], queryField: "productsByName")
+      description: String!
+      price: String!
+      active: Boolean!
+      added: AWSDateTime!
+      orders: [Order] @hasMany
 }
 
 # TODO: handle the subscription case when auth is not added - it doesn't create a subscription resolver
-type Order @model
-    @key(fields: ["id", "productID"]) {
-        id: ID!
-        productID: ID!
-        total: String!
-        ordered: AWSDateTime!
-        expirationUnixTime: AWSTimestamp! @ttl
+type Order @model {
+  id: ID! @primaryKey(sortKeyFields: ["productID"])
+  productID: ID! 
+  total: String!
+  ordered: AWSDateTime!
+  expirationUnixTime: AWSTimestamp! 
 }
 
-type Thread @model
-    @key(fields: ["forumName", "subject"])
-    @key(
-      name: "threadsByLatestPost",
-      fields: ["forumName", "latestPostAt"],
-      queryField: "threadsByLatestPost") {
-        forumName: String!
-        subject:  String!
-        latestPostAt: AWSDateTime!
-        replies: Int!
+type Thread @model {
+  forumName: String! 
+    @primaryKey(sortKeyFields: ["subject"]) 
+    @index(name: "byLatestPost", sortKeyFields: ["latestPostAt"])
+
+  subject:  String!
+  latestPostAt: AWSDateTime!
+  replies: Int!
 }
 
 type Blog @model
@@ -54,20 +50,20 @@ type Blog @model
 {
   id: ID!
   name: String!
-  posts: [Post] @connection(name: "BlogPosts")
+  posts: [Post] @hasMany
 }
 
 type Post @model {
   id: ID!
   title: String!
-  blog: Blog @connection(name: "BlogPosts")
-  comments: [Comment] @connection(name: "PostComments")
+  blog: Blog @belongsTo
+  comments: [Comment] @hasMany
 }
 
 type Comment @model {
   id: ID!
   content: String
-  post: Post @connection(name: "PostComments")
+  post: Post @belongsTo
 }
 
 # Demonstrate the function resolvers
