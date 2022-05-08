@@ -212,6 +212,27 @@ type Product
 ```
 
 ```ts
+const appSyncTransformer = new AppSyncTransformer(this, "my-cool-api", {
+    schemaPath: 'schema.graphql',
+    authorizationConfig: {
+        defaultAuthorization: {
+            authorizationType: AuthorizationType.USER_POOL,
+            userPoolConfig: {
+                userPool: userPool,
+                appIdClientRegex: userPoolClient.userPoolClientId,
+                defaultAction: UserPoolDefaultAction.ALLOW
+            }
+        },
+
+        // Notice the additionalAuthorizationModes
+        additionalAuthorizationModes: [
+        {
+          authorizationType: appsync.AuthorizationType.IAM,
+        },
+      ],
+    }
+});
+
 const identityPool = new CfnIdentityPool(stack, 'test-identity-pool', {
     identityPoolName: 'test-identity-pool',
     cognitoIdentityProviders: [
@@ -262,6 +283,8 @@ const privateFunction = new Function(stack, 'test-function', {
 
 appSyncTransformer.grantPrivate(privateFunction);
 ```
+
+To allow the AppSync resource to use IAM authentication the `authorizationType: appsync.AuthorizationType.IAM` should either be added as the `defaultAuthorization` or as an `additionalAuthorizationModes` (see the example in [Unauth Role](#unauth-role))
 
 ### Functions
 
